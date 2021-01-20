@@ -1,8 +1,8 @@
 ;
 ;	IPL
-;
+; (aka crt0)
 ;Place in Track 0, Sector 1
-; w/: udostool disk.d88 ipl.bin 0 0 1
+; w/: d88saver disk.d88 ipl.bin 0 0 1
 
 	Relaxed	on
 
@@ -17,10 +17,6 @@ Main:
 	call		$428B					; Stop cursor blink
 	call		$4021					; Disable function key display
 
-	jp			.skip2 
-
-; Hold on... 
-.skip2: 
 	ld			hl,.param_console		; Console char
 	call		$7071					; console entry
 	call		$5F0E					; text screen area 
@@ -40,17 +36,14 @@ Main:
 	out			($5F),a					; Allocate $C000-$FFFF to main RAM 
 
 
-	ld			hl,$0100				;アドレス プレイヤー本体 $0100-$0FFF
-	ld			de,(0 << 8) | 2			;トラック0 セクタ2
-	ld			bc,(1 << 8) | 0		;セクタ数1[5] ドライブ0
+	ld			hl,$1000				; Main prog exe address
+	ld			de,(0 << 8) | 2			; Track 0, sector 2
+	ld			bc,(1 << 8) | 0			; Sector size (1) to load, Drive 0
 	call		DISK_Load
 
-	;ld			hl,$1000				;アドレス SMFオブジェクト $1000-
-	;ld			de,(1 << 8)| 1			;トラック1 セクタ1
-	;ld			bc,(128 << 8) | 0		;セクタ数128 ドライブ0 16kb
-	;call		DISK_Load
-
-	jp			$0100
+	ld 			sp,$0100
+	ei 
+	jp			$1000
 
 .param_console:
 	db		"0,25,0,1",0

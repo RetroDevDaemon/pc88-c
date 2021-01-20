@@ -1,19 +1,28 @@
+@echo OFF
 del app.d88
 D88SAVER app.d88 -2d
 
-set TRG=ipl
-asw -cpu z80undoc -g map %TRG%.z80
-p2bin %TRG%.p -l 0 -r $-$
-del %TRG%.p
-del *map.txt
-del *.map
-D88SAVER app.d88 ipl.bin 0 0 1
+sdcc -mz80 --code-loc 0x1000 --stack-loc 0x0000 --data-loc 0x0100 --no-std-crt0 main.c
+hex2bin main.ihx
 
-set ascmd=-D PC80=1
-set TRG=main
-asw -cpu z80undoc -g map %TRG%.z80
-p2bin %TRG%.p -l 0 -r $-$
-del %TRG%.p
-del *map.txt
-del *.map
+D88SAVER app.d88 ipl.bin 0 0 1
 D88SAVER app.d88 main.bin 0 0 2
+
+del *.ihx 
+del *.lk 
+del *.lst 
+del *.map 
+del *.noi 
+del *.sym 
+del *.asm 
+del *.rel 
+
+echo Current Memory Map:
+echo Stack: 0x000 - 0x0ff
+echo Data: 0x0100 - 0x0fff
+echo Prog: 0x1000 ~
+echo On disk:
+echo 0 0 1 - IPL (256b) 
+echo 0 0 2 - Main (256b)
+
+@echo ON 
