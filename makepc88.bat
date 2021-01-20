@@ -8,6 +8,7 @@ hex2bin main.ihx
 D88SAVER app.d88 ipl.bin 0 0 1
 D88SAVER app.d88 main.bin 0 0 2
 
+del main.bin
 del *.ihx 
 del *.lk 
 del *.lst 
