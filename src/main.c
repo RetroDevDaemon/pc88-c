@@ -14,7 +14,7 @@
 String strdat = "H e l l o   W o r l d \x00";
 
 PlanarBitmap santaBitmap = { 
-    img_r, img_g, img_b, 28, 112
+    img_r, img_g, img_b, 384/8, 119
 };
 
 
