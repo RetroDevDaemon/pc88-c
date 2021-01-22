@@ -93,6 +93,7 @@ void DrawPlaneBMP(const u8* img, u8 plane, u16 x, u16 y, u8 w, u8 h);
 #define PLANE_RED 1
 #define PLANE_BLUE 0
 #define PLANE_GREEN 2
+void SetPixel(u16 x, u8 y, u8 c);
 #define DrawPlanarBitmap(pb, x, y) \
         DrawPlaneBMP(pb->r, PLANE_RED, x, y, pb->w, pb->h); \
         DrawPlaneBMP(pb->g, PLANE_GREEN, x, y, pb->w, pb->h); \
@@ -242,3 +243,4 @@ void DrawPlaneBMP(const u8* img, u8 plane, u16 x, u16 y, u8 w, u8 h)
         p += (80 - w);
     } 
 }
+

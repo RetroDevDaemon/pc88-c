@@ -17,6 +17,7 @@ PlanarBitmap santaBitmap = {
     img_r, img_g, img_b, 384/8, 119
 };
 
+void SetPixel(u16 x, u8 y, u8 c);
 
 void main()
 {   
@@ -32,6 +33,11 @@ void main()
 
     PlanarBitmap* pb = &santaBitmap;
     DrawPlanarBitmap(pb, 20, 10);
+
+    //SetPixel(100, 180, CLR_RED);
+    u8 po = (u8)(100 % 8);
+    vu8* p = (vu8*)(0xc000) + (180 * 80) + (u8)(100/8);
+    *p |= bit(po);
 
     SETBANK_MAINRAM()
     
@@ -49,4 +55,23 @@ void main()
         }
         */
     }
+}
+
+
+void SetPixel(u16 x, u8 y, u8 c)
+{
+    switch(c){
+        case(1):
+            SETBANK_BLUE()
+            break;
+        case(2):
+            SETBANK_RED()
+            break;
+        case(4):
+            SETBANK_GREEN()
+            break;
+    };
+    u8 po = (u8)(x % 8);
+    vu8* p = (vu8*)(0xc000) + (y * 80) + (u8)(x/8);
+    *p |= bit(po);
 }

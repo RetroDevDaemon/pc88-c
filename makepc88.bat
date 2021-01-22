@@ -16,7 +16,7 @@ del *.lst
 del *.map 
 del *.noi 
 del *.sym 
-del *.asm 
+rem del *.asm 
 del *.rel 
 
 echo Current Memory Map:
