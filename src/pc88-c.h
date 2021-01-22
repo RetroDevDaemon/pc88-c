@@ -15,8 +15,8 @@ struct planarBitmap {
     const u8* r;
     const u8* g;
     const u8* b;
-    u8 h;
     u8 w;
+    u8 h;
 };
 typedef const struct planarBitmap PlanarBitmap;
 

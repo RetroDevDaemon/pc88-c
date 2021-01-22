@@ -14,7 +14,7 @@
 String strdat = "H e l l o   W o r l d \x00";
 
 PlanarBitmap santaBitmap = { 
-    img_r, img_g, img_b, 119, 48
+    img_r, img_g, img_b, 28, 112
 };
 
 
@@ -40,13 +40,13 @@ void main()
     while(1)
     {
         Wait_VBLANK();
-        
+        /*
         if((SCREEN_POINTER < tgt-3)&&(SCREEN_POINTER < (vu8*)0xff80))
             print("HI!\x00");
         else {
             tgt += 120;
             SCREEN_POINTER += 40;
         }
-        
+        */
     }
 }
