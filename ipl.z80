@@ -26,19 +26,19 @@ Main:
 
 	ld			a,%00111011				; 64KB RAM mode TextWindow func OFF
 	out			($31),a
-	ld			a,%10000000				; Sound IRQ off/Digital RGB/Fast RAM
+	ld			a,%10001001				; Sound IRQ off/Digital RGB/Fast RAM
 	out			($32),a					; If not fastram, can't use text window.
 
-	xor			a						; set IRQ
+	xor			a						; 
 	out			($E6),a
-	out			($E4),a					; Set IRQ level 
+	out			($E4),a					; disables interrupts 
 
 	out			($5F),a					; Allocate $C000-$FFFF to main RAM 
 
 
 	ld			hl,$1000				; Main prog exe address
 	ld			de,(0 << 8) | 2			; Track 0, sector 2
-	ld			bc,(3 << 8) | 0			; Sector size (3*256b) to load, Drive 0
+	ld			bc,(79 << 8) | 0			; Sector size (3*256b) to load, Drive 0
 	call		DISK_Load
 
 	ld 			sp,$0100
