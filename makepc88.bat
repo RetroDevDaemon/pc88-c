@@ -28,12 +28,14 @@ set /a by=%usedsec% * 272
 echo 0 0 1 - IPL (256b) 
 echo 0 0 2-%usedsec% - Main (%by%b)
 
-if "%1" == "" goto:eof
+if "%1" == "" goto:emu
 
 set sz=%~z1
 echo %1 is %sz% bytes.
 if %sz% GTR %by% (
     echo Warning: Filesize exceeded %by% bytes!
     echo Recompile ipl.z80!
+    goto:eof
 )
-
+:emu
+C:\Users\Bent\Downloads\m88\m88x5.exe 
