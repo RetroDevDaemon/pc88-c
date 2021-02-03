@@ -105,8 +105,7 @@ def AddFile(filename, cyl, hed, rec):
     start = (0x2b0 + 16) - rsize 
     start += (rec * rsize) + (hed * hsize) + (cyl * csize)
     # iterate every 256 bytes, then skipping 16... 
-    print(len(indat))
-    print(hex(start))
+    print("Embedding at location " + hex(start))
     tow = open(sys.argv[2], 'rb')
     outdat = bytearray(tow.read())
     tow.close()

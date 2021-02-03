@@ -35,20 +35,20 @@ void main()
 
     IRQ_OFF
     // Test yellow ALU draw (V2)
-    SetIOReg(EXPANDED_GVRAM_CTRL, 0x80); // GVRAM on, comp data off on VRAM ld (???)
-    SetIOReg(ALU_MODE_CTRL, 0xC9);    // ALU on - must be performed AFTER r32 GVRAM enable! (0x89 is default)
+    ExpandedGVRAM_On();                 // Expanded mode GVRAM on, comp data off on VRAM ld (???)
+    EnableALU();                        // ALU on - must be performed AFTER r32 GVRAM enable! (0x89 is default)
     SetIOReg(EXPANDED_ALU_CTRL, CLR_YELLOW);     // OR bits or bit reset to set color
     vu8* vp = (vu8*)0xc100;
     *vp = 0xff;
-    SetIOReg(EXPANDED_GVRAM_CTRL, 0); // gvram off 
+    ExpandedGVRAM_Off();
     // Toggle, then test blue ALU draw (v2)
-    SetIOReg(EXPANDED_GVRAM_CTRL, 0x80);
+    ExpandedGVRAM_On();
     SetIOReg(EXPANDED_ALU_CTRL, CLR_BLUE);
     vp += 0x100;
     *vp = 0xff;
-    SetIOReg(EXPANDED_GVRAM_CTRL, 0);
+    ExpandedGVRAM_Off();
     // Planar bitmap (V1) draw and individual pixels
-    SetIOReg(ALU_MODE_CTRL, 0x89); // ALU off
+    DisableALU(); // ALU off
     PlanarBitmap* pb = &layeredImage;    
     DrawPlanarBitmap(pb, 20, 10);
     SetPixel(360, 180, CLR_BLUE);
@@ -238,6 +238,12 @@ void SetPixel(u16 x, u8 y, u8 c)
     }
 
 }
+
+static inline void EnableALU(){ SetIOReg(ALU_MODE_CTRL, 0xC9); }
+static inline void DisableALU(){ SetIOReg(ALU_MODE_CTRL, 0x89); }
+static inline void ExpandedGVRAM_On() { SetIOReg(EXPANDED_GVRAM_CTRL, 0x80); }
+static inline void ExpandedGVRAM_Off() { SetIOReg(EXPANDED_GVRAM_CTRL, 0); } 
+
 
 /* Pal test for layered planar gfx 
     SetIOReg(PAL_REG0, CLR_RED);

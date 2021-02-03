@@ -414,17 +414,6 @@ Writing 0xff selects Main ROM.
 #define CLR_BLUE 1
 #define CLR_BLACK 0
 
-// Used in COLOR TEXT mode. Defines color and semigraphic toggle.
-#define COLORMODE_SET(color, semigraphic) \
-    (u8)((color<<5)|(semigraphic<<4)|0b1000)
-// Used in COLOR TEXT mode. Defines text attributes.
-#define COLORMODE_ATTR(underline, upperline, reverse, blink, hidden) \
-    (u8)((underline<<5)|(upperline<<4)|(reverse<<2)|(blink<<1)|(hidden))
-// Used in B&W TEXT mode. Bits 7, 5 and 4 must all be set for BW semigraphic mode.
-#define BWMODE_ATTR(underline, upperline, reverse, blink, hidden) \
-    (u8)((underline<<5)|(upperline<<4)|(reverse<<2)|(blink<<1)|(hidden))
-#define ATTR_BW_SEMIGRAPHIC 0b10011000
-
 
 // Function headers
 void main();
@@ -444,7 +433,10 @@ void Wait_VBLANK();
 void DrawPlaneBMP(const u8* img, u8 plane, u16 x, u16 y, u8 w, u8 h);
 void SetPixel(u16 x, u8 y, u8 c);
 bool GetKeyDown(u8 SCANCODE);
-inline void ToggleALU();
+static inline void EnableALU();
+static inline void DisableALU();
+static inline void ExpandedGVRAM_On();
+static inline void ExpandedGVRAM_Off();
 
 #define SetBGColor(c) SetIOReg(0x52, c << 4);
 #define SetBorderColor(c) SetIOReg(0x52, c); // PC8001 only?
@@ -459,6 +451,16 @@ inline void ToggleALU();
         DrawPlaneBMP(pb->r, PLANE_RED, x, y, pb->w, pb->h); \
         DrawPlaneBMP(pb->g, PLANE_GREEN, x, y, pb->w, pb->h); \
         DrawPlaneBMP(pb->b, PLANE_BLUE, x, y, pb->w, pb->h);
+// Used in COLOR TEXT mode. Defines color and semigraphic toggle.
+#define COLORMODE_SET(color, semigraphic) \
+    (u8)((color<<5)|(semigraphic<<4)|0b1000)
+// Used in COLOR TEXT mode. Defines text attributes.
+#define COLORMODE_ATTR(underline, upperline, reverse, blink, hidden) \
+    (u8)((underline<<5)|(upperline<<4)|(reverse<<2)|(blink<<1)|(hidden))
+// Used in B&W TEXT mode. Bits 7, 5 and 4 must all be set for BW semigraphic mode.
+#define BWMODE_ATTR(underline, upperline, reverse, blink, hidden) \
+    (u8)((underline<<5)|(upperline<<4)|(reverse<<2)|(blink<<1)|(hidden))
+#define ATTR_BW_SEMIGRAPHIC 0b10011000
 
 #define IRQ_OFF __asm di __endasm;
 #define IRQ_ON __asm ei __endasm;

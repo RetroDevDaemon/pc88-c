@@ -1,16 +1,16 @@
 @echo OFF
 del app.d88
 REM D88SAVER app.d88 -2d
-python3 maked88.py app.d88
+python3 tools/maked88.py app.d88
 
 set usedsec=79
 sdcc -mz80 --code-loc 0x1000 --stack-loc 0x0080 --data-loc 0x0100 --fomit-frame-pointer --no-std-crt0 src/main.c
 rem hex2bin main.ihx
 rem REQUIRES: pip install intelhex
-python3 hex2bin.py main.ihx main.bin
+python3 tools/hex2bin.py main.ihx main.bin
 
-python3 maked88.py app.d88 ipl.bin 0 0 1
-python3 maked88.py app.d88 main.bin 0 0 2
+python3 tools/maked88.py app.d88 ipl.bin 0 0 1
+python3 tools/maked88.py app.d88 main.bin 0 0 2
 rem D88SAVER app.d88 ipl.bin 0 0 1
 rem D88SAVER app.d88 main.bin 0 0 2
 

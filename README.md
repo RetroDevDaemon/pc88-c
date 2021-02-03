@@ -5,9 +5,10 @@ e.g. `makepc88 main.bin` will give you filesize information.<br>
 <br>
 `ipl.bin` is the autoloader.<br>
 It takes the place of `crt0` by setting up the stack.<br>
+Important byte locations in IPL.BIN:<br>
 `0x2F : Number of sectors loaded by autoloader (bytes / 256, default: 0x4F)`<br>
-`0x34-0x35 : Stack pointer location (Default: 0x0080)`<br>
-`0x38-0x39 : Code start location (Default: 0x1000)`<br>
+`0x34-0x35 : Stack pointer location (Default: 80 00 (=$080))`<br>
+`0x38-0x39 : Code start location (Default: 00 10 (=$1000))`<br>
 (SDCC _data_ is set to 0x0100 - 0x0fff).<br>
 PC-8x usually has the stack on page 0 (0x0000 to 0x00ff).<br>
 ATM, it is located at 0x80 because its unclear to me in SDCC if<br>
