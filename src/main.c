@@ -16,19 +16,28 @@ PlanarBitmap layeredImage = {
     img_r, img_g, img_b, 248/8, 100
 };
 
+    #define KB_NUM0 0x00
+    #define KB_NUM1 0x10
+    #define KB_NUM2 0x20
+    #define KB_NUM3 0x30
+    #define KB_NUM4 0x40
+    #define KB_NUM5 0x50
+    #define KB_NUM6 0x60
+    #define KB_NUM7 0x70
+
 /// Keep me here!
 void main()
 {   
     //SetIOReg(0x53, 1);  // Hide text 
     // turn on 80 col + color mode 
-    vu8* tgt = (vu8*)(SCREEN_TXT_BASE + 80);
+    //vu8* tgt = (vu8*)(SCREEN_TXT_BASE + 80);
     // 25 line, color, gfc on, n88, 64kb, 200line
     //SetIOReg(0x31, 0b00111011);
     //SetIOReg(0x32, 0b10011001); // default state
     //SetIOReg(0x35, (u8)bit(7)); // GVRAM access on 
-
+    SCREEN_POINTER = (vu8*)SCREEN_TXT_BASE;
     IRQ_OFF
-    /*
+    /* Pal test for layered planar gfx 
     SetIOReg(PAL_REG0, CLR_RED);
     SetIOReg(PAL_REG1, CLR_BLACK);
     SetIOReg(PAL_REG2, CLR_FUSCHIA);
@@ -38,36 +47,50 @@ void main()
     SetIOReg(PAL_REG6, CLR_CYAN);
     SetIOReg(PAL_REG7, CLR_CYAN);
     */
-    PlanarBitmap* pb = &layeredImage;    
-    DrawPlanarBitmap(pb, 20, 10);
+    //PlanarBitmap* pb = &layeredImage;    
+    //DrawPlanarBitmap(pb, 20, 10);
+    //SetPixel(360, 180, CLR_BLUE);
+    //SetPixel(361, 181, CLR_CYAN);
+    //SetPixel(362, 182, CLR_GREEN);
+    //SETBANK_MAINRAM()
     
-    SetPixel(360, 180, CLR_BLUE);
-    SetPixel(361, 181, CLR_CYAN);
-    SetPixel(362, 182, CLR_GREEN);
-    SETBANK_MAINRAM()
+    SetIOReg(EXPANDED_GVRAM_CTRL, (u8)0b10000000); // GVRAM on, comp data off on VRAM ld (???)
+    SetIOReg(ALU_MODE_CTRL, (u8)0b11001001);    // ALU on - must be performed after r32 GVRAM enable ^
+    SetIOReg(EXPANDED_ALU_CTRL, (u8)0b00000011);     // OR bits on all planes - noop plane 2
+    // Set the upper bit and the lower bit to DISABLE writing to that plane.
+    // Set only the lower bit to enable OVERWRITE (BIT SET)
+    //  In other words, for normal writing, SET the UPPER BIT to HIDE writing to a color plane.
+    // e.g. GV2 = 00, GV1 = 01, GV0 = 01 means RESET / SET / SET, or GRB[011], which creates fuschia.
+    //  Green plane is set to 0 if it is not. Red and blue plane are always set.
+    //This will overwrite any written pixel with PINK color. 
+    vu8* vp = (vu8*)0xc100;
+    *vp = 0xff;
+    SetIOReg(EXPANDED_GVRAM_CTRL, (u8)0); // gvram off 
     
     IRQ_ON
 
     while(1)
     {
         Wait_VBLANK();
-        /*
-        if((SCREEN_POINTER < tgt-3)&&(SCREEN_POINTER < (vu8*)0xff80))
-            print("HI!\x00");
-        else {
-            tgt += 120;
-            SCREEN_POINTER += 40;
-        }
-        */
+        if(GetKeyDown(KB_RETURN)) print("HI!\x00");
+        if(GetKeyDown(KB_Q)) print("BYTE!\x00");
     }
 }
-// DON'T MOVE main()!!!
+
+bool GetKeyDown(u8 SCANCODE)
+{
+    u8 r = (SCANCODE & 0xf0) >> 4;
+    u8 b = SCANCODE & 0x0f;
+    u8 i = ReadIOReg(r);
+    if(! (i & bit(b)) ) return true;
+    return false;
+}
 
 void Wait_VBLANK() __naked 
 {
     /* Taken from PC-88 info page:
      http://mydocuments.g2.xrea.com/html/p8/vraminfo.html */
-     
+
     __asm
     WaitVBlank:
     in	    a,(0x40)        ; SYS_MODE_SENSE
