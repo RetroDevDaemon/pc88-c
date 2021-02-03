@@ -28,31 +28,33 @@ void main()
     //SetIOReg(0x31, 0b00111011);
     //SetIOReg(0x32, 0b10011001); // default state
     //SetIOReg(0x35, (u8)bit(7)); // GVRAM access on 
+    
+    // Required to initialize print/putchr
     SCREEN_POINTER = (vu8*)SCREEN_TXT_BASE;
     LINE_POINTER = (u8)0;
 
     IRQ_OFF
-    
+    // Test yellow ALU draw (V2)
     SetIOReg(EXPANDED_GVRAM_CTRL, 0x80); // GVRAM on, comp data off on VRAM ld (???)
     SetIOReg(ALU_MODE_CTRL, 0xC9);    // ALU on - must be performed AFTER r32 GVRAM enable! (0x89 is default)
-    SetIOReg(EXPANDED_ALU_CTRL, CLR_YELLOW);     // OR bits on all planes - noop plane 2
+    SetIOReg(EXPANDED_ALU_CTRL, CLR_YELLOW);     // OR bits or bit reset to set color
     vu8* vp = (vu8*)0xc100;
     *vp = 0xff;
     SetIOReg(EXPANDED_GVRAM_CTRL, 0); // gvram off 
-    
+    // Toggle, then test blue ALU draw (v2)
     SetIOReg(EXPANDED_GVRAM_CTRL, 0x80);
     SetIOReg(EXPANDED_ALU_CTRL, CLR_BLUE);
     vp += 0x100;
     *vp = 0xff;
     SetIOReg(EXPANDED_GVRAM_CTRL, 0);
-
+    // Planar bitmap (V1) draw and individual pixels
     SetIOReg(ALU_MODE_CTRL, 0x89); // ALU off
     PlanarBitmap* pb = &layeredImage;    
     DrawPlanarBitmap(pb, 20, 10);
     SetPixel(360, 180, CLR_BLUE);
     SetPixel(361, 181, CLR_CYAN);
     SetPixel(362, 182, CLR_GREEN);
-    SETBANK_MAINRAM()
+    SETBANK_MAINRAM() // must reset after draw!
     
     IRQ_ON
 
@@ -248,11 +250,4 @@ void SetPixel(u16 x, u8 y, u8 c)
     SetIOReg(PAL_REG7, CLR_CYAN);
     */
     
-        
-    // Note this is also the value of the palette!
-    // Set the upper bit and the lower bit to DISABLE writing to that plane.
-    // Set only the lower bit to enable OVERWRITE (BIT SET)
-    //  In other words, for normal writing, SET the UPPER BIT to HIDE writing to a color plane.
-    // e.g. GV2 = 00, GV1 = 01, GV0 = 01 means RESET / SET / SET, or GRB[011], which creates fuschia.
-    //  Green plane is set to 0 if it is not. Red and blue plane are always set.
-    //This will overwrite any written pixel with PINK color. 
+  
