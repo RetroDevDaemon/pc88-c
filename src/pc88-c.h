@@ -210,7 +210,7 @@ COLOR Text screen color mode: 0-Color 1-B&W
 Bit	    7	6	5	    4	    3	    2	    1	    0
                 25LINE	HCOLOR	GRAPH	RMODE	MMODE	200LINE
 
-25LINE Hi-res 25 column mode: 0-All other modes 1-ON
+25LINE Hi-res 25 row mode: 0-All other modes 1-ON
 HCOLOR Graphic color mode: 0-B&W 1-Color
 GRAPH Graphic control: 0-Graphic screens off 1-ON
 RMODE ROM mode: 0-N88-BASIC 1-N-BASIC
@@ -428,8 +428,8 @@ Writing 0xff selects Main ROM.
 
 // Function headers
 void main();
-void putchr(u8 c);
-/**/void putchr40(u8 c);
+static inline void putchr(u8 c);
+/**/static inline void putchr40(u8 c);
 void print(String str);
 /**/void print40(String str);
 u8 ReadIOReg(u8 r);
@@ -444,6 +444,7 @@ void Wait_VBLANK();
 void DrawPlaneBMP(const u8* img, u8 plane, u16 x, u16 y, u8 w, u8 h);
 void SetPixel(u16 x, u8 y, u8 c);
 bool GetKeyDown(u8 SCANCODE);
+inline void ToggleALU();
 
 #define SetBGColor(c) SetIOReg(0x52, c << 4);
 #define SetBorderColor(c) SetIOReg(0x52, c); // PC8001 only?

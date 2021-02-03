@@ -21,10 +21,10 @@ Main:
 	call		$7071					; console entry
 	call		$5F0E					; text screen area 
 
-	ld			a,%00000001				; color, 80 cols
+	ld			a,%00000001				; color, 80 column text mode
 	out			($30),a
 
-	ld			a,%00111011				; 64KB RAM mode TextWindow func OFF
+	ld			a,%00111011				; Hi res 25row mode, Color graphic mode, graphics on, N-88 basic, 64Kmode, 200-line resolution
 	out			($31),a
 	ld			a,%10001001				; Sound IRQ off/Digital RGB/Fast RAM
 	out			($32),a					; If not fastram, can't use text window.
