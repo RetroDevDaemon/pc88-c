@@ -41,7 +41,7 @@ Main:
 	ld			bc,($4f << 8) | 0			; Sector size (3*256b) to load, Drive 0
 	call		DISK_Load
 
-	ld 			sp,$0080
+	ld 			sp,$00ff
 	ei 
 	jp			$1000
 
