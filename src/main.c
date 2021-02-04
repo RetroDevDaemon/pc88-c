@@ -143,7 +143,7 @@ static inline void putchr40(u8 c)
 {
     *SCREEN_POINTER = c;
     SCREEN_POINTER +=2 ;
-    LINE_POINTER++;
+    LINE_POINTER += 2;
     if(LINE_POINTER == 80) { 
         LINE_POINTER = 0;
         SCREEN_POINTER = SCREEN_POINTER + 40;
