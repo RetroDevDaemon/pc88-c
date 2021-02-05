@@ -101,7 +101,7 @@ def AddFile(filename, cyl, hed, rec):
     inb.close() 
     rsize = (256 + 16)
     hsize = rsize * 16
-    csize = rsize * 2
+    csize = hsize * 2
     start = (0x2b0 + 16) - rsize 
     start += (rec * rsize) + (hed * hsize) + (cyl * csize)
     # iterate every 256 bytes, then skipping 16... 
