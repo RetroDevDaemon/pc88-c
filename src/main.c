@@ -52,6 +52,8 @@ void main()
     SetPixel(362, 182, CLR_GREEN);
     SETBANK_MAINRAM() // must reset after draw!
     
+    DiskLoad((u8*)0xc100, 0, 1, 1, 0);
+
     IRQ_ON
 
     while(1)
