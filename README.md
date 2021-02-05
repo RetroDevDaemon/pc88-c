@@ -2,6 +2,12 @@
 Manual part 1, overview: https://barelyconsciousgames.blogspot.com/2021/02/pc-88-c-framework-for-nec-pc8801.html <br> 
 Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/pc88-c-frame-for-nec-pc-8801-part-2.html <br> 
 
+## Important: requires SDCC to be on the path<br>
+Unfortunately the build script atm is Windows only, but it shouldn't be too hard to adapt makepc88.bat for your own purposes.<br>
+If you have SDCC 4.0.0 and Python3, you should be able to build without issue.<br>
+(Recommend M88x5 emulator)<br>
+<br>
+Brief overview:<br>
 `makepc88.bat` - Creates app.d88 for use in an emulator<br>
 e.g. `makepc88 main.bin` will give you filesize information.<br>
 `makeipl.bat` - If you have ASW, you can recompile the crt0/autoloader/floppy driver.<br>
@@ -10,7 +16,7 @@ e.g. `makepc88 main.bin` will give you filesize information.<br>
 It takes the place of `crt0` by setting up the stack.<br>
 Important byte locations in IPL.BIN:<br>
 `0x2F : Number of sectors loaded by autoloader (bytes / 256, default: 0x4F)`<br>
-`0x34-0x35 : Stack pointer location (Default: 80 00 (=$080))`<br>
+`0x34-0x35 : Stack pointer location (Default: ff 00 (=$00ff))`<br>
 `0x38-0x39 : Code start location (Default: 00 10 (=$1000))`<br>
 (SDCC _data_ is set to 0x0100 - 0x0fff).<br>
 PC-8x usually has the stack on page 0 (0x0000 to 0x00ff).<br>
