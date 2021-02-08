@@ -38,7 +38,7 @@ Main:
 
 	ld			hl,$1000				; Main prog exe address
 	ld			de,(0 << 8) | 2			; Track 0, sector 2
-	ld			bc,($4f << 8) | 0			; Sector size (3*256b) to load, Drive 0
+	ld			bc,($6f << 8) | 0			; Sector size (3*256b) to load, Drive 0
 	call		DISK_Load
 
 	ld 			sp,$00ff
