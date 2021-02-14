@@ -4,7 +4,8 @@ Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/
 
 ## Important: requires SDCC to be on the path<br>
 Unfortunately the build script atm is Windows only, but it shouldn't be too hard to adapt makepc88.bat for your own purposes.<br>
-If you have SDCC 4.0.0 and Python3, you should be able to build without issue.<br>
+If you have SDCC 4.0.7 and Python3, you should be able to build without issue.<br>
+<b>NOTE:</b> SDCC 4.0.<b>0</b> has compiling issues with Z80. Make sure you're on the most recent build.<br>
 (Recommend M88x5 emulator)<br>
 <br>
 Brief overview:<br>
