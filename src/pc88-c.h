@@ -19,6 +19,8 @@ typedef unsigned char bool;
 #define true 1
 #define false 0
 #define bit(n) (1 << n)
+#define null 0 
+#define NULL null 
 
 // PlanarBitmap
 //  Consists of three pointers to the three RGB plane data, uncompressed

@@ -4,7 +4,8 @@ REM D88SAVER app.d88 -2d
 python3 tools/maked88.py app.d88
 
 set usedsec=79
-sdcc -mz80 --code-loc 0x1000 --data-loc 0x0100 --fomit-frame-pointer --no-std-crt0 src/main.c
+sdcc -mz80 --code-loc 0x1000 --data-loc 0x0100 --fomit-frame-pointer --no-std-crt0 examples/wip-1bitsprite/main.c
+rem sdcc -mz80 --code-loc 0x1000 --data-loc 0x0100 --fomit-frame-pointer --no-std-crt0 src/main.c
 rem hex2bin main.ihx
 rem REQUIRES: pip install intelhex
 python3 tools/hex2bin.py main.ihx main.bin
