@@ -211,7 +211,6 @@ COLOR Text screen color mode: 0-Color 1-B&W
 ** WRITE: System Control Port
 Bit	    7	6	5	    4	    3	    2	    1	    0
                 25LINE	HCOLOR	GRAPH	RMODE	MMODE	200LINE
-
 25LINE Hi-res 25 row mode: 0-All other modes 1-ON
 HCOLOR Graphic color mode: 0-B&W 1-Color
 GRAPH Graphic control: 0-Graphic screens off 1-ON
