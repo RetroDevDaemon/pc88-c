@@ -8,6 +8,8 @@ if(len(sys.argv) != 4):
 f = open(sys.argv[1], 'rb')
 ib = bytearray(f.read())
 l = int(sys.argv[2], 16)
+if(sys.argv[3][1] != 'x'):
+    o = hex(int(sys.argv[3]))
 o = int(sys.argv[3], 16)
 f.close()
 ib[l] = o 

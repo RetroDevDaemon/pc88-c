@@ -12,9 +12,14 @@ XM8 - SDL2, fast, no debugging (http://retropc.net/pi/xm8/index.html) <br>
 Illusion City, huge tools list, recent M88 builds: https://illusioncity.net/nec-pc-88-series-emulators-tools-lists/ <br>
 <br>
 Brief overview:<br>
-`makepc88.bat` - Creates app.d88 for use in an emulator<br>
-e.g. `makepc88 main.bin` will give you filesize information.<br>
+`makepc88.bat / makepc88.sh` - Creates app.d88 for use in an emulator.<br>
+Windows: `makepc88.bat main.bin` will give you filesize information, and if the autoloader will fail to load the size.<br>
+At the top of the `makepc88.bat` and `makepc88.sh` files are 3 variables:<br>
+`filename` - Output disk name, e.g. app.d88<br>
+`usedsec` - Value to patch ipl.bin to (for autoloader)<br>
+`emuexe` - Local emulator executable<br>
 `makeipl.bat` - If you have ASW, you can recompile the crt0/autoloader/floppy driver.<br>
+(A recent ASW build is included in the old/ folder).<br>
 <br>
 `ipl.bin` is the autoloader.<br>
 It takes the place of `crt0` by setting up the stack.<br>
