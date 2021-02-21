@@ -6,7 +6,10 @@ Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/
 Unfortunately the build script atm is Windows only, but it shouldn't be too hard to adapt makepc88.bat for your own purposes.<br>
 If you have SDCC 4.0.7 and Python3, you should be able to build without issue.<br>
 <b>NOTE:</b> SDCC 4.0.<b>0</b> has compiling issues with Z80. Make sure you're on the most recent build.<br>
-(Recommend M88x5 emulator)<br>
+Recommended emulators:<br>
+M88x5 - Cycle accurate, excellent for debugging, slow (get from Illusion City, below)<br>
+XM8 - SDL2, fast, no debugging (http://retropc.net/pi/xm8/index.html) <br> 
+Illusion City, huge tools list, recent M88 builds: https://illusioncity.net/nec-pc-88-series-emulators-tools-lists/ <br>
 <br>
 Brief overview:<br>
 `makepc88.bat` - Creates app.d88 for use in an emulator<br>
