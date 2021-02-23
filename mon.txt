@@ -1,0 +1,210 @@
+/////// PC-8801 ////////
+///      'mon'      ///
+
+Brief overview of usage for the native assembly language monitor. The ROM's
+ machine language monitor has mini-assembler functionality, display for 
+ octal and hex, ability to read/write to I/O ports, and disassemble.
+
+
+][ BASIC Commands ][
+====================
+
+|  mon
+
+Starts the machine language monitor
+
+
+|  print hex$(peek(&HE7E9)*256+peek(&HE7E8))
+
+Displays hex address of highmem
+
+
+|  print hex$(peek(&HEB1C)*256+peek(&HEB1B))
+
+Displays hex address of lowmem
+
+
+|  clear ,&Hnnnn
+
+Sets the base address of the ML program (usually clear ,&H9000)
+
+
+][ MONITOR COMMANDS ][
+======================
+
+| ctrl+B
+
+Return to BASIC
+
+
+| STOP or ctrl+C
+
+Return to previous line (e.g. typo)
+
+
+| A
+
+Assemble. Begin assembling, using Intel mnemonic, at the specified address.
+ e.g. 
+h] a9000 (enter)
+9000 FF-(begin typing asm)
+
+Z80        Equivalent
+jr x		jmpr x
+jr z,x		jrz x
+jr nz,x		jrnz x
+jr c,x		jrc x
+jr nc,x		jrnc x
+djnz x		djnz x
+
+
+| B
+
+Base. Change number base for display and input - bh is hex, bq is octal.
+ e.g. 
+h] bq
+q]
+
+
+| D
+
+Dump memory. Shows hex representation of range provided. 
+ e.g. 
+h] d
+0000 F3 31 A0 E1 C3 ...
+ or 
+h] d9000,9020
+(lists memory from 9000h to 9020h)
+
+
+| E
+
+Edit memory. Opens a hex editor where you can enter values manually. Ctrl+C 
+or ESC will return to mon.
+ e.g. 
+h] e9000
+(opens hex editor at address 9000h)
+
+
+| F
+
+Fill memory. Fills from start address to target address with value N.
+ e.g. 
+h] f9000,9010,ff
+h] d9000
+9000 FF FF FF FF FF FF ...
+
+
+| G
+
+Go. Runs code starting at the specified address. Can optionally take 2 
+breakpoint addresses as arguments.
+ e.g.
+h] g9000,9050,9080
+ (Runs code from 9000h and stops either 9050h and 9080h)
+h] g
+ (Resets the machine - same as g0000)
+
+
+| I
+
+Input. Read a byte from the specified port address.
+
+
+| L
+
+Disassemble. Shows disassembly with mnemonic beginning at the specified 
+address (takes an optional end address).
+ e.g. 
+h] l9000
+9000  FF     RST 7   ...
+
+
+| M
+
+Move memory. Takes three arguments: start address of copy, end address of
+copy, destination address.
+ e.g. 
+h] m9000,9100,a000
+ (Copies 9000h-9100h to a000h-a100h.)
+
+
+| O
+
+Output. Outputs the given data byte to the specified port.
+ e.g.
+h] o10,ff
+(Writes FFh to port 10)
+
+
+| P
+
+Printer switch. When enabled, any D, L and Ctrl+D command will be sent to 
+the printer instead of the screen.
+
+
+| R
+
+Read tape. Only for tape access. 
+ e.g.
+h] rGAME
+(Tries to load GAME from tape.)
+
+
+| S
+
+Set memory. Inline version of 'E' command. Use the spacebar to quickly tab 
+forward to the next byte without modifying it, or ESC to cancel. Pressing 
+return will commit to memory and return to mon.
+ e.g. 
+h] s9000
+(Edit the byte at 9000h.)
+
+
+| TM
+
+Test memory. Valuable memtest tool if you have real hardware.
+
+
+| V
+
+Verify tape. Checks to see if what is present in memory is equivalent to what
+ is on tape. Optionally takes filename argument, like R.
+ e.g.
+h] vGAME
+
+
+| W
+
+Write tape. Writes given filename to tape from given start and end memory 
+addresses.
+ e.g.
+h] wGAME,9000,9100
+
+
+| X
+
+eXamine register. Optionally takes register name as argument (a, f, b, d,
+ h, i, x, y, p (pc), s (sp)). No argument will print all registers.
+
+
+| HELP key or Ctrl+A
+
+Prints online help. In English, no less!
+
+
+[With DISK BASIC:]
+
+| Ctrl+D
+
+Dump Disk. Prints disk data to screen.
+
+
+| Ctrl+R
+
+Read disk. Reads disk into memory.
+
+
+| Ctrl+W
+
+Write disk. Writes memory to disk.
