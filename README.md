@@ -1,6 +1,8 @@
-# PC88-C (0.0.11)
+# PC88-C (0.0.12)
 
 ## Revision history
+0.0.12<br>
+- Made a real Makefile and removed the .bat/.sh files.<br>
 0.0.11 <br>
 -Fixed maked88.py. Was not copying in the last byte of the file causing build issues.<br>
 -Various tweaks and fixes<br>
@@ -18,12 +20,9 @@ XM8 - SDL2, fast, no debugging (http://retropc.net/pi/xm8/index.html) <br>
 Illusion City, huge tools list, recent M88 builds: https://illusioncity.net/nec-pc-88-series-emulators-tools-lists/ <br>
 <br>
 Brief overview:<br>
-`makepc88.bat / makepc88.sh` - Creates app.d88 for use in an emulator.<br>
-Windows: `makepc88 examples/1bitsprite` will create and launch the 1bitsprite project.<br>
-At the top of the `makepc88.bat` and `makepc88.sh` files are 3 variables:<br>
-`filename` - Output disk name, e.g. app.d88<br>
-`usedsec` - Value to patch ipl.bin to (for autoloader)<br>
-`emuexe` - Local emulator executable<br>
+`Makefile` - Creates app.d88 for use in an emulator.<br>
+Usage: `make PROJECT=examples/1bitsprite`<br>
+
 `makeipl.bat` - If you have ASW, you can recompile the crt0/autoloader/floppy driver.<br>
 (A recent ASW build is included in the old/ folder).<br>
 <br>
