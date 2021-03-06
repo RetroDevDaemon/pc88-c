@@ -476,7 +476,6 @@ u8 LINE_POINTER;
 
 void __init()
 {
-    // Required to initialize print/putchr
     SCREEN_POINTER = (vu8*)SCREEN_TXT_BASE;
     LINE_POINTER = (u8)0;
     main();
@@ -623,8 +622,8 @@ void DrawPlaneBMP(const u8* img, u8 plane, u16 x, u16 y, u8 w, u8 h)
         SETBANK_GREEN()
     vu8* p = (vu8*)(0xc000) + (y * 80) + (u8)(x/8);
     const u8* v = img;
-    for(u8 y = 0; y < h; y++){
-        for(u8 x = 0; x < w; x++){
+    for(u8 yy = 0; yy < h; yy++){
+        for(u8 xx = 0; xx < w; xx++){
             *p = *v;
             p++;
             v++;
@@ -672,30 +671,30 @@ void DiskLoad(u8* dest, u8 srcTrack, u8 srcSector, u8 numSecs, u8 drive) __naked
     __asm 
         ld iy, #0
         add iy, sp 
-        ld l, 2 (iy)        ; 
-        ld h, 3 (iy)        ; dest
-        ld d, 4 (iy)        ; track 
-        ld e, 5 (iy)        ; sector 
-        ld b, 6 (iy)        ; nm secs
-        ld c, 7 (iy)        ; drive no. 
+        ld l, 2 (iy)     
+        ld h, 3 (iy)            ; dest
+        ld d, 4 (iy)            ; track 
+        ld e, 5 (iy)            ; sector 
+        ld b, 6 (iy)            ; nm secs
+        ld c, 7 (iy)            ; drive no. 
     DISK_Load:
         ld			a,#0x02					; cmd 2, read data
         call		DISK_SdCmd
-        ld			a,b						;sector num
+        ld			a,b						; sector num
         cp			#17
         jr			c,.load02
         ld			a,#17					; if 17, go to next track 
         sub			e
     .load02:
         call		DISK_SdData1
-        ld			a,c						;dr #
+        ld			a,c						; drive #
         call		DISK_SdData1
-        ld			a,d						;trk
+        ld			a,d						; trk
         call		DISK_SdData1
-        ld			a,e						;sectr
+        ld			a,e						; sectr
         call		DISK_SdData1
 
-        ld			a,#0x12					;cmd 18 fast send data 
+        ld			a,#0x12					; cmd 18 fast send data - required to continue load loop from disk 
         call		DISK_SdCmd
 
     .loop01:
@@ -711,75 +710,74 @@ void DiskLoad(u8* dest, u8 srcTrack, u8 srcSector, u8 numSecs, u8 drive) __naked
         jr			z,.next
         pop			bc
         djnz		.loop01					; sector loop
-        ret
+        ret                                 ; all done!
 
-    ;next trk
+    ; Quick sub to increase the load counter... 
     .next:
-        inc			d						;from next track
-        ld			e,#1						;sector from 1 
+        inc			d						; from next track
+        ld			e,#1					; sector from 1 
         pop			bc
         dec			b
         jr			nz,DISK_Load
         ret
     ; send cmd to subsys 
     ; a is command symbol
+    ;  7   6   5   4   3   2   1   0
+    ;  W   W   W   W   R   R   R   R
+    ; ATN DAC RFD DAV  -  DAC RFD DAV
     DISK_SdCmd:
-        push		af
-        ld			a,#0b00001111				;Attention=1
-        out			(0xFF),a
+        push		af                          ; Push the queued disk command to the stack
+        ld			a,#0b00001111				; Attention=1 
+        out			(0xFF),a                    ; out to control port 
     .wait1:
-        in			a,(0xFE)
-        bit			1,a						;Ready for Data?
+        in			a,(0xFE)                    ; Read in from port C ...
+        bit			1,a						    ; wait until Ready for Data bit is set 
         jr			z,.wait1
-
-        ld			a,#0b00001110				;Attention=0
-        out			(0xFF),a
-        jr			DISK_SdData1sub
+        ld			a,#0b00001110				; Attention=0
+        out			(0xFF),a                    ;  (to ctl port)
+        jr			DISK_SdData1sub             ; continue to send data routine 
 
     ;get 1 byte 
     DISK_SdData1:
         push		af
     .wait01:
-        in			a,(0xFE)
-        bit			#1,a						;Ready for Data
+        in			a,(0xFE)                    ; port C... 
+        bit			#1,a						; Ready for Data ?
         jr			z,.wait01
-
     DISK_SdData1sub:
-        pop			af
-        out			(0xFD),a					;cmd
-
-        ld			a,#0b00001001				;Data Valid
-        out			(0xFF),a
+        pop			af                          
+        out			(0xFD),a					; output the pushed cmd to port B
+        ld			a,#0b00001001				; Data Validate 
+        out			(0xFF),a                    ; (to ctl port)
     .wait2:
-        in			a,(0xFE)
-        bit			2,a						;Data Accepted?
+        in			a,(0xFE)                    ; port C 
+        bit			2,a						    ; Data Accepted?
         jr			z,.wait2
-
-        ld			a,#0b00001000				;Data Valid
-        out			(0xFF),a
+        ld			a,#0b00001000				; Data Validate off  
+        out			(0xFF),a                    ; 
     .wait3:
-        in			a,(0xfe)
-        bit			2,a						;Data Accepted?
+        in			a,(0xfe)                    ; in from C 
+        bit			2,a						    ; Data Accepted? (bit 2)
         jr			nz,.wait3
-        ret
+        ret                                     ; OK!
 
 
-    ;get 2 byte
+    ;get 2 bytes from 0xfc, stores them in (hl) 
     DISK_RdData2:
-        ld			a,#0b00001011				;Ready for Data
+        ld			a,#0b00001011				; Ready for Data
         out			(0xFF),a
     .wait10:
         in			a,(0xFE)
-        rrca								;Data Valid?
+        rrca								    ; Data Valid?
         jr			nc,.wait10
 
-        ld			a,#0b00001010				;Ready for Data=0
+        ld			a,#0b00001010				; Ready for Data=0
         out			(0xFF),a
 
         in			a,(0xFC)                    ; get data 
         ld			(hl),a
         inc			hl
-        ld			a,#0b00001101				;Data Valid=1
+        ld			a,#0b00001101				; Data Valid=1
         out			(0xFF),a
     .wait20:
         in			a,(0xFE)
@@ -789,7 +787,7 @@ void DiskLoad(u8* dest, u8 srcTrack, u8 srcSector, u8 numSecs, u8 drive) __naked
         in			a,(0xFC)
         ld			(hl),a
         inc			hl
-        ld			a,#0b00001100				;Data Accepted
+        ld			a,#0b00001100				; Data Accepted
         out			(0xFF),a
         ret
 

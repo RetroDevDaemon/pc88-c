@@ -1,25 +1,20 @@
-
-#include "pc88-c.h"
+#include <pc88-c.h>
 
 #include "img_b.h"
 #include "img_r.h"
 #include "img_g.h"
 
 PlanarBitmap layeredImage = { 
-    img_r, img_g, img_b, 384/8, 119
+    img_r, img_g, img_b, 600/8, 40
 };
 
-void main(void)
+void main()
 {   
     IRQ_OFF
     // V1 draw mode , one color plane at a time
-    //SetIOReg(0x53, 1);
     PlanarBitmap* pb = &layeredImage;    
     DrawPlanarBitmap(pb, 0, 0);
-    //DrawPlaneBMP(pb->r, PLANE_RED, 0, 0, pb->w, pb->h); 
-    //DrawPlaneBMP(pb->g, PLANE_GREEN, 0, 0, pb->w, pb->h); 
-    //DrawPlaneBMP(pb->b, PLANE_BLUE, 0, 0, pb->w, pb->h);
-    SetPixel(360, 180, CLR_BLUE);
+    
     SETBANK_MAINRAM()
     IRQ_ON
 

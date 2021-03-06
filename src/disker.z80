@@ -1,0 +1,186 @@
+; Homemade disk control 
+; compile with ASW:
+; $ asw -cpu z80undoc -g map src/disker.z80
+; $ p2bin src/disker.p -k -l 0 -r $-$
+; Poke into RAM using mon @ $9000.
+; Poke parameters:
+;  90f0 - Number of sectors to r/w
+;  90f1 - Drive no
+;  90f2 - Track no
+;  90f3 - Sector no
+;  90f4-f5 - Target address for load, source address for write
+; g9000 - Format 
+; g9017 - Save
+; g905a - Load
+
+    Relaxed on 
+
+    ORG $9000
+
+
+CallFormat:
+    ld          a,5
+    call        DISK_SdCmd
+    ld          a,0
+    call        DISK_SdData1
+
+GetStatus:
+    ld          a,6
+    call        DISK_SdCmd 
+    ld          hl, _result 
+    call        DISK_RdData2
+    ld          a,(hl)
+    ret 
+
+CallSave:
+    ld          a,$19
+    call        DISK_SdCmd 
+CallSave_b:
+    ld          a,1
+GetRegs:
+    ld          ix,_args
+    ld          b, (ix)         ; num of sectors 
+    ld          c, (ix+1)       ; drive #
+    ld          d, (ix+2)       ; track no
+    ld          e, (ix+3)       ; sector no 
+    ld          l, (ix+4)       ; start addr lo
+    ld          h, (ix+5)       ; start addr hi 
+    cp          1
+    ret         nz
+    call        DISK_SdCmd
+    ld          a,b 
+    call        DISK_SdData1 ; num sec
+    ld          a,c 
+    call        DISK_SdData1 ; drive no
+    ld          a,d 
+    call        DISK_SdData1 ; track no
+    ld          a,e 
+    call        DISK_SdData1  ; sec no
+    ld          c,0             ; leave b with num sectors
+$$savloop:
+    ld          a,(hl)
+    call        DISK_SdData1 
+    call        GetStatus
+    and         1
+    jr          nz,CallSave_b
+    inc         hl 
+    dec         bc 
+    ld          a,b
+    cp          0 
+    jr          nz,$$savloop
+    ld          a,c
+    cp          0
+    jr          nz,$$savloop
+    jp          GetStatus
+
+DISK_Load:
+    ld          a,2
+    call        GetRegs
+    call		DISK_SdCmd
+	ld			a,b						;セクタ数　1<=sec(s)<=16
+	cp			17
+	jr			c,$$load2
+	ld			a,17					;16を超える場合は 17-StartSector だけ読んで次トラックへ
+	sub			e
+$$load2:
+	call		DISK_SdData1
+	ld			a,c						;ドライブ
+	call		DISK_SdData1
+	ld			a,d						;トラック
+	call		DISK_SdData1
+	ld			a,e						;セクタ
+	call		DISK_SdData1
+
+	ld			a,$12					;コマンド 18 Fast Send Data
+	call		DISK_SdCmd
+
+$$loop1:
+	push		bc
+	ld			b,128					; 128 * 2bytes  受信
+$$loop2:
+	call		DISK_RdData2
+	djnz		$$loop2					; セクタ内ループ
+
+	inc			e
+	ld			a,e
+	cp			17						; 17に到達->次のトラックへ移行
+	jr			z,$$next
+	pop			bc
+	djnz		$$loop1					; セクタ数分ループ
+	jp          GetStatus               ; end of load 
+
+;次のトラックへ
+$$next:
+	inc			d						;次のトラックから
+	ld			e,1						;セクタは1から
+	pop			bc
+	dec			b
+	jr			nz,DISK_Load
+	jp          GetStatus               ; end of load 
+
+
+DISK_SdCmd:
+    push		af                          ; Push the queued disk command to the stack
+    ld			a,%00001111				; Attention=1 
+    out			(0xFF),a                    ; out to control port 
+$$wait1:
+    in			a,(0xFE)                    ; Read in from port C ...
+    bit			1,a						    ; wait until Ready for Data bit is set 
+    jr			z,$$wait1
+    ld			a,%00001110				; Attention=0
+    out			(0xFF),a                    ;  (to ctl port)
+    jr			DISK_SdData1sub             ; continue to send data routine 
+
+DISK_SdData1:
+    push		af
+$$wait01:
+    in			a,(0xFE)                    ; port C... 
+    bit			1,a						; Ready for Data ?
+    jr			z,$$wait01
+DISK_SdData1sub:
+    pop			af                          
+    out			(0xFD),a					; output the pushed cmd to port B
+    ld			a,%00001001				; Data Validate 
+    out			(0xFF),a                    ; (to ctl port)
+$$wait2:
+    in			a,(0xFE)                    ; port C 
+    bit			2,a						    ; Data Accepted?
+    jr			z,$$wait2
+    ld			a,%00001000				; Data Validate off  
+    out			(0xFF),a                    ; 
+$$wait3:
+    in			a,(0xfe)                    ; in from C 
+    bit			2,a						    ; Data Accepted? (bit 2)
+    jr			nz,$$wait3
+    ret                                     ; OK!
+DISK_RdData2:
+    ld			a,%00001011				; Ready for Data
+    out			(0xFF),a
+$$wait10:
+    in			a,(0xFE)
+    rrca								    ; Data Valid?
+    jr			nc,$$wait10
+
+    ld			a,%00001010				; Ready for Data=0
+    out			(0xFF),a
+
+    in			a,(0xFC)                    ; get data 
+    ld			(hl),a
+    inc			hl
+    ld			a,%00001101				; Data Valid=1
+    out			(0xFF),a
+$$wait20:
+    in			a,(0xFE)
+    rrca
+    jr			c,$$wait20
+
+    in			a,(0xFC)
+    ld			(hl),a
+    inc			hl
+    ld			a,%00001100				; Data Accepted
+    out			(0xFF),a
+    ret
+
+    
+    _result: db 0 
+    _args: db 0,0,0,0,0,0

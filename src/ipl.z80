@@ -36,14 +36,14 @@ Main:
 	out			($5F),a					; Allocate $C000-$FFFF to main RAM 
 
 
-	ld			hl,$1000				; Main prog exe address
+	ld			hl,$4000				; Main prog exe address
 	ld			de,(0 << 8) | 2			; Track 0, sector 2
 	ld			bc,($6f << 8) | 0			; Sector size (3*256b) to load, Drive 0
 	call		DISK_Load
 
-	ld 			sp,$00ff
+	ld 			sp,$0080
 	ei 
-	jp			$1000
+	jp			$4000
 
 .param_console:
 	db		"0,25,0,1",0

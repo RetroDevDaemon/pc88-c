@@ -111,7 +111,7 @@ def AddFile(filename, cyl, hed, rec):
     tow.close()
     i = 0
     bc = 0
-    while i < len(outdat) - 1:
+    while i < len(outdat):
         indat[start+bc] = outdat[i]
         i += 1
         bc += 1
@@ -135,7 +135,7 @@ elif(len(sys.argv) > 2):
         if(os.path.exists(sys.argv[1]) == False):
             print(sys.argv[1] + ' not found. Creating.')
             WriteBlank2D()
-        print('Adding file ' + sys.argv[2] + ' to ' + sys.argv[1] + '...')
+        print('Adding file ' + sys.argv[2] + ' to ' + sys.argv[1] + '...', end=' ')
         AddFile(sys.argv[2], int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]))
 else:
     print('Creating blank 2D disk ' + sys.argv[1] + '...')

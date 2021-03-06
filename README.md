@@ -1,13 +1,17 @@
-# PC88-C
-# Locked and made private
-# SDCC will not function.
+# PC88-C (0.0.11)
+
+## Revision history
+0.0.11 <br>
+-Fixed maked88.py. Was not copying in the last byte of the file causing build issues.<br>
+-Various tweaks and fixes<br>
+<br>
 Manual part 1, overview: https://barelyconsciousgames.blogspot.com/2021/02/pc-88-c-framework-for-nec-pc8801.html <br> 
 Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/pc88-c-frame-for-nec-pc-8801-part-2.html <br> 
 
 ## Important: requires SDCC to be on the path<br>
 Unfortunately the build script atm is Windows only, but it shouldn't be too hard to adapt makepc88.bat for your own purposes.<br>
-If you have SDCC 4.0.7 and Python3, you should be able to build without issue.<br>
-<b>NOTE:</b> SDCC 4.0.<b>0</b> has compiling issues with Z80. Make sure you're on the most recent build.<br>
+If you have SDCC 4.1.0 and Python3, you should be able to build without issue.<br>
+(I use the latest build of SDCC to ensure I have the fewest issues.)<br>
 Recommended emulators:<br>
 M88x5 - Cycle accurate, excellent for debugging, slow (get from Illusion City, below)<br>
 XM8 - SDL2, fast, no debugging (http://retropc.net/pi/xm8/index.html) <br> 
@@ -15,7 +19,7 @@ Illusion City, huge tools list, recent M88 builds: https://illusioncity.net/nec-
 <br>
 Brief overview:<br>
 `makepc88.bat / makepc88.sh` - Creates app.d88 for use in an emulator.<br>
-Windows: `makepc88.bat main.bin` will give you filesize information, and if the autoloader will fail to load the size.<br>
+Windows: `makepc88 examples/1bitsprite` will create and launch the 1bitsprite project.<br>
 At the top of the `makepc88.bat` and `makepc88.sh` files are 3 variables:<br>
 `filename` - Output disk name, e.g. app.d88<br>
 `usedsec` - Value to patch ipl.bin to (for autoloader)<br>
@@ -26,12 +30,12 @@ At the top of the `makepc88.bat` and `makepc88.sh` files are 3 variables:<br>
 `ipl.bin` is the autoloader.<br>
 It takes the place of `crt0` by setting up the stack.<br>
 Important byte locations in IPL.BIN:<br>
-`0x2F : Number of sectors loaded by autoloader (bytes / 256, default: 0x4F)`<br>
-`0x34-0x35 : Stack pointer location (Default: ff 00 (=$00ff))`<br>
-`0x38-0x39 : Code start location (Default: 00 10 (=$1000))`<br>
-(SDCC _data_ is set to 0x0100 - 0x0fff).<br>
+`0x2F : Number of sectors loaded by autoloader (bytes / 256, default: 0x5F)`<br>
+`0x34-0x35 : Stack pointer location (Default: 80 00 (=$0080))`<br>
+`0x38-0x39 : Code start location (Default: 00 40 (=$4000))`<br>
+(SDCC _data_ is set to 0x0100~).<br>
 PC-8x usually has the stack on page 0 (0x0000 to 0x00ff).<br>
-The stack pointer is set in IPL.BIN to 0x00ff, it will grow downward.<br>
+The stack pointer is set in IPL.BIN to 0x0080.<br>
 `disk.z80` is a disk I/O driver under 256 bytes.(!!)<br>
 <br>
 maked88.py is a special tool (replaces D88SAVER.EXE) to make/add the files to<br>
@@ -41,9 +45,7 @@ Stack/data addresses and load code will need tweaking, and will take<br>
 a bit to adapt to sdcc's assembler.<br>
 <br>
 The disk will auto boot.<br>
-The `__init()` function must be the first actual code entry - it is not<br>
-meant to be moved from its location in `pc88-c.h`. It calls main() and<br>
-sets the screen pointers required for putchr/print.<br>
+
 A hello world minimal main.c looks like:<br>
 ```
 #include "pc88-c.h"

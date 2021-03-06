@@ -1,7 +1,8 @@
 @echo OFF
 
+SET proj=%1
 SET filename=app.d88
-SET usedsec=05
+SET usedsec=0x5f
 SET emuexe=C:\Users\Bent\Downloads\m88\m88x5.exe 
 
 REM CREATE FRESH app.d88 FILE
@@ -10,16 +11,18 @@ REM D88SAVER app.d88 -2d
 python3 tools/maked88.py %filename%
 
 rem SET usedsec TO APPROPRIATE SIZE TO COPY FROM DISK.
-python3 tools/hexer.py ipl.bin 0x2f %usedsec%
+python3 tools/hexer.py src/ipl.bin 0x2f %usedsec%
 
 REM COMPILE WITH SDCC AND CONVERT TO BINARY FORMAT
-sdcc -mz80 --code-loc 0x1000 --data-loc 0x0100 --fomit-frame-pointer --no-std-crt0 -Isrc examples/helloworld/main.c
+echo Compiling sources...
+sdcc -mz80 --stack-loc 0x80 --data-loc 0x0100 --code-loc 0x4000 --fomit-frame-pointer --no-std-crt0 -Isrc %1/main.c
 rem REQUIRES: pip install intelhex
+python3 tools/fixboot.py src/ipl.bin 
 python3 tools/hex2bin.py main.ihx main.bin
 rem hex2bin main.ihx
 
 REM ADD BOOTLOADER AND COMPILED BINARY TO D88
-python3 tools/maked88.py %filename% ipl.bin 0 0 1
+python3 tools/maked88.py %filename% src/ipl.bin 0 0 1
 python3 tools/maked88.py %filename% main.bin 0 0 2
 rem D88SAVER app.d88 ipl.bin 0 0 1
 rem D88SAVER app.d88 main.bin 0 0 2
@@ -36,24 +39,10 @@ rem del *.asm
 del *.rel 
 
 REM PRINT MEMORY ESTIMATIONS
-echo Current Memory Map:
-echo Stack: 0x000 - 0x0ff
-echo Data: 0x0100 - 0x0fff
-echo Prog: 0x1000 ~
 echo On disk:
 set /a by=%usedsec% * 256
 echo 0 0 1 - IPL (256b) 
 echo 0 0 2-%usedsec% - Main (%by%b)
 
-if "%1" == "" goto:emu
-
-set sz=%~z1
-echo %1 is %sz% bytes.
-if %sz% GTR %by% (
-    echo Warning: Filesize exceeded %by% bytes!
-    echo Recompile ipl.z80!
-    goto:eof
-)
-:emu
 
 %emuexe%
