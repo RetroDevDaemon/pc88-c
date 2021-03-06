@@ -2,7 +2,7 @@
 
 ## Revision history
 0.0.12<br>
-- Made a real Makefile and removed the .bat/.sh files.<br>
+-Made a real Makefile and removed the .bat/.sh files.<br>
 0.0.11 <br>
 -Fixed maked88.py. Was not copying in the last byte of the file causing build issues.<br>
 -Various tweaks and fixes<br>
@@ -11,7 +11,6 @@ Manual part 1, overview: https://barelyconsciousgames.blogspot.com/2021/02/pc-88
 Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/pc88-c-frame-for-nec-pc-8801-part-2.html <br> 
 
 ## Important: requires SDCC to be on the path<br>
-Unfortunately the build script atm is Windows only, but it shouldn't be too hard to adapt makepc88.bat for your own purposes.<br>
 If you have SDCC 4.1.0 and Python3, you should be able to build without issue.<br>
 (I use the latest build of SDCC to ensure I have the fewest issues.)<br>
 Recommended emulators:<br>
