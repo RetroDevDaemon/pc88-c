@@ -13,7 +13,7 @@ f.close()
 i = 0
 q = []
 while i < len(s):
-    if s[i].find('_main') != -1:
+    if s[i].find('__init') != -1:
         q = re.findall(r'\w\w\w\w\w\w\w\w', s[i])
     i += 1
 ll = q[0][6:]
@@ -30,4 +30,4 @@ f = open(sys.argv[1], 'wb')
 f.write(ib)
 f.close()
 
-print("IPL redirected to _main @", hh+ll)
+print("IPL redirected to __init @", hh+ll)
