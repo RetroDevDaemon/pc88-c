@@ -7,6 +7,7 @@
 -Fixed maked88.py. Was not copying in the last byte of the file causing build issues.<br>
 -Various tweaks and fixes<br>
 <br>
+(kind of out of date):<br>
 Manual part 1, overview: https://barelyconsciousgames.blogspot.com/2021/02/pc-88-c-framework-for-nec-pc8801.html <br> 
 Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/pc88-c-frame-for-nec-pc-8801-part-2.html <br> 
 
