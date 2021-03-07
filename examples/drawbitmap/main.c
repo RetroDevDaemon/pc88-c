@@ -6,7 +6,7 @@
 #include "img_g.h"
 
 PlanarBitmap layeredImage = { 
-    img_r, img_g, img_b, 384/8, 119
+    (u8*)&img_r, (u8*)&img_g, (u8*)&img_b, 384/8, 119
 };
 
 void main(void)
