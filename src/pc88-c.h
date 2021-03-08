@@ -395,6 +395,25 @@ Writing 0xff selects Main ROM.
 
 // To do:
 // Registers Ax - Sound board II registers
+/* Interrupt Level Set Register
+ bits 0 - 2: Interrupt level 
+ 0 (high) - RS232 / Serial
+ 1 - CRTC / Vertical blank
+ 2 - 1/600s timer
+ 3 - INT4
+ 4 - Sound IRQ
+ 5 - INT2
+ 6 - FDINT1
+ 7 - FDINT2
+Set to 1 higher than the IRQ you wish to enable.
+e.g. writing 0x03 will enable 0, 1, and 2. */
+#define IRQ_LEVEL_SET 0xe4
+/* Interrupt Mask Register
+Bit 2 - Serial / RS232 interrupt
+Bit 1 - Vertical blank from CRTC
+Bit 0 - 1/600s timer interrupt
+ Setting a bit ALLOWS the interrupt. */
+#define IRQ_MASK 0xe6
 // Registers Ex - Expanded RAM read/write control registers, including Kanji ROMs
 // Registers Fx - Disc subsystem 8255 control regs
 
@@ -588,8 +607,7 @@ u8 ReadIOReg(u8 r) __naked
         ld a, 0 (iy)
         ld c, a 
         in a, (c)
-        ld 0 (iy), a 
-        ld	l, 0 (iy)
+        ld l, a
         ret 
     __endasm;
 }
@@ -605,7 +623,6 @@ void SetIOReg(u8 r, u8 v) __naked
         ld c, 4 (ix)
         ld a, 5 (ix) 
         out (c), a 
-        ld l, a
         pop	ix
         ret
     __endasm;
