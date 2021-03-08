@@ -1,25 +1,25 @@
 #include "pc88-c.h"
 
-void Vblank();
-void SetVBLIRQ();
+#define CRTC_IRQ 0xf302
 
-void SetVBLIRQ()
+void Vblank() __critical __interrupt(0);
+inline void SetVBLIRQ();
+
+inline void SetVBLIRQ()
 {
     SetIOReg(IRQ_LEVEL_SET, 2);      // Set IRQ high for VBL
     SetIOReg(IRQ_MASK, 0b10);        // Reset mask for VBL
 }
 
-void Vblank()
+void Vblank() __critical __interrupt(0)
 {
     IRQ_OFF         // Disable interrupts during VBL
     SetVBLIRQ();    // Reset interrupt level and mask
     // Do our Vblank code:
     print("Hi!");
     
-    IRQ_ON          // Enable interrupts again!
+    //IRQ_ON   <- This is handled by our compiler
 }
-
-#define CRTC_IRQ 0xf302
 
 void main()
 {
