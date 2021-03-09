@@ -5,7 +5,7 @@
 CC=sdcc
 CFLAGS=-Isrc
 PY=python3
-DEL=rm
+DEL=rm -rf
 
 ## USED SECTORS ON DISC ##
 USEDSEC=0x5f
@@ -25,7 +25,7 @@ CODE=0x4000
 # Stack should stay in ZP.
 # This is due to VRAM being in C000~.
 
-88FLAGS=-mz80 --stack-loc $(STACK) --data-loc $(DATA) --code-loc $(CODE) --fomit-frame-pointer --no-std-crt0 
+88FLAGS=-mz80 --stack-loc $(STACK) --data-loc $(DATA) --code-loc $(CODE) --fomit-frame-pointer --no-std-crt0
 
 ## DISC FILE NAME ##
 APPNAME=app.d88
@@ -33,10 +33,16 @@ APPNAME=app.d88
 ## EMULATOR EXECUTABLE ##
 EMUEXE=C:\Users\Bent\Downloads\m88\m88x5.exe 
 
-default: $(PROJECT)
+# This is updated when new .c files are added
+PC88CFILES=out/crt0.rel out/getkeydown.rel out/waitvblank.rel out/diskload.rel out/ioreg.rel out/draw.rel 
+
+out/%.rel: src/lib/%.c
+	sdcc -c -mz80 $(CFLAGS) -o $@ $< 
+
+default: $(PROJECT) $(PC88CFILES)
 	$(PY) tools/maked88.py $(APPNAME)
 	$(PY) tools/hexer.py src/ipl.bin 0x2f $(USEDSEC)
-	$(CC) $(88FLAGS) $(CFLAGS) $(PROJECT)/main.c
+	$(CC) $(88FLAGS) $(CFLAGS) $(PROJECT)/main.c out/*.rel 
 	$(PY) tools/fixboot.py src/ipl.bin 
 	$(PY) tools/hex2bin.py main.ihx main.bin
 	$(PY) tools/maked88.py $(APPNAME) src/ipl.bin 0 0 1
@@ -48,4 +54,21 @@ default: $(PROJECT)
 	$(DEL) *.noi
 	$(DEL) *.rel
 	$(DEL) *.sym
+	$(DEL) *.bin
+	$(DEL) out/*.asm 
+	$(DEL) out/*.sym 
+	$(DEL) out/*.lst   
 	$(EMUEXE)
+
+clean:
+	$(DEL) out/*.*
+	$(DEL) $(APPNAME)
+	$(DEL) *.ihx
+	$(DEL) *.lk
+	$(DEL) *.lst
+	$(DEL) *.map
+	$(DEL) *.noi
+	$(DEL) *.rel
+	$(DEL) *.sym
+	$(DEL) *.bin
+	$(DEL) *.asm
