@@ -1,7 +1,8 @@
-#include "pc88-c.h"
+#include <pc88-c.h>
 
 void main()
 {
+    print("Press RETURN or SPACE.");
     while(1)
     {
         Wait_VBLANK();

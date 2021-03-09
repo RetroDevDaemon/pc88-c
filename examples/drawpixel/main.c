@@ -1,4 +1,4 @@
-#include "pc88-c.h"
+#include <pc88-c.h>
 
 void main()
 {
@@ -36,7 +36,5 @@ void main()
     
     IRQ_ON
     
-    while(1){
-        Wait_VBLANK();
-    }
+    while(1){ }
 }

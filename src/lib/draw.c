@@ -41,7 +41,7 @@ void SetPixel(u16 x, u8 y, u8 c)
 
 }
 
-static inline void EnableALU(){ SetIOReg(ALU_MODE_CTRL, 0xC9); }
-static inline void DisableALU(){ SetIOReg(ALU_MODE_CTRL, 0x89); }
-static inline void ExpandedGVRAM_On() { SetIOReg(EXPANDED_GVRAM_CTRL, 0x80); }
-static inline void ExpandedGVRAM_Off() { SetIOReg(EXPANDED_GVRAM_CTRL, 0); } 
+inline void EnableALU(){ SetIOReg(ALU_MODE_CTRL, 0xC9); }
+inline void DisableALU(){ SetIOReg(ALU_MODE_CTRL, 0x89); }
+inline void ExpandedGVRAM_On() { SetIOReg(EXPANDED_GVRAM_CTRL, 0x80); }
+inline void ExpandedGVRAM_Off() { SetIOReg(EXPANDED_GVRAM_CTRL, 0); } 

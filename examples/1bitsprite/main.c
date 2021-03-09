@@ -1,4 +1,4 @@
-#include "pc88-c.h"
+#include <pc88-c.h>
 
 const unsigned char sprite[] = { 
     0b00011111,0b11100000,0b00000000,
@@ -40,8 +40,10 @@ void main()
         oldpos.x = spritepos.x;
         oldpos.y = spritepos.y;
         moved = false;
+        
         // Draw
         Wait_VBLANK();
+
         // Get input and set new sprite position
         if(GetKeyDown(KB_S)){ 
             spritepos.y += 4;

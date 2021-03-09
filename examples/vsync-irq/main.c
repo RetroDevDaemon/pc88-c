@@ -1,6 +1,4 @@
-#include "pc88-c.h"
-
-#define CRTC_IRQ 0xf302
+#include <pc88-c.h>
 
 void Vblank() __critical __interrupt(0);
 inline void SetVBLIRQ();

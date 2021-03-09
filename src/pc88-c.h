@@ -415,6 +415,13 @@ Bit 1 - Vertical blank from CRTC
 Bit 0 - 1/600s timer interrupt
  Setting a bit ALLOWS the interrupt. */
 #define IRQ_MASK 0xe6
+/* IRQ Vector Table @ 0xf300~
+f300 - Serial
+f302 - Vblank
+f304 - Sound1
+f306 - Sound2 ...
+*/
+#define CRTC_IRQ 0xf302
 // Registers Ex - Expanded RAM read/write control registers, including Kanji ROMs
 // Registers Fx - Disc subsystem 8255 control regs
 
@@ -454,10 +461,10 @@ void Wait_VBLANK();
 void DrawPlaneBMP(const u8* img, u8 plane, u16 x, u16 y, u8 w, u8 h);
 void SetPixel(u16 x, u8 y, u8 c);
 bool GetKeyDown(u8 SCANCODE);
-static inline void EnableALU();
-static inline void DisableALU();
-static inline void ExpandedGVRAM_On();
-static inline void ExpandedGVRAM_Off();
+inline void EnableALU();
+inline void DisableALU();
+inline void ExpandedGVRAM_On();
+inline void ExpandedGVRAM_Off();
 void DiskLoad(u8* dst, u8 track, u8 sector, u8 numSecs, u8 drive); 
 
 #define SetBGColor(c) SetIOReg(0x52, c << 4);
