@@ -6,6 +6,7 @@
 
 import numpy
 import sys 
+import os 
 from PIL import Image, ImageDraw
 
 img, b2, b3 = None, None, None 
@@ -22,9 +23,47 @@ def FilterPlane(p):
             else:
                 a.append(0)
     return a
+totalbytes = 0
+rlebytes = 0
+def RLEEncode(arr):
+    s = 0
+    rlearr = []
+    while s < len(arr):
+        if(arr[s] == 0x80):
+            rlearr.append(0x80)
+            rlearr.append(0x80)
+            rlearr.append(0x1)
+        else:
+            if(s < len(arr)-2):
+                # Check the next 2 bytes. Is it the same?
+                if (arr[s] == arr[s + 1]):
+                    if(arr[s] == arr[s + 2]):
+                        rlearr.append(0x80)
+                        rlearr.append(arr[s])
+                        # how many?
+                        ct = 3
+                        while ( ((s+ct) < len(arr)-1) & (arr[s+ct] == arr[s]) ):
+                            ct += 1
+                        rlearr.append(ct)
+                        s += (ct-1)
+                # If not, append normally
+                else:
+                    rlearr.append(arr[s])
+                    rlearr.append(arr[s+1])
+                    rlearr.append(arr[s+2])
+                    s += 2
+            else: # finish word
+                rlearr.append(arr[s])
+        s += 1
+    global totalbytes 
+    global rlebytes 
+    totalbytes += len(arr)
+    rlebytes += len(rlearr)
+    return rlearr 
 
-def OutBytes(a,fn):
+def OutBytes(a,fn, rle):
     # a is array from FilterPlane
+    global obstr
     iarr = []
     wid = b3.size[0]
     hei = b3.size[1]
@@ -38,30 +77,49 @@ def OutBytes(a,fn):
                 else: 
                     bistr = bistr + '0'
                 n += 1
-            iarr.append(str(int(bistr,2)))
-    f = open(fn, 'w')
-    f.write("// rgb image header\nconst unsigned char " + fn.split('.')[0] + '[' + str(len(iarr)) + '] = { ')
+            iarr.append(int(bistr,2))
+    if rle == 1:
+        iarr = RLEEncode(iarr)
+        obstr += "// RLE encoded. 0xFE 0xNN - copy the next NN bytes through\n//     0xFD 0xNN 0xJJ - copy NN JJ times\n"
+    obstr = obstr + "// rgb image header\nconst unsigned char " + fn.split('.')[0] + '[' + str(len(iarr)) + '] = { '
     for s in range(0,len(iarr)):
-        f.write(iarr[s])
-        f.write(',')
-    f.write(' \n};\n')
-    f.close()
-    print(len(iarr))
-                
-
+        if s % 16 == 0:
+            obstr += '\n'
+        obstr += str(iarr[s])
+        obstr += ','
+    obstr += ' \n};\n'
+    #print(len(iarr), "rle = " + str(rle))
+    
+obstr = ''                
 img = Image.open(sys.argv[1])
 b2 = numpy.asarray(img)
 b3 = Image.new('L', (b2.shape[1], b2.shape[0]), 0)
 o = []
 
+fn = os.path.splitext(sys.argv[1])[0]
+fn2 = fn.split('/')
+fn2 = fn2[len(fn2)-1]
+
 b = FilterPlane(0b001)
 g = FilterPlane(0b100)
 r = FilterPlane(0b010)
-OutBytes(b, 'img_b.h')
-OutBytes(r, 'img_r.h')
-OutBytes(g, 'img_g.h')
+rle = 0
+i = 0
+while i < len(sys.argv):
+    a = sys.argv[i]
+    if a.find("rle") != -1:
+        rle = 1
+    i += 1
 
+OutBytes(b, fn2 + '_b.h', rle)
+OutBytes(r, fn2 + '_r.h', rle)
+OutBytes(g, fn2 + '_g.h', rle)
 
+f = open(fn + '.h', 'w')
+f.write(obstr)
+f.close()
+
+print(totalbytes, rlebytes)
 
 def OutColorPlane(c,fn):
     wid = b3.size[0]

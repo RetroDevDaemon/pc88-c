@@ -1,6 +1,13 @@
 # PC88-C (0.0.12)
 
 ## Revision history
+0.0.13<br>
+-Updated png288.py. If you append `-rle`, `/rle` etc. it will RLE-encode the file with the following schema:<br>
+`0x80 [X] [Y] : Duplicate [X] by [Y] times.
+All other bytes : Copy through`
+-Added getsjis.py. Scans and prints a file for N88-BASIC kana. <br>
+-Added Sprite, XYPos structs to lib header<br>
+-WIP: Arkanoid clone example<br>
 0.0.12<br>
 -Made a real Makefile and removed the .bat/.sh files.<br>
 0.0.11 <br>

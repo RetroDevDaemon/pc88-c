@@ -34,6 +34,21 @@ typedef const struct planarBitmap {
     u8 h;
 } PlanarBitmap;
 
+// 4 bytes
+typedef struct xypos { 
+    signed int x;
+    signed int y;
+} XYpos;
+
+// 8 bytes - technically same as pb.
+typedef const struct sprite { 
+    const u8* r_data;
+    const u8* g_data;
+    const u8* b_data;
+    u8 w;   // times 8
+    u8 h;
+} Sprite;
+
 // PC88 Registers and other defs
 //
 #define SCREEN_TXT_BASE 0xf3c8

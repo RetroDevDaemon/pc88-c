@@ -2,3 +2,4 @@
 *.asm 
 main.bin
 out
+tools/*.txt

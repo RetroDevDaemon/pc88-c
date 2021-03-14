@@ -1,0 +1,14 @@
+{
+    "configurations": [
+        {
+            "name": "PC88",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "compilerPath": "C:/Program Files/SDCC/bin/cl.exe",
+            "cStandard": "c17",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}
