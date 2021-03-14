@@ -4,8 +4,8 @@
 0.0.13b<br>
 -Added IPL target to makefile (`make IPL`). No longer requires ASW, compiles with SDCC.<br> 
 -Updated png288.py. If you append `-rle`, `/rle` etc. it will RLE-encode the file with the following schema:<br>
-`0x80 [X] [Y] : Duplicate [X] by [Y] times.
-All other bytes : Copy through`
+`0x80 [X] [Y] : Duplicate [X] by [Y] times.` <br>
+`All other bytes : Copy through`<br>
 -Added getsjis.py. Scans and prints a file for N88-BASIC kana. <br>
 -Added Sprite, XYPos structs to lib header<br>
 -WIP: Arkanoid clone example<br>
