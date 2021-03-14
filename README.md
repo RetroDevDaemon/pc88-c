@@ -1,19 +1,14 @@
 # PC88-C (0.0.13b)
 
-## Revision history
-0.0.13b<br>
--Added IPL target to makefile (`make IPL`). No longer requires ASW, compiles with SDCC.<br> 
--Updated png288.py. If you append `-rle`, `/rle` etc. it will RLE-encode the file with the following schema:<br>
-`0x80 [X] [Y] : Duplicate [X] by [Y] times.` <br>
-`All other bytes : Copy through`<br>
--Added getsjis.py. Scans and prints a file for N88-BASIC kana. <br>
--Added Sprite, XYPos structs to lib header<br>
--WIP: Arkanoid clone example<br>
-0.0.12<br>
--Made a real Makefile and removed the .bat/.sh files.<br>
-0.0.11 <br>
--Fixed maked88.py. Was not copying in the last byte of the file causing build issues.<br>
--Various tweaks and fixes<br>
+# Overview 
+A very minimal framework for PC88 development using C. <br> 
+`src/pc88-c.h` has all the good stuff. <br> 
+Check out the `src/lib/` folder for the detailed code. Everything should be laid bare.<br>
+## To-Dos
+-V2 drawing<br>
+-Sound<br>
+-Joystick<br>
+-Disk saving<br>
 <br>
 (kind of out of date):<br>
 Manual part 1, overview: https://barelyconsciousgames.blogspot.com/2021/02/pc-88-c-framework-for-nec-pc8801.html <br> 
@@ -31,11 +26,10 @@ Brief overview:<br>
 `Makefile` - Creates app.d88 for use in an emulator.<br>
 Usage: `make PROJECT=examples/1bitsprite`<br>
 Creates app.d88 in root of '1bitsprite' project.<br>
-`make IPL`<br>
-Recompiles src/ipl.z80 and src/disk.z80.<br>
+You can also do `make IPL` to recompile src/ipl.z80 and src/disk.z80.<br>
 <br>
 `ipl.bin` is the autoloader.<br>
-It takes the place of `crt0` by setting up the stack.<br>
+In some ways it takes place of crt0. For me, src/crt0.c instead sets up the PC88-C environment. Notably, the putchr/print functions are probably quite clumsy since I haven't written them for a system before. <br>
 Important byte locations in IPL.BIN:<br>
 `0x2F : Number of sectors loaded by autoloader (bytes / 256, default: 0x5F)`<br>
 `0x34-0x35 : Stack pointer location (Default: 80 00 (=$0080))`<br>
@@ -48,10 +42,9 @@ The stack pointer is set in IPL.BIN to 0x0080.<br>
 maked88.py is a special tool (replaces D88SAVER.EXE) to make/add the files to<br>
 a 2D PC-88 disk image.<br>
 `0 0 1` must be the IPL, `0 0 2` must be the the file to load into RAM.<br>
-Stack/data addresses and load code will need tweaking, and will take<br>
-a bit to adapt to sdcc's assembler.<br>
+I tried to make it as easy as possible to adjust memory addresses and load options.<br>
 <br>
-The disk will auto boot.<br>
+The disk will auto boot!<br>
 
 A hello world minimal main.c looks like:<br>
 ```
@@ -67,6 +60,28 @@ A large amount of information is in `pc88-c.h`
 <br>
 <br>
 Python dependencies for tools:<br>
-`$ python3 -m pip install --upgrade Pillow`<br>
-`$ pip install numpy`<br>
-`$ pip install intelhex`<br>
+```
+$ python3 -m pip install --upgrade Pillow
+$ pip install numpy
+$ pip install intelhex
+```
+<br>
+
+## Revision history
+0.0.13b<br>
+-Added IPL target to makefile (`make IPL`). No longer requires ASW, compiles with SDCC.<br> 
+-Updated png288.py. If you append `-rle`, `/rle` etc. it will RLE-encode the file with the following schema:<br>
+```
+0x80 [X] [Y] : Duplicate [X] by [Y] times.
+All other bytes : Copy through
+```
+-Added getsjis.py. Scans and prints a file for N88-BASIC kana. <br>
+-Added Sprite, XYPos structs to lib header<br>
+-WIP: Arkanoid clone example<br>
+0.0.12<br>
+-Made a real Makefile and removed the .bat/.sh files.<br>
+0.0.11 <br>
+-Fixed maked88.py. Was not copying in the last byte of the file causing build issues.<br>
+-Various tweaks and fixes<br>
+<br>
+
