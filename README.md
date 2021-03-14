@@ -4,6 +4,10 @@
 A very minimal framework for PC88 development using C. <br> 
 `src/pc88-c.h` has all the good stuff. <br> 
 Check out the `src/lib/` folder for the detailed code. Everything should be laid bare.<br>
+<br>
+Consider joining the RetroDev Discord to discuss, ask questions, and contribute:<br>
+https://discord.gg/Js3uUrc
+<br>
 ## To-Dos
 -V2 drawing<br>
 -Sound<br>
