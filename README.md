@@ -1,7 +1,8 @@
 # PC88-C (0.0.12)
 
 ## Revision history
-0.0.13<br>
+0.0.13b<br>
+-Added IPL target to makefile (`make IPL`). No longer requires ASW, compiles with SDCC.<br> 
 -Updated png288.py. If you append `-rle`, `/rle` etc. it will RLE-encode the file with the following schema:<br>
 `0x80 [X] [Y] : Duplicate [X] by [Y] times.
 All other bytes : Copy through`
@@ -29,9 +30,9 @@ Illusion City, huge tools list, recent M88 builds: https://illusioncity.net/nec-
 Brief overview:<br>
 `Makefile` - Creates app.d88 for use in an emulator.<br>
 Usage: `make PROJECT=examples/1bitsprite`<br>
-
-`makeipl.bat` - If you have ASW, you can recompile the crt0/autoloader/floppy driver.<br>
-(A recent ASW build is included in the old/ folder).<br>
+Creates app.d88 in root of '1bitsprite' project.<br>
+`make IPL`<br>
+Recompiles src/ipl.z80 and src/disk.z80.<br>
 <br>
 `ipl.bin` is the autoloader.<br>
 It takes the place of `crt0` by setting up the stack.<br>

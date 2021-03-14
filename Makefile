@@ -59,6 +59,15 @@ default: $(PROJECT) $(PC88CFILES)
 	@$(DEL) out/*.lst   
 	$(EMUEXE)
 
+IPL: src/ipl.z80 src/disk.z80 
+	sdasz80 -o ipl.rel src/ipl.z80 
+	sdldz80 -b _CODE=0xC000 -i ipl.ihx ipl.rel 
+	$(PY) tools/hex2bin.py ipl.ihx ipl.bin 
+	@$(DEL) *.ihx 
+	@$(DEL) *.rel 
+	@cp ipl.bin src/
+	@$(DEL) ipl.bin 
+
 clean:
 	@$(DEL) out/*.*
 	@$(DEL) $(APPNAME)

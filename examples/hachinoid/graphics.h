@@ -67,13 +67,13 @@ Sprite tile_07 = {
 };
 
 // RLE
-Sprite title_1 = { 
+PlanarBitmap title_1 = { 
     (u8*)&title_1_r, (u8*)&title_1_g, (u8*)&title_1_b, 
     28, 38
 };
 
 // RLE
-Sprite title_2 = { 
+PlanarBitmap title_2 = { 
     (u8*)&title_2_r, (u8*)&title_2_g, (u8*)&title_2_b, 
     18, 109
 };

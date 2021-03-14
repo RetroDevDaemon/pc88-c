@@ -21,6 +21,7 @@ bool moved;
 void DrawSpritePlane(u8* dat, XYpos* xy, u8 w, u8 h);
 void DrawSprite(Sprite* spr, signed int x, signed int y);
 void EraseVRAMArea(XYpos* xy, u8 w, u8 h);
+void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y);
 
 inline void GAME_INIT();
 inline void GAME_DRAW();
@@ -41,6 +42,47 @@ void main()
     }
 }
 
+void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y)
+{
+    SETBANK_RED();
+    vu8* p = (vu8*)(0xc000) + (y * 80) + x;
+    const u8* v = pb->r;
+    u8 row = 0;
+    u8 col = 0;
+    u8 loop = 0;
+    u16 siz = pb->w * pb->h;
+    for(u16 s = 0; s < siz; s++)
+    {
+        // check if *v is 0x80
+        if(*(v + s) == 0x80){
+            // copy *v+1 by *v+2 times
+            u8 cp = *(v + s + 1);
+            loop = *(v + s + 2);
+            for(u8 l = 0; l < loop; l++){
+                *(p + row + (col * 80)) = cp;
+                row++;
+                if(row > pb->w) { row = 0; col++; }
+            }
+            s += (2 + loop);
+        }
+        else { 
+            *(p + row + (col * 80)) = *(v + s);
+            row++;
+            if(row > pb->w) { row = 0; col++; }
+        }
+        /*
+        for(u8 yy = 0; yy < pb->h; yy++){
+            for(u8 xx = 0; xx < pb->w; xx++){
+                *p = *v;
+                p++;
+                v++;
+            }
+            p += (80 - pb->w);
+        }
+        */
+    }
+}
+
 #define GFX_OFF 0b00010011
 #define GFX_ON 0b00011011
     
@@ -55,6 +97,7 @@ inline void GAME_INIT()
 
     // GUI:
     SetIOReg(0x31, GFX_OFF);
+    
     DrawSprite(&tile_01, 0, 0);
     DrawSprite(&tile_01, 47, 0);
     DrawSprite(&tile_01, 0, 168);
@@ -75,7 +118,9 @@ inline void GAME_INIT()
     }
     DrawSprite(&tile_07, 0, 160);
     DrawSprite(&tile_07, 47, 160);
-
+    
+    //DrawRLEBitmap(&title_1, 51, 4);
+    DrawSprite((Sprite*)&title_1, 51, 4);
     // Reset and clear load text
     SetIOReg(0x31, GFX_ON);
     SETBANK_MAINRAM();

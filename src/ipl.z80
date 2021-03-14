@@ -1,51 +1,40 @@
-;
-;	IPL
-; (aka crt0)
-;Place in Track 0, Sector 1
-; w/: d88saver disk.d88 ipl.bin 0 0 1
+; IPL for PC88-C
+;   ~ cc0 ~
+; (Adapted from several Xrea examples)
 
-	Relaxed	on
+    .z80 
 
-	ORG		$C000
+Main: 
+    di 
 
+    xor     a 
+    ld      (0xE6A7),a      ; cursor off
+    call    0x428B          ; blink off
+    call    0x4021          ; f-key display off 
+    ld      hl,#.console     
+    call    0x7071          ; Run 'console'
+    call    0x5F0E          ; txt screen area 
+    ld      a,#1            ; color/80c text mode
+    out     (0x30),a 
+    ld      a,#0b00111011
+    out     (0x31),a        ; hi-res 25row/color
+    ld      a,#0b10001001
+    out     (0x32),a        ; sound irq off/digital rgb
+    xor     a 
+    out     (0xE6),a 
+    out     (0xE4),a        ; disable all IRQ
+    out     (0x5F),a        ; mainRAM 
+    ld      hl,#0x1000          ; prog exe address 
+    ld      de,#((0 << 8) | 2)  ; track 0, sector 2 
+    ld      bc,#((0x5f << 8) | 0)   ; sector size, drive no
+    call    DISK_Load 
+    ld      sp,#0x0080 
+    ei 
+    jp      0x1000
 
-Main:
-	di									; After boot SP=$E5F4?
-	
-	xor			a
-	ld			($E6A7),a				; Cursor display 0=off 1=on
-	call		$428B					; Stop cursor blink
-	call		$4021					; Disable function key display
+.console: 
+    .ascii  /0,25,0,1/
+    .db     0               ; CONSOLE 0,25,0,1 - 25 row color
 
-	ld			hl,.param_console		; Console char
-	call		$7071					; console entry
-	call		$5F0E					; text screen area 
-
-	ld			a,%00000001				; color, 80 column text mode
-	out			($30),a
-
-	ld			a,%00111011				; Hi res 25row mode, Color graphic mode, graphics on, N-88 basic, 64Kmode, 200-line resolution
-	out			($31),a
-	ld			a,%10001001				; Sound IRQ off/Digital RGB/Fast RAM
-	out			($32),a					; If not fastram, can't use text window.
-
-	xor			a						; 
-	out			($E6),a
-	out			($E4),a					; disables interrupts 
-
-	out			($5F),a					; Allocate $C000-$FFFF to main RAM 
-
-
-	ld			hl,$1000				; Main prog exe address
-	ld			de,(0 << 8) | 2			; Track 0, sector 2
-	ld			bc,($6f << 8) | 0			; Sector size (3*256b) to load, Drive 0
-	call		DISK_Load
-
-	ld 			sp,$0080
-	ei 
-	jp			$1000
-
-.param_console:
-	db		"0,25,0,1",0
-
-	include "disk.z80"
+.include "disk.z80"
+    
