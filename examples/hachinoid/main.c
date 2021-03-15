@@ -4,18 +4,14 @@ enum directions { UP, DOWN, LEFT, RIGHT };
 
 #include "graphics.h"
 
-const unsigned char sprite[] = { 
-    0b00111100,
-    0b01011110,
-    0b01111110,
-    0b00111100,
-    null
-};
 
 enum directions playerDir;
+
 XYpos ball_pos;
 XYpos ball_oldpos;
 XYpos bar_pos;
+XYpos bar_oldpos;
+
 bool moved;
 
 void DrawSpritePlane(u8* dat, XYpos* xy, u8 w, u8 h);
@@ -41,7 +37,7 @@ void main()
         GAME_DRAW();
     }
 }
-
+/*
 void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y)
 {
     SETBANK_RED();
@@ -80,21 +76,22 @@ void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y)
             p += (80 - pb->w);
         }
         */
+/*
     }
 }
-
+*/
 #define GFX_OFF 0b00010011
 #define GFX_ON 0b00011011
     
 inline void GAME_INIT()
 {
-    SetCursorPos(20, 12);
+    SetCursorPos(20, 9);
     print("Loading 'HACHINOID' ... PREPARE TO DIE");
     ball_pos.x = 16;
     ball_pos.y = 10;
     bar_pos.x = 8;
     bar_pos.y = 154;
-
+    moved = true;
     // GUI:
     SetIOReg(0x31, GFX_OFF);
     
@@ -124,7 +121,7 @@ inline void GAME_INIT()
     // Reset and clear load text
     SetIOReg(0x31, GFX_ON);
     SETBANK_MAINRAM();
-    SetCursorPos(20, 12);
+    SetCursorPos(20, 9);
     print("                                       ");
 }
 
@@ -140,6 +137,9 @@ inline void GAME_UPDATE()
     ball_pos.y += 4;
     if(ball_pos.x > 45) ball_pos.x = 2;
     if(ball_pos.y > 160) ball_pos.y = 8;
+
+    bar_oldpos.x = bar_pos.x;
+    bar_oldpos.y = bar_pos.y;
 }
 
 ////////////////
@@ -147,26 +147,19 @@ inline void GAME_UPDATE()
 ////////////////
 inline void GAME_INPUT()
 {
-            // Get input and set new sprite position
-    /*
-    if(GetKeyDown(KB_S)){ 
-        spritepos.y += 4;
-        moved = true;
-        playerDir = DOWN;
-    } else if (GetKeyDown(KB_W)){
-        spritepos.y -= 4;
-        moved = true;
-        playerDir = UP;
-    } else if (GetKeyDown(KB_D)){
-        spritepos.x++;
-        moved = true;
-        playerDir = RIGHT;
-    } else if (GetKeyDown(KB_A)){
-        spritepos.x--;
-        moved = true;
-        playerDir = LEFT;
+    if (GetKeyDown(KB_D) || GetKeyDown(KB_PAD6)){
+        if(bar_pos.x < 41){
+            bar_pos.x++;
+            moved = true;
+            playerDir = RIGHT;
+        }
+    } else if (GetKeyDown(KB_A) || GetKeyDown(KB_PAD4)){
+        if(bar_pos.x > 2){
+            bar_pos.x--;
+            moved = true;
+            playerDir = LEFT;
+        }
     }
-    */
 }
 
 ///////////////
@@ -180,7 +173,12 @@ inline void GAME_DRAW()
     EraseVRAMArea(&ball_oldpos, 1, 4);
     DrawSprite(&ball, ball_pos.x, ball_pos.y);
     // Player!
-    DrawSprite(&bar, bar_pos.x, bar_pos.y);
+    if(moved){
+        SETBANK_BLUE();
+        EraseVRAMArea(&bar_oldpos, 6, 6);
+        DrawSprite(&bar, bar_pos.x, bar_pos.y);
+        moved = false; 
+    }
     // end VBL
     SETBANK_MAINRAM()
 }
@@ -200,7 +198,7 @@ void EraseVRAMArea(XYpos* xy, u8 w, u8 h)
     }
 }
 
-void DrawSpritePlane(u8* dat, XYpos* xy, u8 w, u8 h)
+void DrawSpritePlane(const u8* dat, XYpos* xy, u8 w, u8 h)
 {   
     u8 xt = (u8)(xy->x);
     vu8* vp = (vu8*)(0xc000 + xt + (xy->y * 80));
