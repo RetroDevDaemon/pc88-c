@@ -11,13 +11,26 @@ XYpos ball_pos;
 XYpos ball_oldpos;
 XYpos bar_pos;
 XYpos bar_oldpos;
-
+s8 by_speed;
+s8 bx_speed;
 bool moved;
+
+typedef struct levelblock { 
+    u8 x;
+    u8 y;
+    u8 hits;
+} LevelBlock;
+
+u8 LEVELBLOCKSIZE;
+LevelBlock BLOCK_LEVEL[100];
+u8 tick;
+u8 PLAYER_SPEED;
 
 void DrawSpritePlane(u8* dat, XYpos* xy, u8 w, u8 h);
 void DrawSprite(Sprite* spr, signed int x, signed int y);
-void EraseVRAMArea(XYpos* xy, u8 w, u8 h);
+
 void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y);
+void GetBallCollision(s8 xsp, s8 ysp);
 
 inline void GAME_INIT();
 inline void GAME_DRAW();
@@ -85,16 +98,30 @@ void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y)
     
 inline void GAME_INIT()
 {
+    PLAYER_SPEED = 1; // 1 tick per frame
+
     SetCursorPos(20, 9);
     print("Loading 'HACHINOID' ... PREPARE TO DIE");
     ball_pos.x = 16;
     ball_pos.y = 10;
     bar_pos.x = 8;
     bar_pos.y = 154;
+    bx_speed = 1;
+    by_speed = 6;
     moved = true;
     // GUI:
     SetIOReg(0x31, GFX_OFF);
     
+    LEVELBLOCKSIZE = 9 * 7;
+    for(u8 i = 0; i < 7; i++)
+    {
+        for(u8 j = 0; j < 9; j++) { 
+            BLOCK_LEVEL[(i*9)+j].x = 11 + (3 * j);
+            BLOCK_LEVEL[(i*9)+j].y = 24 + (i * 8);
+            BLOCK_LEVEL[(i*9)+j].hits = 2;
+        }
+    }
+
     DrawSprite(&tile_01, 0, 0);
     DrawSprite(&tile_01, 47, 0);
     DrawSprite(&tile_01, 0, 168);
@@ -118,6 +145,22 @@ inline void GAME_INIT()
     
     //DrawRLEBitmap(&title_1, 51, 4);
     DrawSprite((Sprite*)&title_1, 51, 4);
+    DrawSprite((Sprite*)&leveltxt, 59, 56);
+    DrawSprite((Sprite*)&scoretxt, 58, 104);
+    
+    for(u8 i = 0; i < 9; i++) { 
+        DrawSprite(&redBlock, 11 + (i * 3), 24);
+        DrawSprite(&greenBlock, 11 + (i * 3), 24+(8*1));
+        DrawSprite(&blueBlock, 11 + (i * 3), 24+(8*2));
+        DrawSprite(&whiteBlock, 11 + (i * 3), 24+(8*3));
+        DrawSprite(&cyanBlock, 11 + (i * 3), 24+(8*4));
+        DrawSprite(&yellowBlock, 11 + (i * 3), 24+(8*5));
+        DrawSprite(&magentaBlock, 11 + (i * 3), 24+(8*6));
+    }
+
+    DrawSprite(&s_0, 62, 80);
+    DrawSprite(&s_1, 64, 80);
+
     // Reset and clear load text
     SetIOReg(0x31, GFX_ON);
     SETBANK_MAINRAM();
@@ -128,16 +171,77 @@ inline void GAME_INIT()
 ///////////////
 /// Update
 ///////////////
+
+EraseBlock(LevelBlock* b)
+{
+    XYpos t = { b->x, b->y };
+    SETBANK_BLUE()
+    EraseVRAMArea(&t, 2, 8);
+    SETBANK_GREEN()
+    EraseVRAMArea(&t, 2, 8);
+    SETBANK_RED()
+    EraseVRAMArea(&t, 2, 8);
+    b->x = 0; b->y = 0;
+}
+
+u8 GetCollisionDirection(LevelBlock* b)
+{
+    // check what side of the block the ball is on.
+    // if L/R : flip x 
+    // if U/D : flip y 
+    return 0;
+}
+
+void GetBallCollision(s8 xsp, s8 ysp)
+{
+    // Is the location at ball_pos.x + xsp, ball_pos.y + ysp a COLLIDEABLE?
+    // Collideables are in the BLOCK_LEVEL[] array, and
+    //  are the ULR borders of the screen. 
+    
+    u8 txp; u8 typ;
+    txp = ball_pos.x + xsp;
+    typ = ball_pos.y + ysp;
+    for(u8 i = 0; i < LEVELBLOCKSIZE; i++){
+        if (txp > BLOCK_LEVEL[i].x) { 
+            if (txp < (BLOCK_LEVEL[i].x + 3)) { 
+                if (typ > BLOCK_LEVEL[i].y ) { 
+                    if(typ < (BLOCK_LEVEL[i].y+8) ) { 
+                        u8 d = GetCollisionDirection(&BLOCK_LEVEL[i]);
+                        bx_speed *= -1;
+                        EraseBlock(&BLOCK_LEVEL[i]);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+}
+
 inline void GAME_UPDATE()
 {
-    ball_oldpos.x = ball_pos.x;
-    ball_oldpos.y = ball_pos.y;
-    
-    ball_pos.x++;
-    ball_pos.y += 4;
-    if(ball_pos.x > 45) ball_pos.x = 2;
-    if(ball_pos.y > 160) ball_pos.y = 8;
-
+    tick++;
+    if(tick >= PLAYER_SPEED) {
+        tick = 0;
+        // save for erase
+        ball_oldpos.x = ball_pos.x;
+        ball_oldpos.y = ball_pos.y;
+        // get collision
+        GetBallCollision(bx_speed, by_speed);
+        
+        ball_pos.x += bx_speed;
+        ball_pos.y += by_speed;
+        
+        // bounce
+        if(ball_pos.x >= 45) {
+            bx_speed *= -1;
+        } else if (ball_pos.x <= 2) 
+            bx_speed *= -1;
+        if(ball_pos.y >= 160) {
+            by_speed *= -1;
+        } else if (ball_pos.y <= 12) 
+            by_speed *= -1;
+    }
+    // save for erase 
     bar_oldpos.x = bar_pos.x;
     bar_oldpos.y = bar_pos.y;
 }
@@ -150,13 +254,13 @@ inline void GAME_INPUT()
     if (GetKeyDown(KB_D) || GetKeyDown(KB_PAD6)){
         if(bar_pos.x < 41){
             bar_pos.x++;
-            moved = true;
+            //moved = true;
             playerDir = RIGHT;
         }
     } else if (GetKeyDown(KB_A) || GetKeyDown(KB_PAD4)){
         if(bar_pos.x > 2){
             bar_pos.x--;
-            moved = true;
+            //moved = true;
             playerDir = LEFT;
         }
     }
@@ -173,30 +277,19 @@ inline void GAME_DRAW()
     EraseVRAMArea(&ball_oldpos, 1, 4);
     DrawSprite(&ball, ball_pos.x, ball_pos.y);
     // Player!
-    if(moved){
-        SETBANK_BLUE();
-        EraseVRAMArea(&bar_oldpos, 6, 6);
-        DrawSprite(&bar, bar_pos.x, bar_pos.y);
-        moved = false; 
-    }
+    
+    SETBANK_BLUE();
+    EraseVRAMArea(&bar_oldpos, 6, 6);
+    DrawSprite(&bar, bar_pos.x, bar_pos.y);
+    
+    // Write once to 3rd GVRAM plane to balance speed 
+    SetPixel(0, 1, CLR_RED);
     // end VBL
     SETBANK_MAINRAM()
 }
 
 //
-void EraseVRAMArea(XYpos* xy, u8 w, u8 h)
-{
-    u8 xo = xy->x % 8;
-    u8 xt = (u8)(xy->x);// / 8);
-    vu8* vp = (vu8*)(0xc000 + xt + (xy->y * 80));
-    for(u8 z = 0; z < h; z++)
-    {
-        for(u8 f = 0; f < w; f++)
-            *vp++ = 0;
-        if(xo != 0) *vp = 0;
-        vp += (80 - w);
-    }
-}
+
 
 void DrawSpritePlane(const u8* dat, XYpos* xy, u8 w, u8 h)
 {   

@@ -10,7 +10,7 @@ https://discord.gg/Js3uUrc
 <br>
 ## To-Dos
 -V2 drawing<br>
--Sound<br>
+-PSG, OPN/+A<br>
 -Joystick<br>
 -Disk saving<br>
 <br>
@@ -28,8 +28,8 @@ Illusion City, huge tools list, recent M88 builds: https://illusioncity.net/nec-
 <br>
 Brief overview:<br>
 `Makefile` - Creates app.d88 for use in an emulator.<br>
-Usage: `make PROJECT=examples/1bitsprite`<br>
-Creates app.d88 in root of '1bitsprite' project.<br>
+Usage: `make PROJECT=examples/1bitsprite USEDSEC=0x2f`<br>
+Creates app.d88 in root of '1bitsprite' project and overrides the value of the initial number of sectors to copy in from the autoloader to 2Fh.<br>
 You can also do `make IPL` to recompile src/ipl.z80 and src/disk.z80.<br>
 <br>
 `ipl.bin` is the autoloader.<br>
@@ -72,6 +72,8 @@ $ pip install intelhex
 <br>
 
 ## Revision history
+0.0.14<br>
+-Added BEEP support
 0.0.13b<br>
 -Added IPL target to makefile (`make IPL`). No longer requires ASW, compiles with SDCC.<br> 
 -Updated png288.py. If you append `-rle`, `/rle` etc. it will RLE-encode the file with the following schema:<br>

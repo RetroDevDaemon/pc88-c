@@ -13,8 +13,8 @@ void DiskLoad(u8* dest, u8 srcTrack, u8 srcSector, u8 numSecs, u8 drive) __naked
     
     dest; srcTrack; srcSector; numSecs; drive;
     __asm 
-        ld iy, #0
-        add iy, sp 
+        ld iy, #0               ; iy 0 contains n. bytes in arguments
+        add iy, sp              ; fix stack pointer 
         ld l, 2 (iy)     
         ld h, 3 (iy)            ; dest
         ld d, 4 (iy)            ; track 

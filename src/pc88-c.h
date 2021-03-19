@@ -15,6 +15,10 @@ typedef unsigned char u8;
 typedef unsigned int u16;
 typedef volatile unsigned char vu8;
 typedef volatile unsigned int vu16;
+typedef signed char s8;
+typedef signed int s16;
+typedef volatile signed char vs8;
+typedef volatile unsigned int vs16;
 typedef const u8 String[];
 typedef unsigned char bool;
 #define true 1
@@ -32,22 +36,13 @@ typedef const struct planarBitmap {
     const u8* b;
     u8 w;
     u8 h;
-} PlanarBitmap;
+} PlanarBitmap, Sprite;
 
 // 4 bytes
 typedef struct xypos { 
     signed int x;
     signed int y;
 } XYpos;
-
-// 8 bytes - technically same as pb.
-typedef const struct sprite { 
-    const u8* r_data;
-    const u8* g_data;
-    const u8* b_data;
-    u8 w;   // times 8
-    u8 h;
-} Sprite;
 
 // PC88 Registers and other defs
 //
@@ -194,6 +189,15 @@ typedef const struct sprite {
 #define KB_LEFTSHIFT  0xE2
 #define KB_RIGHTSHIFT  0xE3
 
+// Snd
+#define BEEP_C4 315
+#define BEEP_D4 281 
+#define BEEP_E4 250 
+#define BEEP_F4 235 
+#define BEEP_G4 209 
+#define BEEP_A4 186 
+#define BEEP_B4 165
+
 #define PD_CTL_REG      0x10         // W - Printer Out OR Calendar Lock (uPD1990AC)
 // If PD1990AC - bit0 - bit2 : Command output
 //               bit3 : Data output
@@ -322,7 +326,19 @@ ld a,($c000)	; this is bit comp data, but the
 ld ($c0002),a   ; operation commands a vram 'copy'.*/
 #define EXPANDED_GVRAM_CTRL 0x35
 // Bit 6 - Joystick port output
-#define SYS_MODE_SENSE 0x40   // Write
+// Octave4 (A-440)
+// Value in HL (number of loop cycles to wait)
+// C 315
+// D 281
+// E 250 
+// F 235
+// G 209
+// A 186
+// B 165
+//            ((CPU SPD /  TUNEHZ)  - 138) / 48
+// Formula: ((3993600 / <Tune>) - 138) / 48
+// MkII only
+#define SYS_MODE_SENSE 0x40   // Write also for beepin'
 #define STROBE_PORT 0x40      // Read
 
 #define FM_REG_0 0x44     // <FR/MR - OPN, FH/MH> - OPNA SSG/FM1-3
@@ -481,6 +497,8 @@ inline void DisableALU();
 inline void ExpandedGVRAM_On();
 inline void ExpandedGVRAM_Off();
 void DiskLoad(u8* dst, u8 track, u8 sector, u8 numSecs, u8 drive); 
+void beep(u16 tone, u8 length);
+void EraseVRAMArea(XYpos* xy, u8 w, u8 h);
 
 #define SetBGColor(c) SetIOReg(0x52, c << 4);
 #define SetBorderColor(c) SetIOReg(0x52, c); // PC8001 only?

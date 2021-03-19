@@ -3,7 +3,7 @@
 #  i.e. do not use the one distributed with SGDK etc.
 
 CC=sdcc
-CFLAGS=-Isrc
+CFLAGS=-Isrc --cyclomatic 
 PY=python3
 DEL=rm -rf
 
@@ -34,7 +34,7 @@ APPNAME=app.d88
 EMUEXE=C:\Users\Bent\Downloads\m88\m88x5.exe 
 
 # This is updated when new .c files are added
-PC88CFILES=out/crt0.rel out/getkeydown.rel out/waitvblank.rel out/diskload.rel out/ioreg.rel out/draw.rel out/textmode.rel
+PC88CFILES=out/crt0.rel out/getkeydown.rel out/waitvblank.rel out/diskload.rel out/ioreg.rel out/draw.rel out/textmode.rel out/beep.rel out/vram_util.rel  
 
 out/%.rel: src/lib/%.c
 	sdcc -c -mz80 $(CFLAGS) -o $@ $< 

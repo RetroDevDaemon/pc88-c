@@ -11,11 +11,6 @@ const unsigned char sprite[] = {
     null
 };
 
-typedef struct xypos { 
-    signed int x;
-    signed int y;
-} XYpos;
-
 enum directions { UP, DOWN, LEFT, RIGHT };
 enum directions playerDir;
 XYpos spritepos;
@@ -23,7 +18,6 @@ XYpos oldpos;
 bool moved;
 
 void DrawSprite(XYpos* xy, u8 w, u8 h);
-void EraseVRAMArea(XYpos* xy, u8 w, u8 h);
 
 void main()
 {
@@ -73,20 +67,6 @@ void main()
             SETBANK_MAINRAM()
         }
         IRQ_ON;
-    }
-}
-
-void EraseVRAMArea(XYpos* xy, u8 w, u8 h)
-{
-    u8 xo = xy->x % 8;
-    u8 xt = (u8)(xy->x);// / 8);
-    vu8* vp = (vu8*)(0xc000 + xt + (xy->y * 80));
-    for(u8 z = 0; z < h; z++)
-    {
-        for(u8 f = 0; f < w; f++)
-            *vp++ = 0;
-        if(xo != 0) *vp = 0;
-        vp += (80 - w);
     }
 }
 
