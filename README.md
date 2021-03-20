@@ -1,4 +1,4 @@
-# PC88-C (0.0.13b)
+# PC88-C (0.0.14)
 
 # Overview 
 A very minimal framework for PC88 development using C. <br> 
@@ -73,7 +73,7 @@ $ pip install intelhex
 
 ## Revision history
 0.0.14<br>
--Added BEEP support
+-Added BEEP support<br>
 0.0.13b<br>
 -Added IPL target to makefile (`make IPL`). No longer requires ASW, compiles with SDCC.<br> 
 -Updated png288.py. If you append `-rle`, `/rle` etc. it will RLE-encode the file with the following schema:<br>

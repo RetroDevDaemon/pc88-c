@@ -4,8 +4,8 @@ void beep(u16 tone, u8 length) __naked
 {
     tone; length;
     __asm
-    	ld	    iy, #2
-	    add	    iy, sp          // push stack pointer back up 2 bytes
+        ld	    iy, #2
+        add	    iy, sp          // push stack pointer back up 2 bytes
         ld      b, 2 (iy)       // length
     Beeperloop: 
         ld      l, 0 (iy)
@@ -28,9 +28,9 @@ void beep(u16 tone, u8 length) __naked
         ld      a,l 
         or      h 
         jp      nz,.weet2 
-        djnz    Beeperloop        // dec bc and j if nz
+        djnz    Beeperloop      // dec b and j if nz
         inc     iy 
-        inc     iy 
+        inc     iy              // push SP back up to original position (+4b)
         ret 
     __endasm;
 }
