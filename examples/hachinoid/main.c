@@ -23,7 +23,7 @@ typedef struct levelblock {
 } LevelBlock;
 
 u8 LEVELBLOCKSIZE;
-LevelBlock BLOCK_LEVEL[100];
+LevelBlock BLOCK_LEVEL[150];
 u8 tick;
 u8 PLAYER_SPEED;
 
@@ -113,17 +113,6 @@ inline void GAME_INIT()
     moved = true;
     // GUI:
     SetIOReg(0x31, GFX_OFF);
-    
-    LEVELBLOCKSIZE = 9 * 7;
-    for(u8 i = 0; i < 7; i++)
-    {
-        for(u8 j = 0; j < 9; j++) { 
-            BLOCK_LEVEL[(i*9)+j].x = 11 + (3 * j);
-            BLOCK_LEVEL[(i*9)+j].y = 24 + (i * 8);
-            BLOCK_LEVEL[(i*9)+j].hits = 2;
-        }
-    }
-
     DrawSprite(&tile_01, 0, 0);
     DrawSprite(&tile_01, 47, 0);
     DrawSprite(&tile_01, 0, 168);
@@ -150,16 +139,34 @@ inline void GAME_INIT()
     DrawSprite((Sprite*)&leveltxt, 59, 56);
     DrawSprite((Sprite*)&scoretxt, 58, 104);
     
-    for(u8 i = 0; i < 9; i++) { 
-        DrawSprite(&redBlock, 11 + (i * 3), 24);
-        DrawSprite(&greenBlock, 11 + (i * 3), 24+(8*1));
-        DrawSprite(&blueBlock, 11 + (i * 3), 24+(8*2));
-        DrawSprite(&whiteBlock, 11 + (i * 3), 24+(8*3));
-        DrawSprite(&cyanBlock, 11 + (i * 3), 24+(8*4));
-        DrawSprite(&yellowBlock, 11 + (i * 3), 24+(8*5));
-        DrawSprite(&magentaBlock, 11 + (i * 3), 24+(8*6));
+    
+    // Level data
+    LEVELBLOCKSIZE = 150;
+    for(u8 i = 2; i < 9; i++)
+    {
+        for(u8 j = 3; j < 12; j++) { 
+            BLOCK_LEVEL[(i*9)+j].x = 2 + (3 * j);
+            BLOCK_LEVEL[(i*9)+j].y = 8 + (i * 8);
+            BLOCK_LEVEL[(i*9)+j].hits = 2;
+            if(i % 2 == 0) { 
+                DrawSprite(&redBlock, 2 + (j * 3), 8 + (i * 8)); 
+            }
+            if(i % 2 == 1) {
+                DrawSprite(&blueBlock, 2 + (j * 3), 8 + (i * 8)); 
+            }
+        }
     }
-
+    /*
+    for(u8 i = 4; i < 13; i++) { 
+        DrawSprite(&redBlock, 2 + (i * 3), 24);
+        DrawSprite(&greenBlock, 2 + (i * 3), 24+(8*1));
+        DrawSprite(&blueBlock, 2 + (i * 3), 24+(8*2));
+        DrawSprite(&whiteBlock, 2 + (i * 3), 24+(8*3));
+        DrawSprite(&cyanBlock, 2 + (i * 3), 24+(8*4));
+        DrawSprite(&yellowBlock, 2 + (i * 3), 24+(8*5));
+        DrawSprite(&magentaBlock, 2 + (i * 3), 24+(8*6));
+    }
+    */
     DrawSprite(&s_0, 62, 80);
     DrawSprite(&s_1, 64, 80);
 
@@ -183,16 +190,12 @@ inline void GAME_INIT()
 EraseBlock(LevelBlock* b)
 {
     XYpos t = { b->x, b->y };
-    u8 w = 2;
-    if(b->x == 32) { 
-        w = 3;
-    }
     SETBANK_BLUE()
-    EraseVRAMArea(&t, w, 8);
+    EraseVRAMArea(&t, 3, 8);
     SETBANK_GREEN()
-    EraseVRAMArea(&t, w, 8);
+    EraseVRAMArea(&t, 3, 8);
     SETBANK_RED()
-    EraseVRAMArea(&t, w, 8);
+    EraseVRAMArea(&t, 3, 8);
     b->x = 0; b->y = 0;
     SETBANK_MAINRAM()
 }
@@ -213,6 +216,19 @@ u8 GetCollisionDirection(u8 tx, u8 ty, LevelBlock* b)
 
 }
 
+inline u8 abs(s8 n)
+{
+    if(n < 0) return n * -1;
+    return n;
+}
+/*
+inline u16 abs(s16 n)
+{
+    if(n < 0) return n * -1;
+    return n;
+}
+*/
+
 bool GetBallCollision(s8 xsp, s8 ysp)
 {
     // Is the location at ball_pos.x + xsp, ball_pos.y + ysp a COLLIDEABLE?
@@ -228,15 +244,54 @@ bool GetBallCollision(s8 xsp, s8 ysp)
                 if(typ < (BLOCK_LEVEL[i].y + 8)){
                     if((typ + 4) > BLOCK_LEVEL[i].y){
                         u8 d = GetCollisionDirection(txp, typ, &BLOCK_LEVEL[i]);
-                        SetCursorPos(45, 18);
-                        if(d == 0b1) { print("right   "); bx_speed *= -1; }
-                        else if(d == 0b10) { print("btm     "); by_speed *= -1; }
-                        else if(d == 0b100) { print("left    "); bx_speed *= -1; }
-                        else if(d == 0b1000)  { print("top     "); by_speed *= -1; }
-                        else if(d == 0b0011) print("btm/rt  ");
-                        else if(d == 0b0110)  print("btm/lft ");
-                        else if(d == 0b1001) print("top/rt  ");
-                        else if(d == 0b1100) print("top/lft ");
+                        //SetCursorPos(45, 18);
+                        if(d == 0b1) { 
+                            //print("right   "); 
+                            bx_speed *= -1; 
+                        } else if(d == 0b10) { 
+                            //print("btm     "); 
+                            by_speed *= -1; 
+                        } else if(d == 0b100) { 
+                            //print("left    "); 
+                            bx_speed *= -1; 
+                        } else if(d == 0b1000) { 
+                            //print("top     "); 
+                            by_speed *= -1; 
+                        } 
+                        /*else if(d == 0b0011) {
+                            if(abs(xsp) > abs(ysp)){ // hit from right 
+                                
+                            } else { 
+                                
+                                // D
+                            }
+                            //print("btm/rt  ");
+                        } else if(d == 0b0110) {
+                            if(abs(xsp) > abs(ysp)){ 
+                                // hit L/R
+                            } else { 
+                                // hit U/D
+                            }
+                            //print("btm/lft ");
+                        } else if(d == 0b1001) { 
+                            if(abs(xsp) > abs(ysp)){ 
+                                // hit L/R
+                            } else { 
+                                // hit U/D
+                            }
+                            //print("top/rt  ");
+                        } else if(d == 0b1100) {
+                            if(abs(xsp) > abs(ysp)){ 
+                                // hit L/R
+                            } else { 
+                                // hit U/D
+                            }
+                            //print("top/lft ");
+                        }*/
+                        else { 
+                            bx_speed *= -1;
+                            by_speed *= -1;
+                        }
                         EraseBlock(&BLOCK_LEVEL[i]);
                         beep(100, 10);
                         return true;

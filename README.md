@@ -13,6 +13,7 @@ https://discord.gg/Js3uUrc
 -PSG, OPN/+A<br>
 -Joystick<br>
 -Disk saving<br>
+-Kanji ROM, nado<br>
 <br>
 (kind of out of date):<br>
 Manual part 1, overview: https://barelyconsciousgames.blogspot.com/2021/02/pc-88-c-framework-for-nec-pc8801.html <br> 
@@ -73,6 +74,8 @@ $ pip install intelhex
 
 ## Revision history
 0.0.14<br>
+-Fixed EraseVRAMArea - deleted old code fragments<br>
+-Still WIP Hachinoid example<br>
 -Added BEEP support<br>
 0.0.13b<br>
 -Added IPL target to makefile (`make IPL`). No longer requires ASW, compiles with SDCC.<br> 
