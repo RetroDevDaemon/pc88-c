@@ -26,6 +26,8 @@ u8 LEVELBLOCKSIZE;
 LevelBlock BLOCK_LEVEL[150];
 u8 tick;
 u8 PLAYER_SPEED;
+u16 pScore;
+char score[6];// = { '0', '0', '0', '0', '0', '0' };
 
 void DrawSpritePlane(u8* dat, XYpos* xy, u8 w, u8 h);
 void DrawSprite(Sprite* spr, signed int x, signed int y);
@@ -38,8 +40,13 @@ inline void GAME_DRAW();
 inline void GAME_UPDATE();
 inline void GAME_INPUT();
 
+
 void main()
 {
+    RESETVEC:
+    __asm 
+      ld sp,#_main 
+    __endasm;
     GAME_INIT();
     
     while(1)
@@ -96,21 +103,37 @@ void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y)
 */
 #define GFX_OFF 0b00010011
 #define GFX_ON 0b00011011
-    
+
+void ClearAllVRAM()
+{
+    XYpos p;
+    p.x = 0;
+    p.y = 0;
+    SETBANK_BLUE()
+    EraseVRAMArea(&p, 80, 200);
+    SETBANK_GREEN()
+    EraseVRAMArea(&p, 80, 200);
+    SETBANK_RED()
+    EraseVRAMArea(&p, 80, 200);
+    SETBANK_MAINRAM()
+}
+
 inline void GAME_INIT()
 {
     ClearAttributeRam();
+    ClearAllVRAM();
     PLAYER_SPEED = 1; // 1 tick per frame
     bar_speed = 2;
     SetCursorPos(20, 9);
     print("Loading 'HACHINOID' ... PREPARE TO DIE");
     ball_pos.x = 16;
-    ball_pos.y = 10;
-    bar_pos.x = 8;
+    ball_pos.y = 120;
+    bar_pos.x = 20;
     bar_pos.y = 154;
     bx_speed = 1;
-    by_speed = 3;
+    by_speed = 4;
     moved = true;
+    pScore = 0;
     // GUI:
     SetIOReg(0x31, GFX_OFF);
     DrawSprite(&tile_01, 0, 0);
@@ -139,7 +162,15 @@ inline void GAME_INIT()
     DrawSprite((Sprite*)&leveltxt, 59, 56);
     DrawSprite((Sprite*)&scoretxt, 58, 104);
     
-    
+    SetIOReg(0x31, GFX_ON);
+    SETBANK_MAINRAM()
+    Wait_VBLANK();
+    SetCursorPos(20, 9);
+    print("                                       ");
+    SetCursorPos(60, 13);
+    for(u8 z = 0; z < 6; z++) putchr(score[z]);
+    DrawSprite(&s_0, 62, 80);
+    DrawSprite(&s_1, 64, 80);
     // Level data
     LEVELBLOCKSIZE = 150;
     for(u8 i = 2; i < 9; i++)
@@ -156,25 +187,10 @@ inline void GAME_INIT()
             }
         }
     }
-    /*
-    for(u8 i = 4; i < 13; i++) { 
-        DrawSprite(&redBlock, 2 + (i * 3), 24);
-        DrawSprite(&greenBlock, 2 + (i * 3), 24+(8*1));
-        DrawSprite(&blueBlock, 2 + (i * 3), 24+(8*2));
-        DrawSprite(&whiteBlock, 2 + (i * 3), 24+(8*3));
-        DrawSprite(&cyanBlock, 2 + (i * 3), 24+(8*4));
-        DrawSprite(&yellowBlock, 2 + (i * 3), 24+(8*5));
-        DrawSprite(&magentaBlock, 2 + (i * 3), 24+(8*6));
-    }
-    */
-    DrawSprite(&s_0, 62, 80);
-    DrawSprite(&s_1, 64, 80);
 
     // Reset and clear load text
-    SetIOReg(0x31, GFX_ON);
+    
     SETBANK_MAINRAM();
-    SetCursorPos(20, 9);
-    print("                                       ");
     beep(BEEP_C5, 50);
     for(u16 i = 10000; i > 0; i--) { 
         __asm nop __endasm;
@@ -187,7 +203,21 @@ inline void GAME_INIT()
 /// Update
 ///////////////
 
-EraseBlock(LevelBlock* b)
+void AddScore(u8 sc)
+{
+    pScore += sc;
+    for(u8 n = 0; n < 3; n++) // number of nibbles in pScore
+    {
+        u8 p = (u8)((pScore & (0xf << (n*4))) >> (n*4));
+        if(p > 9) { 
+            pScore += (1 << ((n+1)*4)); 
+            pScore &= 0xfff0;
+        } 
+    }
+    // for each digit, is AND Fh > 9? then add the remainder
+}
+
+void EraseBlock(LevelBlock* b)
 {
     XYpos t = { b->x, b->y };
     SETBANK_BLUE()
@@ -198,38 +228,46 @@ EraseBlock(LevelBlock* b)
     EraseVRAMArea(&t, 3, 8);
     b->x = 0; b->y = 0;
     SETBANK_MAINRAM()
+    AddScore((u8)1);
 }
 
-u8 GetCollisionDirection(u8 tx, u8 ty, LevelBlock* b)
+u8 GetCollisionDirection(u8 x, u8 y, LevelBlock* b)
 {
     // check what side of the block the ball is on.
     // if L/R : flip x 
     // if U/D : flip y 
     // get the quadrant versus the block!
     u8 h = 0b1111;
-    if((ball_pos.x + 1) < (b->x + 3)) h ^= 0b1;// NOT right 
-    if((ball_pos.y + 4) < (b->y + 8)) h ^= 0b10;// NOT bottom 
-    if((ball_pos.x) > (b->x)) h ^= 0b100;// NOT left 
-    if((ball_pos.y) > (b->y)) h ^= 0b1000;// NOT top 
+    if((x + 1) < (b->x + 3)) h ^= 0b1;// NOT right 
+    if((y + 4) < (b->y + 8)) h ^= 0b10;// NOT bottom 
+    if((x) >= (b->x)) h ^= 0b100;// NOT left 
+    if((y) >= (b->y)) h ^= 0b1000;// NOT top 
     return h;
     // returns bit field of POSSIBLE DIRECTIONS. 
 
 }
 
-inline u8 abs(s8 n)
+LevelBlock* GetQuadrant(u8 d, LevelBlock* b)
 {
-    if(n < 0) return n * -1;
-    return n;
+    // d = bitfield , b = current block
+    // four cases: top left, top right, bottom left, bottom right 
+    // for each case, examine the level layout
+    // if there is a block in either LATERAL quadrant, bounce off it instead
+    // otherwise, bounce of both XY
+    d;
+    bx_speed *= -1;
+    by_speed *= -1;
+    return b;
 }
-/*
-inline u16 abs(s16 n)
-{
-    if(n < 0) return n * -1;
-    return n;
-}
-*/
 
-bool GetBallCollision(s8 xsp, s8 ysp)
+u8 abs(s8 n)
+{
+    if(n < 0) return n * -1;
+    return n;
+}
+
+
+u8 GetBallCollision(s8 xsp, s8 ysp)
 {
     // Is the location at ball_pos.x + xsp, ball_pos.y + ysp a COLLIDEABLE?
     // Collideables are in the BLOCK_LEVEL[] array, and
@@ -243,56 +281,35 @@ bool GetBallCollision(s8 xsp, s8 ysp)
             if((txp + 1) > BLOCK_LEVEL[i].x){
                 if(typ < (BLOCK_LEVEL[i].y + 8)){
                     if((typ + 4) > BLOCK_LEVEL[i].y){
-                        u8 d = GetCollisionDirection(txp, typ, &BLOCK_LEVEL[i]);
-                        //SetCursorPos(45, 18);
-                        if(d == 0b1) { 
-                            //print("right   "); 
+                        LevelBlock* bl = &BLOCK_LEVEL[i];
+                        u8 d = GetCollisionDirection(txp, typ, bl);
+                        SetCursorPos(45, 18);
+                        if(d == 0b1) { //rt
+                            print("      "); 
+                            ball_pos.x = (bl->x+3) + xsp;
                             bx_speed *= -1; 
-                        } else if(d == 0b10) { 
-                            //print("btm     "); 
-                            by_speed *= -1; 
-                        } else if(d == 0b100) { 
-                            //print("left    "); 
+                        } 
+                        else if(d == 0b100) {  //lf
+                            print("      "); 
+                            ball_pos.x = (bl->x-1) - xsp;
                             bx_speed *= -1; 
-                        } else if(d == 0b1000) { 
-                            //print("top     "); 
+                        } 
+                        else if(d == 0b10) { //btm
+                            print("      "); 
+                            ball_pos.y = (bl->y+8) + ysp;
                             by_speed *= -1; 
                         } 
-                        /*else if(d == 0b0011) {
-                            if(abs(xsp) > abs(ysp)){ // hit from right 
-                                
-                            } else { 
-                                
-                                // D
-                            }
-                            //print("btm/rt  ");
-                        } else if(d == 0b0110) {
-                            if(abs(xsp) > abs(ysp)){ 
-                                // hit L/R
-                            } else { 
-                                // hit U/D
-                            }
-                            //print("btm/lft ");
-                        } else if(d == 0b1001) { 
-                            if(abs(xsp) > abs(ysp)){ 
-                                // hit L/R
-                            } else { 
-                                // hit U/D
-                            }
-                            //print("top/rt  ");
-                        } else if(d == 0b1100) {
-                            if(abs(xsp) > abs(ysp)){ 
-                                // hit L/R
-                            } else { 
-                                // hit U/D
-                            }
-                            //print("top/lft ");
-                        }*/
+                        else if(d == 0b1000) { //tp
+                            print("      "); 
+                            ball_pos.y = (bl->y-4) - ysp;
+                            by_speed *= -1; 
+                        } 
                         else { 
-                            bx_speed *= -1;
-                            by_speed *= -1;
+                            print("Edge  ");
+                            // fall back to Get Quadrant
+                            bl = GetQuadrant(d, bl);
                         }
-                        EraseBlock(&BLOCK_LEVEL[i]);
+                        EraseBlock(bl);
                         beep(100, 10);
                         return true;
                     }
@@ -312,7 +329,13 @@ inline void GAME_UPDATE()
         ball_oldpos.x = ball_pos.x;
         ball_oldpos.y = ball_pos.y;
         // get collision
-        if(!GetBallCollision(bx_speed, by_speed)){
+        if(ball_pos.y < 100) {     
+            if(!GetBallCollision(bx_speed, by_speed)){
+                ball_pos.x += bx_speed;
+                ball_pos.y += by_speed;
+            }
+        } else { // small optimization
+            Wait_VBLANK();
             ball_pos.x += bx_speed;
             ball_pos.y += by_speed;
         }
@@ -325,12 +348,44 @@ inline void GAME_UPDATE()
             bx_speed *= -1;
             beep(600, 5);
         }
-        if(ball_pos.y >= 160) {
-            by_speed *= -1;
-            beep(600, 5);
+        if(ball_pos.y >= 162) {
+            // Miss! Game over!
+            by_speed = 0;
+            bx_speed = 0;
+            ball_pos.y = 15;
+            beep(700, 50);
+            Wait_VBLANK();
+            SETBANK_MAINRAM()
+            SetCursorPos(20, 8);
+            print("YOU ARE DEAD!!!");
+            SetCursorPos(20, 9);
+            print("SpaceBar to restart?");
+            while(1){
+                if(GetKeyDown(KB_SPACE)){
+                    SetCursorPos(20, 8);
+                    print("                  ");
+                    SetCursorPos(20, 9);
+                    print("                  ");
+                    SetCursorPos(60, 13);
+                    print("     ");
+                    __init();
+                }
+            }
         } else if (ball_pos.y <= 12) {
             by_speed *= -1;
             beep(600, 5);
+        }
+        // hit paddle
+        if(bar_pos.x < ball_pos.x + 1){
+            if((bar_pos.x + 6) > ball_pos.x){
+                if(bar_pos.y < ball_pos.y + 4){
+                    if((bar_pos.y + 8) > ball_pos.y){
+                        ball_pos.y = bar_pos.y - 4;
+                        by_speed *= -1;
+                        beep(90, 5);
+                    }
+                }
+            }
         }
     }
     // save for erase 
@@ -379,10 +434,14 @@ inline void GAME_DRAW()
     //SetPixel(0, 1, CLR_RED);
     // end VBL
     SETBANK_MAINRAM()
+    SetCursorPos(60, 13);
+    for(s8 z = 3; z >= 0; z--) {
+        u8 c = (pScore & (0xf << (z*4))) >> (z*4);
+        putchr(c + 0x30);
+    }
 }
 
 //
-
 
 void DrawSpritePlane(const u8* dat, XYpos* xy, u8 w, u8 h)
 {   

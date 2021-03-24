@@ -1,9 +1,11 @@
     
 #include <pc88-c.h>
-
+#ifndef CRT0
+#define CRT0
 // globals 
 vu8* SCREEN_POINTER;
 u8 LINE_POINTER;
+void __init();
 
 void __init()
 {
@@ -11,6 +13,7 @@ void __init()
     LINE_POINTER = (u8)0;
     main();
 }
+
 
 void SetCursorPos(u8 x, u8 y)
 {
@@ -22,7 +25,7 @@ void SetCursorPos40(u8 x, u8 y)
     SCREEN_POINTER = (vu8*)(SCREEN_TXT_BASE + (120 * y) + (x * 2));
 }
 
-static inline void putchr(u8 c)
+inline void putchr(u8 c)
 {
     *SCREEN_POINTER = c;
     SCREEN_POINTER++;
@@ -33,7 +36,7 @@ static inline void putchr(u8 c)
     }
 }
 
-static inline void putchr40(u8 c)
+inline void putchr40(u8 c)
 {
     *SCREEN_POINTER = c;
     SCREEN_POINTER +=2 ;
@@ -58,3 +61,4 @@ void print40(String str)
         putchr40(str[i++]);
 }
 
+#endif 

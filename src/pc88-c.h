@@ -21,6 +21,10 @@ typedef volatile signed char vs8;
 typedef volatile unsigned int vs16;
 typedef const u8 String[];
 typedef unsigned char bool;
+typedef unsigned long u32;
+typedef signed long s32;
+typedef unsigned long long u64;
+typedef signed long long s64;
 #define true 1
 #define false 0
 #define bit(n) (1 << n)
@@ -492,8 +496,8 @@ f306 - Sound2 ...
 // Function headers
 void __init();
 void main();
-static inline void putchr(u8 c);
-/**/static inline void putchr40(u8 c);
+inline void putchr(u8 c);
+/**/inline void putchr40(u8 c);
 void print(String str);
 /**/void print40(String str);
 u8 ReadIOReg(u8 r);
