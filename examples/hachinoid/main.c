@@ -4,6 +4,13 @@ enum directions { UP, DOWN, LEFT, RIGHT };
 
 #include "graphics.h"
 
+#define GFX_OFF 0b00010011
+#define GFX_ON 0b00011011
+
+#define PLAYFIELD_RIGHT 45
+#define PLAYFIELD_LEFT 2
+#define PLAYFIELD_BTM 168
+#define PLAYFIELD_TOP 8
 
 enum directions playerDir;
 
@@ -27,25 +34,26 @@ LevelBlock BLOCK_LEVEL[150];
 u8 tick;
 u8 PLAYER_SPEED;
 u16 pScore;
-char score[6];// = { '0', '0', '0', '0', '0', '0' };
 
 void DrawSpritePlane(u8* dat, XYpos* xy, u8 w, u8 h);
 void DrawSprite(Sprite* spr, signed int x, signed int y);
-
-void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y);
-bool GetBallCollision(s8 xsp, s8 ysp);
-
+//void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y);
+void InitGUI();
+void ClearAllVRAM();
 inline void GAME_INIT();
 inline void GAME_DRAW();
 inline void GAME_UPDATE();
 inline void GAME_INPUT();
-
+void AddScore(u8 sc);
+void EraseBlock(LevelBlock* b);
+u8 GetCollisionDirection(u8 x, u8 y, LevelBlock* b);
+LevelBlock* GetQuadrant(u8 d, LevelBlock* b);
+u8 GetBallCollision(s8 xsp, s8 ysp);
 
 void main()
 {
-    RESETVEC:
     __asm 
-      ld sp,#_main 
+      ld sp,#0x0080
     __endasm;
     GAME_INIT();
     
@@ -58,51 +66,39 @@ void main()
         GAME_DRAW();
     }
 }
-/*
-void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y)
+
+void InitGUI()
 {
-    SETBANK_RED();
-    vu8* p = (vu8*)(0xc000) + (y * 80) + x;
-    const u8* v = pb->r;
-    u8 row = 0;
-    u8 col = 0;
-    u8 loop = 0;
-    u16 siz = pb->w * pb->h;
-    for(u16 s = 0; s < siz; s++)
-    {
-        // check if *v is 0x80
-        if(*(v + s) == 0x80){
-            // copy *v+1 by *v+2 times
-            u8 cp = *(v + s + 1);
-            loop = *(v + s + 2);
-            for(u8 l = 0; l < loop; l++){
-                *(p + row + (col * 80)) = cp;
-                row++;
-                if(row > pb->w) { row = 0; col++; }
-            }
-            s += (2 + loop);
-        }
-        else { 
-            *(p + row + (col * 80)) = *(v + s);
-            row++;
-            if(row > pb->w) { row = 0; col++; }
-        }
-        /*
-        for(u8 yy = 0; yy < pb->h; yy++){
-            for(u8 xx = 0; xx < pb->w; xx++){
-                *p = *v;
-                p++;
-                v++;
-            }
-            p += (80 - pb->w);
-        }
-        */
-/*
+    // Corners
+    DrawSprite(&tile_01, PLAYFIELD_LEFT-2, PLAYFIELD_TOP-8);
+    DrawSprite(&tile_01, PLAYFIELD_RIGHT+2, PLAYFIELD_TOP-8);
+    DrawSprite(&tile_01, PLAYFIELD_LEFT-2, PLAYFIELD_BTM);
+    DrawSprite(&tile_01, PLAYFIELD_RIGHT+2, PLAYFIELD_BTM);
+    DrawSprite(&tile_02, PLAYFIELD_LEFT, PLAYFIELD_TOP-8);
+    DrawSprite(&tile_02, PLAYFIELD_LEFT, PLAYFIELD_BTM);
+    // Top/bottom bars
+    for(u8 i = 0; i < 43; i ++){
+        DrawSprite(&tile_03, PLAYFIELD_LEFT+i+1, PLAYFIELD_TOP-8);
+        DrawSprite(&tile_03, PLAYFIELD_LEFT+i+1, PLAYFIELD_BTM);
     }
+    DrawSprite(&tile_04, PLAYFIELD_RIGHT+1, PLAYFIELD_TOP-8);
+    DrawSprite(&tile_04, PLAYFIELD_RIGHT+1, PLAYFIELD_BTM);
+    DrawSprite(&tile_05, PLAYFIELD_LEFT-1, PLAYFIELD_TOP);
+    DrawSprite(&tile_05, PLAYFIELD_RIGHT+2, PLAYFIELD_TOP);
+    // Left/right bars
+    for(u8 i = 2; i < 20; i++){
+        DrawSprite(&tile_06, PLAYFIELD_LEFT-2, i * 8);
+        DrawSprite(&tile_06, PLAYFIELD_RIGHT+2, i * 8);
+    }
+    DrawSprite(&tile_07, PLAYFIELD_LEFT-2, PLAYFIELD_BTM-8);
+    DrawSprite(&tile_07, PLAYFIELD_RIGHT+2, PLAYFIELD_BTM-8);
+    
+    // Draw title/text bitmaps:
+    //DrawRLEBitmap(&title_1, 51, 4);
+    DrawSprite((Sprite*)&title_1, 51, 4);
+    DrawSprite((Sprite*)&leveltxt, 59, 56);
+    DrawSprite((Sprite*)&scoretxt, 58, 104);
 }
-*/
-#define GFX_OFF 0b00010011
-#define GFX_ON 0b00011011
 
 void ClearAllVRAM()
 {
@@ -132,46 +128,25 @@ inline void GAME_INIT()
     bar_pos.y = 154;
     bx_speed = 1;
     by_speed = 4;
-    moved = true;
+    //moved = true;
     pScore = 0;
-    // GUI:
+
     SetIOReg(0x31, GFX_OFF);
-    DrawSprite(&tile_01, 0, 0);
-    DrawSprite(&tile_01, 47, 0);
-    DrawSprite(&tile_01, 0, 168);
-    DrawSprite(&tile_01, 47, 168);
-    DrawSprite(&tile_02, 2, 0);
-    DrawSprite(&tile_02, 2, 168);
-    for(u8 i = 0; i < 43; i ++){
-        DrawSprite(&tile_03, 3+i, 0);
-        DrawSprite(&tile_03, 3+i, 168);
-    }
-    DrawSprite(&tile_04, 46, 0);
-    DrawSprite(&tile_04, 46, 168);
-    DrawSprite(&tile_05, 0, 8);
-    DrawSprite(&tile_05, 47, 8);
-    for(u8 i = 2; i < 20; i++){
-        DrawSprite(&tile_06, 0, i * 8);
-        DrawSprite(&tile_06, 47, i * 8);
-    }
-    DrawSprite(&tile_07, 0, 160);
-    DrawSprite(&tile_07, 47, 160);
-    
-    //DrawRLEBitmap(&title_1, 51, 4);
-    DrawSprite((Sprite*)&title_1, 51, 4);
-    DrawSprite((Sprite*)&leveltxt, 59, 56);
-    DrawSprite((Sprite*)&scoretxt, 58, 104);
-    
+    // Draw GUI while screen is off
+    InitGUI();
     SetIOReg(0x31, GFX_ON);
+    
+    // erase load text 
     SETBANK_MAINRAM()
-    Wait_VBLANK();
     SetCursorPos(20, 9);
     print("                                       ");
     SetCursorPos(60, 13);
-    for(u8 z = 0; z < 6; z++) putchr(score[z]);
+    
+    // Level 01!
     DrawSprite(&s_0, 62, 80);
     DrawSprite(&s_1, 64, 80);
-    // Level data
+    
+    // Initialize level + data
     LEVELBLOCKSIZE = 150;
     for(u8 i = 2; i < 9; i++)
     {
@@ -188,9 +163,9 @@ inline void GAME_INIT()
         }
     }
 
-    // Reset and clear load text
-    
     SETBANK_MAINRAM();
+
+    // DOOT DO DOO!
     beep(BEEP_C5, 50);
     for(u16 i = 10000; i > 0; i--) { 
         __asm nop __endasm;
@@ -199,127 +174,10 @@ inline void GAME_INIT()
     beep(BEEP_G5, 200);
 }
 
-///////////////
+
+///////////////////////
 /// Update
-///////////////
-
-void AddScore(u8 sc)
-{
-    pScore += sc;
-    for(u8 n = 0; n < 3; n++) // number of nibbles in pScore
-    {
-        u8 p = (u8)((pScore & (0xf << (n*4))) >> (n*4));
-        if(p > 9) { 
-            pScore += (1 << ((n+1)*4)); 
-            pScore &= 0xfff0;
-        } 
-    }
-    // for each digit, is AND Fh > 9? then add the remainder
-}
-
-void EraseBlock(LevelBlock* b)
-{
-    XYpos t = { b->x, b->y };
-    SETBANK_BLUE()
-    EraseVRAMArea(&t, 3, 8);
-    SETBANK_GREEN()
-    EraseVRAMArea(&t, 3, 8);
-    SETBANK_RED()
-    EraseVRAMArea(&t, 3, 8);
-    b->x = 0; b->y = 0;
-    SETBANK_MAINRAM()
-    AddScore((u8)1);
-}
-
-u8 GetCollisionDirection(u8 x, u8 y, LevelBlock* b)
-{
-    // check what side of the block the ball is on.
-    // if L/R : flip x 
-    // if U/D : flip y 
-    // get the quadrant versus the block!
-    u8 h = 0b1111;
-    if((x + 1) < (b->x + 3)) h ^= 0b1;// NOT right 
-    if((y + 4) < (b->y + 8)) h ^= 0b10;// NOT bottom 
-    if((x) >= (b->x)) h ^= 0b100;// NOT left 
-    if((y) >= (b->y)) h ^= 0b1000;// NOT top 
-    return h;
-    // returns bit field of POSSIBLE DIRECTIONS. 
-
-}
-
-LevelBlock* GetQuadrant(u8 d, LevelBlock* b)
-{
-    // d = bitfield , b = current block
-    // four cases: top left, top right, bottom left, bottom right 
-    // for each case, examine the level layout
-    // if there is a block in either LATERAL quadrant, bounce off it instead
-    // otherwise, bounce of both XY
-    d;
-    bx_speed *= -1;
-    by_speed *= -1;
-    return b;
-}
-
-u8 abs(s8 n)
-{
-    if(n < 0) return n * -1;
-    return n;
-}
-
-
-u8 GetBallCollision(s8 xsp, s8 ysp)
-{
-    // Is the location at ball_pos.x + xsp, ball_pos.y + ysp a COLLIDEABLE?
-    // Collideables are in the BLOCK_LEVEL[] array, and
-    //  are the ULR borders of the screen. 
-    
-    u8 txp; u8 typ;
-    txp = ball_pos.x + xsp;
-    typ = ball_pos.y + ysp;
-    for(u8 i = 0; i < LEVELBLOCKSIZE; i++){
-        if(txp < (BLOCK_LEVEL[i].x + 3)){
-            if((txp + 1) > BLOCK_LEVEL[i].x){
-                if(typ < (BLOCK_LEVEL[i].y + 8)){
-                    if((typ + 4) > BLOCK_LEVEL[i].y){
-                        LevelBlock* bl = &BLOCK_LEVEL[i];
-                        u8 d = GetCollisionDirection(txp, typ, bl);
-                        SetCursorPos(45, 18);
-                        if(d == 0b1) { //rt
-                            print("      "); 
-                            ball_pos.x = (bl->x+3) + xsp;
-                            bx_speed *= -1; 
-                        } 
-                        else if(d == 0b100) {  //lf
-                            print("      "); 
-                            ball_pos.x = (bl->x-1) - xsp;
-                            bx_speed *= -1; 
-                        } 
-                        else if(d == 0b10) { //btm
-                            print("      "); 
-                            ball_pos.y = (bl->y+8) + ysp;
-                            by_speed *= -1; 
-                        } 
-                        else if(d == 0b1000) { //tp
-                            print("      "); 
-                            ball_pos.y = (bl->y-4) - ysp;
-                            by_speed *= -1; 
-                        } 
-                        else { 
-                            print("Edge  ");
-                            // fall back to Get Quadrant
-                            bl = GetQuadrant(d, bl);
-                        }
-                        EraseBlock(bl);
-                        beep(100, 10);
-                        return true;
-                    }
-                }
-            }
-        }
-    }
-    return false;
-}
-
+//////////////////////
 inline void GAME_UPDATE()
 {
     tick++;
@@ -419,20 +277,19 @@ inline void GAME_INPUT()
 inline void GAME_DRAW()
 {
     Wait_VBLANK();
-    // Set pen color
+    // ball 
     SETBANK_GREEN();
     EraseVRAMArea(&ball_oldpos, 1, 4);
     DrawSprite(&ball, ball_pos.x, ball_pos.y);
-    // Player!
     
+    // paddle
     SETBANK_BLUE();
     EraseVRAMArea(&bar_oldpos, 6, 6);
+      // if you want cyan:
     //SETBANK_RED();
     //EraseVRAMArea(&bar_oldpos, 6, 6);
     DrawSprite(&bar, bar_pos.x, bar_pos.y);
-    // Write once to 3rd GVRAM plane to balance speed 
-    //SetPixel(0, 1, CLR_RED);
-    // end VBL
+    // back to mainRAM, print score
     SETBANK_MAINRAM()
     SetCursorPos(60, 13);
     for(s8 z = 3; z >= 0; z--) {
@@ -441,7 +298,6 @@ inline void GAME_DRAW()
     }
 }
 
-//
 
 void DrawSpritePlane(const u8* dat, XYpos* xy, u8 w, u8 h)
 {   
@@ -471,3 +327,160 @@ void DrawSprite(Sprite* spr, signed int x, signed int y)
         DrawSpritePlane(spr->b, &xy, spr->w, spr->h);
     }
 }
+
+// Adds a base-16 number (sc) to a base-10 number (pScore)
+//  This keeps pScore in a easily printable format.
+void AddScore(u8 sc)
+{
+    pScore += sc;
+    for(u8 n = 0; n < 3; n++) // number of nibbles in pScore
+    {
+        u8 p = (u8)((pScore & (0xf << (n*4))) >> (n*4));
+        if(p > 9) { 
+            pScore += (1 << ((n+1)*4)); 
+            pScore &= 0xfff0;
+        } 
+    }
+    // for each digit, is AND Fh > 9? then add the remainder
+}
+
+void EraseBlock(LevelBlock* b)
+{
+    XYpos t = { b->x, b->y };
+    SETBANK_BLUE()
+    EraseVRAMArea(&t, 3, 8);
+    SETBANK_GREEN()
+    EraseVRAMArea(&t, 3, 8);
+    SETBANK_RED()
+    EraseVRAMArea(&t, 3, 8);
+    b->x = 0; b->y = 0;
+    SETBANK_MAINRAM()
+    AddScore((u8)1); // How many points am I worth?
+}
+
+// For edge collisions
+u8 GetCollisionDirection(u8 x, u8 y, LevelBlock* b)
+{
+    // check what side of the block the ball is on.
+    // if L/R : flip x 
+    // if U/D : flip y 
+    // get the quadrant versus the block!
+    u8 h = 0b1111;
+    if((x + 1) < (b->x + 3)) h ^= 0b1;// NOT right 
+    if((y + 4) < (b->y + 8)) h ^= 0b10;// NOT bottom 
+    if((x) >= (b->x)) h ^= 0b100;// NOT left 
+    if((y) >= (b->y)) h ^= 0b1000;// NOT top 
+    return h;
+    // returns bit field of POSSIBLE DIRECTIONS. 
+}
+
+// Not finished
+LevelBlock* GetQuadrant(u8 d, LevelBlock* b)
+{
+    // d = bitfield , b = current block
+    // four cases: top left, top right, bottom left, bottom right 
+    // for each case, examine the level layout
+    // if there is a block in either LATERAL quadrant, bounce off it instead
+    // otherwise, bounce of both XY
+    d;
+    bx_speed *= -1;
+    by_speed *= -1;
+    return b;
+}
+
+
+u8 GetBallCollision(s8 xsp, s8 ysp)
+{
+    // Is the location at ball_pos.x + xsp, ball_pos.y + ysp a COLLIDEABLE?
+    // Collideables are in the BLOCK_LEVEL[] array, and
+    //  are the ULR borders of the screen. 
+    u8 txp; u8 typ;
+    txp = ball_pos.x + xsp;
+    typ = ball_pos.y + ysp;
+    for(u8 i = 0; i < LEVELBLOCKSIZE; i++){
+        if(txp < (BLOCK_LEVEL[i].x + 3)){
+            if((txp + 1) > BLOCK_LEVEL[i].x){
+                if(typ < (BLOCK_LEVEL[i].y + 8)){
+                    if((typ + 4) > BLOCK_LEVEL[i].y){
+                        LevelBlock* bl = &BLOCK_LEVEL[i];
+                        u8 d = GetCollisionDirection(txp, typ, bl); // from what side?
+                        SetCursorPos(45, 18); // debug text
+                        if(d == 0b1) { //rt
+                            print("      "); 
+                            ball_pos.x = (bl->x+3) + xsp;
+                            bx_speed *= -1; 
+                        } 
+                        else if(d == 0b100) {  //lf
+                            print("      "); 
+                            ball_pos.x = (bl->x-1) - xsp;
+                            bx_speed *= -1; 
+                        } 
+                        else if(d == 0b10) { //btm
+                            print("      "); 
+                            ball_pos.y = (bl->y+8) + ysp;
+                            by_speed *= -1; 
+                        } 
+                        else if(d == 0b1000) { //tp
+                            print("      "); 
+                            ball_pos.y = (bl->y-4) - ysp;
+                            by_speed *= -1; 
+                        } 
+                        else { 
+                            print("Edge  ");
+                            // fall back to Get Quadrant
+                            bl = GetQuadrant(d, bl);
+                        }
+                        EraseBlock(bl); // Fix me later
+                        beep(100, 10);
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
+/*
+void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y)
+{
+    SETBANK_RED();
+    vu8* p = (vu8*)(0xc000) + (y * 80) + x;
+    const u8* v = pb->r;
+    u8 row = 0;
+    u8 col = 0;
+    u8 loop = 0;
+    u16 siz = pb->w * pb->h;
+    for(u16 s = 0; s < siz; s++)
+    {
+        // check if *v is 0x80
+        if(*(v + s) == 0x80){
+            // copy *v+1 by *v+2 times
+            u8 cp = *(v + s + 1);
+            loop = *(v + s + 2);
+            for(u8 l = 0; l < loop; l++){
+                *(p + row + (col * 80)) = cp;
+                row++;
+                if(row > pb->w) { row = 0; col++; }
+            }
+            s += (2 + loop);
+        }
+        else { 
+            *(p + row + (col * 80)) = *(v + s);
+            row++;
+            if(row > pb->w) { row = 0; col++; }
+        }
+        /*
+        for(u8 yy = 0; yy < pb->h; yy++){
+            for(u8 xx = 0; xx < pb->w; xx++){
+                *p = *v;
+                p++;
+                v++;
+            }
+            p += (80 - pb->w);
+        }
+        */
+/*
+    }
+}
+*/
