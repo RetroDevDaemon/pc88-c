@@ -91,32 +91,45 @@ typedef struct xypos {
 #define PLANE_GREEN 2
 
 // Function headers
+// CRT0
 void __init();
 void main();
 inline void putchr(u8 c);
 /**/inline void putchr40(u8 c);
 void print(String str);
 /**/void print40(String str);
+void SetCursorPos(u8 x, u8 y);
+/**/void SetCursorPos40(u8 x, u8 y);
+// IOREGS
 u8 ReadIOReg(u8 r);
 void SetIOReg(u8 r, u8 v);
 /* Attributes must be set in ascending X order on each row. 
     Attribute #0 on each row is ALWAYS read as X=0, regardless of its actual value. */
+// TEXTMODE
 void SetTextAttribute(u8 x, u8 y, u8 attr);
 void ClearAttributeRam();       // Resets to the bios defaults.
-void SetCursorPos(u8 x, u8 y);
-/**/void SetCursorPos40(u8 x, u8 y);
+// WAITVBLANK
 void Wait_VBLANK();
+// GETKEYDOWN
+bool GetKeyDown(u8 SCANCODE);
+// DRAW
 void DrawPlaneBMP(const u8* img, u8 plane, u16 x, u16 y, u8 w, u8 h);
 void SetPixel(u16 x, u8 y, u8 c);
-bool GetKeyDown(u8 SCANCODE);
 inline void EnableALU();
 inline void DisableALU();
 inline void ExpandedGVRAM_On();
 inline void ExpandedGVRAM_Off();
+// DISKLOAD
 void DiskLoad(u8* dst, u8 track, u8 sector, u8 numSecs, u8 drive); 
+// BEEP
 void beep(u16 tone, u8 length);
+// VRAM_UTIL
 void EraseVRAMArea(XYpos* xy, u8 w, u8 h);
+// MATH
+u16 rand16();
 u8 abs(s8 n);
+u16 abs16(s16 n);
+u8 rand();
 
 #define SetBGColor(c) SetIOReg(0x52, c << 4);
 #define SetBorderColor(c) SetIOReg(0x52, c); // PC8001 only?

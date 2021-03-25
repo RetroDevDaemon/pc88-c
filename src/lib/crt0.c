@@ -5,7 +5,6 @@
 // globals 
 vu8* SCREEN_POINTER;
 u8 LINE_POINTER;
-void __init();
 
 void __init()
 {
@@ -17,12 +16,14 @@ void __init()
 
 void SetCursorPos(u8 x, u8 y)
 {
-    SCREEN_POINTER = (vu8*)(SCREEN_TXT_BASE + (120 * y) + x);
+    SCREEN_POINTER = (vu8*)(SCREEN_TXT_BASE + (u16)(120 * y) + x);
+    LINE_POINTER = x;
 }
 
 void SetCursorPos40(u8 x, u8 y)
 {
-    SCREEN_POINTER = (vu8*)(SCREEN_TXT_BASE + (120 * y) + (x * 2));
+    SCREEN_POINTER = (vu8*)(SCREEN_TXT_BASE + (u16)(120 * y) + (x * 2));
+    LINE_POINTER = x * 2;
 }
 
 inline void putchr(u8 c)

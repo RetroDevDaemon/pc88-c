@@ -83,33 +83,50 @@ Sprite s_9 = {
     2, 16
 };
 //
-
-// Block A Colors
-Sprite redBlock = { 
+//Stoneblock
+Sprite stoneBlock = { //11
+    (u8*)stoneblock_b, (u8*)stoneblock_b, (u8*)stoneblock_b, 
+    3, 8
+};
+// Block B
+Sprite hardGreen = { //9
+    null, (u8*)hardblock_b, (u8*)hardblock_g,
+    3, 8
+};
+Sprite hardBlue = { //10
+    null, (u8*)hardblock_g, (u8*)hardblock_b,
+    3, 8
+};
+Sprite hardRed = { //8
+    (u8*)hardblock_b, null, (u8*)hardblock_g, 
+    3, 8
+};
+// Block A
+Sprite redBlock = { //1
     (u8*)block_r, (u8*)block_b, (u8*)block_b, 
     3, 8
 };
-Sprite blueBlock = { 
+Sprite blueBlock = { //2
     (u8*)block_b, (u8*)block_b, (u8*)block_r, 
     3, 8
 };
-Sprite greenBlock = { 
+Sprite greenBlock = { //3
     (u8*)block_b, (u8*)block_r, (u8*)block_b, 
     3, 8
 };
-Sprite cyanBlock = { 
+Sprite cyanBlock = { //4
     (u8*)block_b, (u8*)block_r, (u8*)block_r, 
     3, 8
 };
-Sprite magentaBlock = { 
+Sprite magentaBlock = { //5
     (u8*)block_r, (u8*)block_b, (u8*)block_r, 
     3, 8
 };
-Sprite yellowBlock = { 
+Sprite yellowBlock = { //6
     (u8*)block_r, (u8*)block_r, (u8*)block_b, 
     3, 8
 };
-Sprite whiteBlock = { 
+Sprite whiteBlock = { //7
     (u8*)block_r, (u8*)block_r, (u8*)block_r, 
     3, 8
 };
@@ -183,5 +200,43 @@ PlanarBitmap scoretxt = {
     12, 16
 };
 //
+const unsigned char level1data[150] = { 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0,
+    0, 0, 0, 11,11,11,11,11,11,11,11,11, 0, 0, 0,
+    0, 0, 0, 10,10,10,10,10,10,10,10,10, 0, 0, 0,
+    0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 0,
+    0, 0, 3, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3, 0, 0,
+    0, 0, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 0, 0,
+    0, 0, 3, 1, 1, 1, 1, 1, 1, 1, 1, 1, 3, 0, 0,
+    0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0,
+    0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0,
+    0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0,
+    0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+const unsigned char level2data[150] = { 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 8, 8, 8, 8, 8, 8, 8, 8, 8, 0, 0, 0,
+    0, 0,11, 2, 2, 2, 2, 2, 2, 2, 2, 2,11, 0, 0,
+    0, 0, 0, 10,10,10,10,10,10,10,10,10,0, 0, 0,
+    0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 9, 0, 0, 0,
+    0, 0,11, 7, 7, 7, 7, 7, 7, 7, 7, 7,11, 0, 0,
+    0, 0, 3, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 0, 0,
+    0, 0,11, 1, 1, 1, 1, 1, 1, 1, 1, 1,11, 0, 0,
+    0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0,
+    0, 0,11, 1, 1, 1, 1, 1, 1, 1, 1, 1,11, 0, 0,
+    0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2, 2, 0, 0, 0,
+    0, 0, 0, 5, 5, 5, 5, 5, 5, 5, 5, 5, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
+
+Sprite* blockTypes[16];
+const unsigned char* levels[50];
 
 #endif 

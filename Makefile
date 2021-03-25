@@ -3,7 +3,8 @@
 #  i.e. do not use the one distributed with SGDK etc.
 
 CC=sdcc
-CFLAGS=-Isrc --cyclomatic 
+CFLAGS=-Isrc # --cyclomatic 
+CMDFLAGS=
 PY=python3
 DEL=rm -rf
 
@@ -19,7 +20,7 @@ PROJECT=examples/helloworld
 # $ make PROJECT=myproj
 
 ## MEMORY LOCATIONS ##
-STACK=0x80
+STACK=0x100
 DATA=0x100
 CODE=0x1000
 # Stack should stay in ZP.
@@ -42,7 +43,7 @@ out/%.rel: src/lib/%.c
 default: $(PROJECT) $(PC88CFILES)
 	$(PY) tools/maked88.py $(APPNAME)
 	$(PY) tools/hexer.py src/ipl.bin 0x2f $(USEDSEC)
-	$(CC) $(88FLAGS) $(CFLAGS) $(PROJECT)/main.c out/*.rel 
+	$(CC) $(88FLAGS) $(CFLAGS) $(CMDFLAGS) $(PROJECT)/main.c out/*.rel 
 	$(PY) tools/fixboot.py src/ipl.bin 
 	$(PY) tools/hex2bin.py main.ihx main.bin
 	$(PY) tools/maked88.py $(APPNAME) src/ipl.bin 0 0 1
