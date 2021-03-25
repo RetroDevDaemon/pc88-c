@@ -98,16 +98,13 @@ inline void putchr(u8 c);
 /**/inline void putchr40(u8 c);
 void print(String str);
 /**/void print40(String str);
-void SetCursorPos(u8 x, u8 y);
-/**/void SetCursorPos40(u8 x, u8 y);
+
 // IOREGS
 u8 ReadIOReg(u8 r);
 void SetIOReg(u8 r, u8 v);
 /* Attributes must be set in ascending X order on each row. 
     Attribute #0 on each row is ALWAYS read as X=0, regardless of its actual value. */
-// TEXTMODE
-void SetTextAttribute(u8 x, u8 y, u8 attr);
-void ClearAttributeRam();       // Resets to the bios defaults.
+
 // WAITVBLANK
 void Wait_VBLANK();
 // GETKEYDOWN
@@ -125,11 +122,6 @@ void DiskLoad(u8* dst, u8 track, u8 sector, u8 numSecs, u8 drive);
 void beep(u16 tone, u8 length);
 // VRAM_UTIL
 void EraseVRAMArea(XYpos* xy, u8 w, u8 h);
-// MATH
-u16 rand16();
-u8 abs(s8 n);
-u16 abs16(s16 n);
-u8 rand();
 
 #define SetBGColor(c) SetIOReg(0x52, c << 4);
 #define SetBorderColor(c) SetIOReg(0x52, c); // PC8001 only?

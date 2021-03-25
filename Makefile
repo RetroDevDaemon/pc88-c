@@ -3,8 +3,8 @@
 #  i.e. do not use the one distributed with SGDK etc.
 
 CC=sdcc
-CFLAGS=-Isrc # --cyclomatic 
-CMDFLAGS=
+CFLAGS=-Isrc -Isrc/lib 
+CMDFLAGS=#--cyclomatic
 PY=python3
 DEL=rm -rf
 

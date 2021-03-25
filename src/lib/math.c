@@ -1,4 +1,6 @@
 #include <pc88-c.h>
+#include <math.h>
+
 
 u8 abs(s8 n)
 {
@@ -20,14 +22,14 @@ u8 rand() __naked
     //;-----> Generate a random number
     //; output a=answer 0<=a<=255
     random:
-        ld      hl,(_randSeed)
+        ld      hl,(_RANDOMSEED)
         ld      a,r
         ld      d,a
         ld      e,(hl)
         add     hl,de
         add     a,l
         xor     h
-        ld      (_randSeed),hl
+        ld      (_RANDOMSEED),hl
         ld      l,a
         ret 
     __endasm;
@@ -35,5 +37,5 @@ u8 rand() __naked
 
 u16 rand16()
 {
-    return (rand() << 8) | rand();
+    return rand() << 8 | rand();
 }

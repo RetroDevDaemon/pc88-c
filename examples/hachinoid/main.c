@@ -1,8 +1,11 @@
 #include <pc88-c.h>
 
 enum directions { UP, DOWN, LEFT, RIGHT };
-
+#include "textmode.h"
 #include "graphics.h"
+#include "lib/math.h"
+
+extern u16 RANDOMSEED;
 
 #define GFX_OFF 0b00010011
 #define GFX_ON 0b00011011
@@ -34,7 +37,7 @@ LevelBlock BLOCK_LEVEL[150];
 u8 tick;
 u8 PLAYER_SPEED;
 u16 pScore;
-u16 randSeed;
+
 void DrawSpritePlane(u8* dat, XYpos* xy, u8 w, u8 h);
 void DrawSprite(Sprite* spr, signed int x, signed int y);
 //void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y);
@@ -149,7 +152,7 @@ inline void GAME_INIT()
     PLAYER_SPEED = 1; // 1 tick per frame
     bar_speed = 2;
     SetCursorPos(20, 9);
-    print("Loading 'HACHINOID' ... PREPARE TO DIE\x00");
+    print("Loading 'HACHINOID' ...\nPREPARE TO DIE\x00");
     
     // Initialize Hachinoid Vars
     blockTypes[0] = null;
@@ -183,7 +186,7 @@ inline void GAME_INIT()
     // erase load text 
     SETBANK_MAINRAM()
     SetCursorPos(20, 9);
-    print("                                       ");
+    print("                       \n                  ");
     SetCursorPos(60, 13);
     
     // Level 01!
@@ -205,15 +208,14 @@ inline void GAME_INIT()
     beep(BEEP_G5, 200);
 }
 
-
 ///////////////////////
 /// Update
 //////////////////////
 inline void GAME_UPDATE()
 {
-    bool xOk;
+    bool xOk = false;
     tick++;
-    randSeed++;
+    RANDOMSEED += rand();
     //PLAYER_SPEED = 2;
     if(tick >= PLAYER_SPEED) {
         tick = 0;
@@ -459,7 +461,6 @@ u8 GetBallCollision(s8 xsp, s8 ysp)
                             print("Edge  \x00");
                             // fall back to Get Quadrant
                             u8 s = rand();
-                            s8 mod;
                             if(s < 128) { 
                                 //bx_speed--; 
                                 //if(bx_speed == 0) bx_speed = -1;
@@ -475,8 +476,8 @@ u8 GetBallCollision(s8 xsp, s8 ysp)
                             
                             if(bx_speed < -2) bx_speed = -2;
                             else if(bx_speed > 2) bx_speed = 2;
-                            if(by_speed < -8) by_speed = -8;
-                            else if(by_speed > 8) by_speed = 8;
+                            if(by_speed < -7) by_speed = -7;
+                            else if(by_speed > 7) by_speed = 7;
                             
                             bl = GetQuadrant(d, bl);
                         }
