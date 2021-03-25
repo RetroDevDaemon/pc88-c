@@ -1,9 +1,9 @@
 #include <pc88-c.h>
 
 enum directions { UP, DOWN, LEFT, RIGHT };
-#include "textmode.h"
+
 #include "graphics.h"
-#include "lib/math.h"
+#include "math.h"
 
 extern u16 RANDOMSEED;
 
