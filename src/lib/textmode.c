@@ -1,5 +1,4 @@
 #include <pc88-c.h>
-#include "lib/textmode.h"
 
 u8 TABULATE;
 vu8* SCREEN_POINTER;
