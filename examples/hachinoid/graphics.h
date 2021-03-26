@@ -15,8 +15,16 @@
 #include "img/dmg2.h"
 #include "img/dmg3.h"
 
+#include "img/edgepin_empty.h"
+#include "img/edgepin_full.h"
+
+#include "img/bullet.h"
+#include "img/fire_ok.h"
+#include "img/no_fire.h"
+
 #include "img/leveltxt.h"
 #include "img/scoretxt.h"
+#include "img/edgetxt.h"
 
 #include "img/tile_01.h"
 #include "img/tile_02.h"
@@ -25,6 +33,7 @@
 #include "img/tile_05.h"
 #include "img/tile_06.h"
 #include "img/tile_07.h"
+#include "img/tile_08.h"
 
 #include "img/title_1.h"
 #include "img/title_2.h"
@@ -139,7 +148,7 @@ Sprite ball = {
 };
 Sprite bar = { 
     null, null, (u8*)&bar_sprite_b,
-    6, 6
+    6, 8
 };
 Sprite block = { 
     (u8*)&block_r, (u8*)&block_b, (u8*)&block_b, 
@@ -176,6 +185,10 @@ Sprite tile_07 = {
     (u8*)&tile_07_r, (u8*)&tile_07_g, (u8*)&tile_07_b, 
     2, 8
 };
+Sprite tile_08 = {
+    (u8*)&tile_08_r, null, null, 
+    1, 8
+};
 //
 
 // BMPs
@@ -190,7 +203,7 @@ PlanarBitmap title_2 = {
 };
 //
 
-// 
+// Text 
 PlanarBitmap leveltxt = { 
     (u8*)&leveltxt_b, (u8*)&leveltxt_b, (u8*)&leveltxt_b, 
     10, 16
@@ -198,6 +211,33 @@ PlanarBitmap leveltxt = {
 PlanarBitmap scoretxt = { 
     (u8*)&scoretxt_b, (u8*)&scoretxt_b, (u8*)&scoretxt_b, 
     12, 16
+};
+PlanarBitmap edgetxt = { 
+    (u8*)&edgetxt_b, (u8*)&edgetxt_b, (u8*)&edgetxt_b, 
+    8, 16
+};
+
+// bullet 
+Sprite bulletspr = { 
+    (u8*)&bullet_r, (u8*)&bullet_r, null, //yellow
+    2, 8
+};
+// edge GUI
+Sprite edgeGem_0 = { 
+    null, (u8*)&edgepin_empty_g, null,
+    1, 8
+};
+Sprite edgeGem_1 = { 
+    null, (u8*)&edgepin_full_g, null,
+    1, 8
+};
+Sprite fire_yes = { 
+    (u8*)fire_ok_r, null, null, 
+    2, 16
+};
+Sprite fire_no = { 
+    (u8*)no_fire_r, null, null, 
+    2, 16
 };
 //
 const unsigned char level1data[] = { 

@@ -25,6 +25,7 @@ s8 by_speed;
 s8 bx_speed;
 u8 bar_speed;
 bool moved;
+bool edgeBounce;
 
 typedef struct levelblock { 
     u8 x;
@@ -50,7 +51,7 @@ inline void GAME_INPUT();
 void AddScore(u8 sc);
 void EraseBlock(LevelBlock* b);
 u8 GetCollisionDirection(u8 x, u8 y, LevelBlock* b);
-LevelBlock* GetQuadrant(u8 d, LevelBlock* b);
+LevelBlock* GetQuadrantBlock(u8 d, u8 blocknum);
 u8 GetBallCollision(s8 xsp, s8 ysp);
 
 void main()
@@ -70,7 +71,7 @@ void main()
     }
 }
 
-void InitGUI()
+inline void InitGUI()
 {
     // Corners
     DrawSprite(&tile_01, PLAYFIELD_LEFT-2, PLAYFIELD_TOP-8);
@@ -95,12 +96,17 @@ void InitGUI()
     }
     DrawSprite(&tile_07, PLAYFIELD_LEFT-2, PLAYFIELD_BTM-8);
     DrawSprite(&tile_07, PLAYFIELD_RIGHT+2, PLAYFIELD_BTM-8);
-    
+    // Flame
+    for(u8 t = 2; t <= 46; t++) DrawSprite(&tile_08, t, 160);
     // Draw title/text bitmaps:
     //DrawRLEBitmap(&title_1, 51, 4);
     DrawSprite((Sprite*)&title_1, 51, 4);
     DrawSprite((Sprite*)&leveltxt, 59, 56);
     DrawSprite((Sprite*)&scoretxt, 58, 104);
+    // Edge bits
+    DrawSprite((Sprite*)&edgetxt, 32, 178);
+    for(u8 f = 0; f < 5; f++) DrawSprite(&edgeGem_0, 41 + f, 180);
+    DrawSprite(&fire_no, 46, 176);
 }
 
 void ClearAllVRAM()
@@ -174,7 +180,7 @@ inline void GAME_INIT()
     ball_pos.y = 120;
     bar_pos.x = 20;
     bar_pos.y = 154;
-    bx_speed = 1;
+    bx_speed = 4;
     by_speed = 4;
     //moved = true;
     pScore = 0;
@@ -196,7 +202,7 @@ inline void GAME_INIT()
     // Initialize level + data
     LEVELBLOCKSIZE = 150;
     
-    LoadLevel(levels[2]);
+    LoadLevel(levels[1]);
     SETBANK_MAINRAM();
 
     // DOOT DO DOO!
@@ -208,15 +214,51 @@ inline void GAME_INIT()
     beep(BEEP_G5, 200);
 }
 
+inline void RandomizeBall()
+{
+    // adjust bx_speed and by_speed by +-1 within their bounds
+    // based on a random roll 
+    u8 r = rand();
+    if(r < 128) { 
+        // x
+        if (r < 64) { 
+            bx_speed++;
+            by_speed--;
+        }
+        else {
+            bx_speed--;
+            by_speed++;
+        }
+    }
+    else { 
+        // y
+        if (r < 192) {
+            by_speed++;
+            bx_speed--;
+        }
+        else {
+            by_speed--;
+            bx_speed++;
+        }
+    }
+    if(abs(bx_speed) + abs(by_speed) < 8) {
+        if(bx_speed < 0) bx_speed --;
+        if(bx_speed > 0) bx_speed++;
+    }
+}
+
 ///////////////////////
 /// Update
 //////////////////////
+u8 lx, ly;
 inline void GAME_UPDATE()
 {
     bool xOk = false;
-    tick++;
+    edgeBounce = false;
     RANDOMSEED += rand();
-    //PLAYER_SPEED = 2;
+    // What is my speed? 
+    tick += abs(bx_speed); // 4
+    PLAYER_SPEED = 8 - abs(bx_speed); // 5
     if(tick >= PLAYER_SPEED) {
         tick = 0;
         xOk = true;
@@ -224,27 +266,57 @@ inline void GAME_UPDATE()
     // save for erase
     ball_oldpos.x = ball_pos.x;
     ball_oldpos.y = ball_pos.y;
+    s8 lr= 0;
+    if(bx_speed < 0) lr = -1;
+    else if(bx_speed < -4) lr = -2;
+    else if(bx_speed > 0) lr = 1;
+    else if(bx_speed > 4) lr = 2;
     // get collision
-    if(ball_pos.y < 100) {     
-        if(!GetBallCollision(bx_speed, by_speed)){
-            if(xOk) ball_pos.x += bx_speed;
+    if(ball_pos.y < 136) {     
+        if(!GetBallCollision(lr, by_speed)){
+            if(xOk) ball_pos.x += lr;
             ball_pos.y += by_speed;
+        } else { 
+            if(edgeBounce) { 
+                // Edge bounce!
+                RandomizeBall();
+            }
         }
     } else { // small optimization
         Wait_VBLANK();
-        if(xOk) ball_pos.x += bx_speed;
+        if(xOk) ball_pos.x += lr;
         ball_pos.y += by_speed;
     }
-    
+    if(bx_speed == 0) RandomizeBall();
+    if(by_speed == 0) RandomizeBall();
+    if(bx_speed > 8) bx_speed = 8;
+    if(bx_speed < -8) bx_speed = -8;
+    if(by_speed > 7) by_speed = 7;
+    if(by_speed < -7) by_speed = -7;
+    if(by_speed == -1) by_speed--;
+    if(by_speed == 1) by_speed++;
+
     // bounce
-    if(ball_pos.x > 45) {
-        bx_speed *= -1;
+    if(ball_pos.x > (44 + abs(lr)) ) {
+        if(bx_speed > 0) bx_speed *= -1;
         beep(600, 5);
-    } else if (ball_pos.x <= 2) {
-        bx_speed *= -1;
+    } else if (ball_pos.x <= (1 + abs(lr))) {
+        if(bx_speed < 0) bx_speed *= -1;
         beep(600, 5);
     }
-    if(ball_pos.y >= 162) {
+    // hit paddle
+    if(bar_pos.x < ball_pos.x + 1){
+        if((bar_pos.x + 6) > ball_pos.x){
+            if(bar_pos.y < ball_pos.y + 4){
+                if((bar_pos.y + 8) > ball_pos.y){
+                    ball_pos.y = bar_pos.y - 4;
+                    by_speed *= -1;
+                    beep(90, 5);
+                }
+            }
+        }
+    }
+    if(ball_pos.y + abs(by_speed) >= 168) {
         // Miss! Game over!
         by_speed = 0;
         bx_speed = 0;
@@ -264,23 +336,19 @@ inline void GAME_UPDATE()
                 __init();
             }
         }
-    } else if (ball_pos.y < 12) {
+    } else if (ball_pos.y < (8 - by_speed)) {
+        //RandomizeBall();
         by_speed *= -1;
         beep(600, 5);
     }
-    // hit paddle
-    if(bar_pos.x < ball_pos.x + 1){
-        if((bar_pos.x + 6) > ball_pos.x){
-            if(bar_pos.y < ball_pos.y + 4){
-                if((bar_pos.y + 8) > ball_pos.y){
-                    ball_pos.y = bar_pos.y - 4;
-                    by_speed *= -1;
-                    beep(90, 5);
-                }
-            }
-        }
-    }
     
+    
+    if(edgeBounce)
+    {
+        //randomize angle!
+
+    }
+
     // save for erase 
     bar_oldpos.x = bar_pos.x;
     bar_oldpos.y = bar_pos.y;
@@ -319,7 +387,7 @@ inline void GAME_DRAW()
     
     // paddle
     SETBANK_BLUE();
-    EraseVRAMArea(&bar_oldpos, 6, 6);
+    EraseVRAMArea(&bar_oldpos, 6, 8);
       // if you want cyan:
     //SETBANK_RED();
     //EraseVRAMArea(&bar_oldpos, 6, 6);
@@ -403,24 +471,16 @@ u8 GetCollisionDirection(u8 x, u8 y, LevelBlock* b)
     u8 h = 0b1111;
     if((x + 1) < (b->x + 3)) h ^= 0b1;// NOT right 
     if((y + 4) < (b->y + 8)) h ^= 0b10;// NOT bottom 
-    if((x) >= (b->x)) h ^= 0b100;// NOT left 
-    if((y) >= (b->y)) h ^= 0b1000;// NOT top 
+    if((x) > (b->x)) h ^= 0b100;// NOT left 
+    if((y) > (b->y)) h ^= 0b1000;// NOT top 
     return h;
     // returns bit field of POSSIBLE DIRECTIONS. 
 }
 
 // Not finished
-LevelBlock* GetQuadrant(u8 d, LevelBlock* b)
+LevelBlock* GetQuadrantBlock(u8 d, u8 blocknum)
 {
-    // d = bitfield , b = current block
-    // four cases: top left, top right, bottom left, bottom right 
-    // for each case, examine the level layout
-    // if there is a block in either LATERAL quadrant, bounce off it instead
-    // otherwise, bounce of both XY
-    d;
-    bx_speed *= -1;
-    by_speed *= -1;
-    return b;
+   return &BLOCK_LEVEL[blocknum];
 }
 
 
@@ -439,47 +499,30 @@ u8 GetBallCollision(s8 xsp, s8 ysp)
                     if((typ + 4) > BLOCK_LEVEL[i].y){
                         LevelBlock* bl = &BLOCK_LEVEL[i];
                         u8 d = GetCollisionDirection(txp, typ, bl); // from what side?
-                        SetCursorPos(45, 18); // debug text
-                        print("      \x00"); 
+                        //SetCursorPos(45, 18); // debug text
+                        //print("         \x00"); 
                         if(d == 0b1) { //rt
                             bx_speed *= -1;
-                            ball_pos.x = (bl->x+3) + xsp; 
+                            ball_pos.x = (bl->x+3);// - xsp; 
                         } 
                         else if(d == 0b100) {  //lf
                             bx_speed *= -1; 
-                            ball_pos.x = (bl->x-1) + xsp;
+                            ball_pos.x = (bl->x-1);// + xsp;
                         } 
                         else if(d == 0b10) { //btm
                             by_speed *= -1; 
-                            ball_pos.y = (bl->y+8) + ysp;
+                            ball_pos.y = (bl->y+8);// - ysp;
                         } 
                         else if(d == 0b1000) { //tp
                             by_speed *= -1; 
-                            ball_pos.y = (bl->y-4) + ysp;
+                            ball_pos.y = (bl->y-4);// + ysp;
                         } 
                         else { 
-                            print("Edge  \x00");
-                            // fall back to Get Quadrant
-                            u8 s = rand();
-                            if(s < 128) { 
-                                //bx_speed--; 
-                                //if(bx_speed == 0) bx_speed = -1;
-                                by_speed++; 
-                                if(by_speed == 0) by_speed = -1;
-                            }
-                            else { 
-                                //bx_speed++; 
-                                //if(bx_speed == 0) bx_speed = 1;
-                                by_speed--; 
-                                if(by_speed == 0) by_speed = 1;
-                            }
-                            
-                            if(bx_speed < -2) bx_speed = -2;
-                            else if(bx_speed > 2) bx_speed = 2;
-                            if(by_speed < -7) by_speed = -7;
-                            else if(by_speed > 7) by_speed = 7;
-                            
-                            bl = GetQuadrant(d, bl);
+                            SetCursorPos(45, 18);
+                            //print("Edge  \x00");
+                            edgeBounce = true;
+                            by_speed *= -1;
+                            bx_speed *= -1;
                         }
                         if(bl->hits != 99)
                             EraseBlock(bl); // Fix me later
@@ -493,46 +536,3 @@ u8 GetBallCollision(s8 xsp, s8 ysp)
     return false;
 }
 
-/*
-void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y)
-{
-    SETBANK_RED();
-    vu8* p = (vu8*)(0xc000) + (y * 80) + x;
-    const u8* v = pb->r;
-    u8 row = 0;
-    u8 col = 0;
-    u8 loop = 0;
-    u16 siz = pb->w * pb->h;
-    for(u16 s = 0; s < siz; s++)
-    {
-        // check if *v is 0x80
-        if(*(v + s) == 0x80){
-            // copy *v+1 by *v+2 times
-            u8 cp = *(v + s + 1);
-            loop = *(v + s + 2);
-            for(u8 l = 0; l < loop; l++){
-                *(p + row + (col * 80)) = cp;
-                row++;
-                if(row > pb->w) { row = 0; col++; }
-            }
-            s += (2 + loop);
-        }
-        else { 
-            *(p + row + (col * 80)) = *(v + s);
-            row++;
-            if(row > pb->w) { row = 0; col++; }
-        }
-        /*
-        for(u8 yy = 0; yy < pb->h; yy++){
-            for(u8 xx = 0; xx < pb->w; xx++){
-                *p = *v;
-                p++;
-                v++;
-            }
-            p += (80 - pb->w);
-        }
-        */
-/*
-    }
-}
-*/
