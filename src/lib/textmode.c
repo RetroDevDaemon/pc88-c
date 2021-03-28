@@ -26,17 +26,20 @@ inline void putchr40(u8 c)
     }
 }
 
-void print(String str)
+void print(const u8* str)
 {
     u8 i = 0;
     TABULATE = LINE_POINTER;
-    while(str[i] != '\x00') {
-        if(str[i] == '\n') { 
+    while(*(str+i) != '\x00') {
+        if(*(str+i) == '\n') { 
             i++; 
             SCREEN_POINTER += (120 - (((u16)SCREEN_POINTER - SCREEN_TXT_BASE) % 120)) + TABULATE;
             LINE_POINTER = TABULATE;
         }
-        else putchr(str[i++]);
+        else { 
+            putchr(*(str+i));
+            i++;
+        }
     }
 }
 
