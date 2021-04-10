@@ -1,0 +1,9 @@
+# compiled with native arm7l build of GCC 9.3.0
+sudo apt-get install flex bison libboost-all-dev gputils
+sudo apt-get update && sudo apt-get upgrade
+# download and extract source snapshot, then:
+tar -xvf sdcc-src-YYYYMMDD-VVVVV.tar.bz2
+cd sdcc
+./configure
+# lots of warnings about unsupported bits w/ gputils
+make && sudo make install

@@ -37,6 +37,14 @@ XM8 - SDL2, fast, no debugging (http://retropc.net/pi/xm8/index.html) <br>
 Illusion City, huge tools list, recent M88 builds: https://illusioncity.net/nec-pc-88-series-emulators-tools-lists/ <br>
 <br>
 Brief overview:<br>
+<br>
+Python dependencies for tools:<br>
+```
+$ python3 -m pip install --upgrade Pillow
+$ pip (or pip3) install numpy
+$ pip (or pip3) install intelhex
+```
+<br>
 `Makefile` - Creates app.d88 for use in an emulator.<br>
 Usage: `make PROJECT=examples/1bitsprite USEDSEC=0x2f`<br>
 Creates app.d88 in root of '1bitsprite' project and overrides the value of the initial number of sectors to copy in from the autoloader to 2Fh.<br>
@@ -72,13 +80,10 @@ void main() {
 <br><br>
 A large amount of information is in `pc88-c.h`
 <br>
-<br>
-Python dependencies for tools:<br>
-```
-$ python3 -m pip install --upgrade Pillow
-$ pip install numpy
-$ pip install intelhex
-```
+
+## On Pi4/00
+Use the sdcc-compile-guide.txt to compile SDCC for your Pi.<br>
+If properly made/installed, the normal make command should work :)<br>
 <br>
 
 ## Revision history
