@@ -15,7 +15,7 @@ def WriteBlank2D():
     f = open(sys.argv[1], 'wb')
     # WRITE DISK NAME
     disk_name = "                "
-    f.write( bytearray(disk_name, 'ansi') )
+    f.write( bytearray(disk_name, 'ascii') )
     # null
     f.write(bytes([0]))
     i = 0x11

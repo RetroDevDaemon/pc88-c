@@ -32,12 +32,13 @@ CODE=0x1000
 APPNAME=app.d88
 
 ## EMULATOR EXECUTABLE ##
-EMUEXE=C:\Users\Bent\Downloads\m88\m88x5.exe 
+EMUEXE=#C:\Users\Bent\Downloads\m88\m88x5.exe 
 
 # This is updated when new .c files are added
 PC88CFILES=out/crt0.rel out/math.rel out/getkeydown.rel out/waitvblank.rel out/diskload.rel out/ioreg.rel out/draw.rel out/textmode.rel out/beep.rel out/vram_util.rel  
 
 out/%.rel: src/lib/%.c
+	@if [ ! -d "out" ]; then mkdir out; fi
 	sdcc -c -mz80 $(CFLAGS) -o $@ $< 
 
 default: $(PROJECT) $(PC88CFILES)
@@ -70,7 +71,7 @@ IPL: src/ipl.z80 src/disk.z80
 	@$(DEL) ipl.bin 
 
 clean:
-	@$(DEL) out/*.*
+	@$(DEL) out
 	@$(DEL) $(APPNAME)
 	@$(DEL) *.ihx
 	@$(DEL) *.lk
@@ -81,3 +82,4 @@ clean:
 	@$(DEL) *.sym
 	@$(DEL) *.bin
 	@$(DEL) *.asm
+	@echo Directories cleaned.

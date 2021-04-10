@@ -1,5 +1,5 @@
 #include <pc88-c.h>
-#include <math.h>
+//#include <math.h>
 
 
 u8 abs(s8 n)

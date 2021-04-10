@@ -13,7 +13,7 @@ void __init()
 {
     SCREEN_POINTER = (vu8*)SCREEN_TXT_BASE;
     LINE_POINTER = (u8)0;
-    main(true);
+    main();
 }
 
 

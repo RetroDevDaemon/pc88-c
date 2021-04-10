@@ -1,5 +1,5 @@
 #include <pc88-c.h>
-#include "math.h"
+//#include "math.h"
 
 enum directions { UP, DOWN, LEFT, RIGHT };
 
@@ -77,9 +77,9 @@ u8 GetBallCollision(s8 xsp, s8 ysp);
 void CPUWAIT(u16 n);
 void TickPrint(u8* str, u8 len);
 
-void main(bool CLEANRESET)
+void main()
 {
-    cln = CLEANRESET;
+    //cln = CLEANRESET;
     __asm 
       ld sp,#0x0100
     __endasm;
@@ -470,7 +470,7 @@ void EndStage()
     print("      VICTORY!!!\nNow try a new battlefield!!\nYour kills are saved, for now...\x00");
     ClearAttributeRam();
     ClearAllVRAM();
-    main(false); // reset
+    main(); // reset
 
 }
 
@@ -590,7 +590,7 @@ inline void GAME_UPDATE()
                     pScore = 0;
                     ClearAttributeRam();
                     ClearAllVRAM();
-                    main(true);
+                    main();
                 }
             }
         } 

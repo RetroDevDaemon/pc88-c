@@ -93,7 +93,7 @@ typedef struct xypos {
 // Function headers
 // CRT0
 void __init();
-void main(bool CLEANRESET);
+void main();
 inline void putchr(u8 c);
 /**/inline void putchr40(u8 c);
 void print(String str);
