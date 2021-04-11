@@ -1,0 +1,7 @@
+sudo apt-get install libpulse-dev libjack0 libjack-dev librtaudio-dev librtmidi-dev build-essential qt5-default qttools5-dev-tools libasound2-dev
+git clone https://github.com/rerrahkr/BambooTracker --recurse-submodules
+cd BambooTracker
+qmake PREFIX=/usr/local CONFIG-=debug CONFIG+=release CONFIG+=use_alsa CONFIG+=use_pulse CONFIG+=use_jack
+make qmake_all
+make -j4
+sudo make install
