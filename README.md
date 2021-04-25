@@ -1,4 +1,4 @@
-# PC88-C (0.0.14b)
+# PC88-C (0.1.0)
 
 # Overview 
 A very minimal framework for PC88 development using C. <br> 
@@ -9,7 +9,7 @@ Consider joining the RetroDev Discord to discuss, ask questions, and contribute:
 https://discord.gg/Js3uUrc
 <br>
 ## To-Dos
--V2 drawing<br>
+-V2 ALU optimizations<br>
 -PSG, OPN/+A<br>
 -Joystick<br>
 -Disk saving<br>
@@ -20,13 +20,14 @@ Manual part 1, overview: https://barelyconsciousgames.blogspot.com/2021/02/pc-88
 Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/pc88-c-frame-for-nec-pc-8801-part-2.html <br> 
 
 ## What's new
-0.0.14b<br>
--Fixed SetCursorPos (wasn't updating ROWPOINTER)<br>
--Added VERY BASIC math routines<br>
--Added CMDFLAGS to the `make` for your own build flags. <br>
-e.g. `make PROJECT=examples/hachinoid USEDSEC=0x49 CMDFLAGS=--cyclomatic`<br>
--Moved stack pointer back to 0x100 (doubled stack size)<br>
-<br>
+0.1.0<br>
+-Added clock-irq example<br>
+-Added bin2c.py (converts binary to .h)<br>
+-Added xbas.c<br>
+xbas.c should compile on pretty much any nix.<br>
+It allows you to transfer BASIC programs to PC-88 over USB-Serial.<br>
+Stay tuned for disk writing, ROM extraction, etc.!<br> 
+
 
 ## Important: requires SDCC to be on the path<br>
 If you have SDCC 4.1.0 and Python3, you should be able to build without issue.<br>
@@ -35,6 +36,7 @@ Recommended emulators:<br>
 M88x5 - Cycle accurate, excellent for debugging, slow (get from Illusion City, below)<br>
 XM8 - SDL2, fast, no debugging (http://retropc.net/pi/xm8/index.html) <br> 
 Illusion City, huge tools list, recent M88 builds: https://illusioncity.net/nec-pc-88-series-emulators-tools-lists/ <br>
+quasi88 - SDL1, builds on pretty much any nix (https://github.com/waitingmoon/quasi88/tree/master)<br>
 <br>
 Brief overview:<br>
 <br>
@@ -87,6 +89,13 @@ If properly made/installed, the normal make command should work :)<br>
 <br>
 
 ## Revision history
+0.0.14b<br>
+-Fixed SetCursorPos (wasn't updating ROWPOINTER)<br>
+-Added VERY BASIC math routines<br>
+-Added CMDFLAGS to the `make` for your own build flags. <br>
+e.g. `make PROJECT=examples/hachinoid USEDSEC=0x49 CMDFLAGS=--cyclomatic`<br>
+-Moved stack pointer back to 0x100 (doubled stack size)<br>
+<br>
 0.0.14<br>
 -Fixed EraseVRAMArea - deleted old code fragments<br>
 -Still WIP Hachinoid example<br>
