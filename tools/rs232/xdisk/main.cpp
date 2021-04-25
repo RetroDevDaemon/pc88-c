@@ -15,11 +15,14 @@
 #include <iostream>
 
 #include "lz77e.h"
-
 #include "xdisk2bas.h"
+
+typedef signed char s8;
+typedef unsigned char u8;
 
 void Usage();
 
+int mode;
 bool verbose = false;
 int version_l = 7;
 int drive = -1;
@@ -29,30 +32,38 @@ char title[17] = "                ";
 bool writeprotect = false;
 bool fastrecv = true;
 int media = -1;
-uint baud = 19200;
+uint baud = B19200;
 uint port = 0;
 uint16_t crc = -1;
 LZ77Enc enc;
+static u8 fpa[] = "/dev/ttyUSB ";
+
+uint16_t crctable[0x100] = { 123 };
+//SIO sio;
+//SystemInfo si;
+uint16_t xc_index;
+int d, e;
+//uint16_t crc;
+bool connect;
+int unc;
+struct termios options;
+//u16 baud = B9600;
+// TODO FIX BAUD BURST RATE
+int RSPORT = 0;
+
+void send_byte(int a, bool cc = true);
+inline void send_word(int a, bool cc = true);
+uint send_packet(const uint8_t* buffer, int length, bool cmd = false, bool data = false);
+uint recv_packet(uint8* buffer, int length, bool burst = false);
+int recv_word(bool cc=true);
+int recv_byte(bool cc=true);
+uint recv_c();
+
+#define calc_crc(d) crc = (crc << 8) ^ crctable[(d ^ (crc >> 8)) & 0xff]
 
 static bool D88Seek(FILE* f);
 bool send_disk(int drive, FILE* f);
-
-// Only works with ttyUSB0 right now!
-int open_port(int p)
-{
-	int fd;
-    // O_RDWR - enable read and write
-    // O_NOCTTY - do not make TTY for the port
-    // O_NDELAY - does not care if other side is ready (data carrier detect)
-    fd = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NDELAY);
-    if(fd == -1)
-    {   // couldn't open?
-        perror("open_port: Unable to open /dev/ttyUSB0 - ");
-    }
-    else
-        fcntl(fd, F_SETFL, 0);
-    return (fd);
-}
+bool decompress_packet(uint8* buf, uint bufsize, const uint8* src, uint pksize);
 
 // D88 image header definition
 struct ImageHeader
@@ -65,16 +76,35 @@ struct ImageHeader
 	uint32_t trackptr[164];
 };
 
-uint16_t crctable[0x100] = { 123 };
-//SIO sio;
-//SystemInfo si;
-uint16_t xc_index;
-int d, e;
-//uint16_t crc;
-bool connect;
-int unc;
-//int baud;
-	
+// Only works with ttyUSB0 right now!
+int open_port(unsigned char port)
+{
+	// O_RDWR - enable read and write
+    // O_NOCTTY - do not make TTY for the port
+    // O_NDELAY - does not care if other side is ready (data carrier detect)
+	fpa[11] = port | 0x30;
+    int fd = open((const char*)fpa, O_RDWR | O_NOCTTY | O_NDELAY);
+    // set options 
+	tcgetattr(fd, &options);
+	if(mode == 'b') baud = B9600;
+    cfsetispeed(&options, baud);
+    cfsetospeed(&options, baud);
+    options.c_cflag |= (CLOCAL | CREAD);
+    options.c_cflag &= ~PARENB; // mask parity =N
+    options.c_cflag &= ~CSTOPB; // mask stop bit =1
+    options.c_cflag &= ~CSIZE; // mask size =8
+    options.c_cflag |= CS8;     // set
+    tcsetattr(fd, TCSANOW, &options); // (N81X)
+
+    if(fd == -1)
+    {   // couldn't open?
+        perror("open_port: Unable to open /dev/ttyUSB0 - ");
+    }
+    else
+        fcntl(fd, F_SETFL, 0);
+    return (fd);
+}
+
 
 void build_crc_table()
 {
@@ -87,18 +117,227 @@ void build_crc_table()
 	}
 }
 
-//#define calc_crc(crc) crc = (crc << 8) ^ crctable[(data ^ (crc >> 8)) & 0xff]
 
-uint send_packet(const uint8_t* buffer, int length, bool cmd = false, bool data = false);
+uint recv_c()
+{
+	uint8_t c;
+	//if (SIO::OK != sio.Read(&c, 1))
+	//	Throw(e_connect);
+	if(read(RSPORT, &c, 1) < 0)
+		printf("fail to read");
+		// todo fixme
+	if ((c - 0x40) & 0x80)
+	{
+		unc = c;
+		//Throw(e_protocol);
+		printf("fail to read");
+		//return 0;
+	}
+	return c - 0x40;
+}
+
+int recv_byte(bool cc)
+{
+	if (e == 0)
+		d = recv_c() << 1, e = 7;
+	int c = recv_c();
+	int a = d | (c >> (e-1));
+	d = (c << (9-e)) & 0xff;
+	e--;
+	if (cc)
+		calc_crc(a);
+	return a;
+}
+
+inline int recv_word(bool c)
+{
+	int r = recv_byte(c);
+	return r + recv_byte(c) * 256;
+}
+
+void send_c(uint8 c)
+{
+	c = (c & 0x7f) + 0x40;
+//	if (SIO::OK != sio.Write(&c, 1))
+//		Throw(e_connect);
+	s8 n = write(RSPORT, &c, 1);
+	if (n < 0) {
+		fputs("write() failed.\n", stderr);
+	//	return 1;
+	}
+	//return 0;
+}
+
+inline void init_pack()
+{
+	d = e = 0;
+	crc = ~0;
+}
+
+void send_byte(int a, bool cc)
+{
+	send_c(d | (a >> (e+1)));
+	if (e < 6)
+		d = a << (6-e++);
+	else
+		send_c(a), d = e = 0;
+	if (cc)
+		calc_crc(a);
+}
+
+inline void send_word(int a, bool cc)
+{
+	send_byte(a & 0xff, cc);
+	send_byte((a >> 8) & 0xff, cc);
+}
+
+void send_flush()
+{
+	if (e)
+		send_c(d);
+}
+
+bool decompress_packet(uint8* buf, uint bufsize, const uint8* src, uint pksize)
+{
+	const uint8* st = src;
+	const uint8* dt = buf;
+
+	uint orgsize = (src[0] + src[1] * 256) & 0x3fff;
+	uint method = (src[1] >> 6) & 3;
+//	printf("Compression: %.4x\n", src[0] + src[1] * 256);
+	uint exsize = orgsize > bufsize ? bufsize : orgsize;
+	src += 2;
+
+	switch (method)
+	{
+	case 0:		// ÔøΩÔøΩÔøΩÔøΩÔøΩk
+		memcpy(buf, src, exsize);
+		return true;
+
+	case 1:		// RLE
+		while (exsize > 0)
+		{
+			uint a = *src++;
+			if (a & 0x80)
+			{
+				uint l = (a & 0x7f) + 3;
+				uint b = *src++;
+				l = l > exsize ? exsize : l;
+				exsize -= l;
+				for (; l > 0; l--)
+					*buf++ = b;
+			}
+			else
+			{
+				uint l = (a & 0x7f) + 1;
+				l = l > exsize ? exsize : l;
+				exsize -= l;
+				for (; l > 0; l--)
+					*buf++ = *src++;
+			}
+		}
+		if (0)
+		{
+			crc = -1;
+			exsize = orgsize > bufsize ? bufsize : orgsize;
+			uint i;
+			for (i=0; i<exsize-2; i++)
+				calc_crc(dt[i]);
+			uint dcrc = *(const uint16*)(dt + exsize - 2);
+			if (verbose) 
+				printf("(%.4x-%.4x)", dcrc & 0xffff, src - st);
+			if (((dcrc ^ crc) & 0xffff) || pksize - (src - st))
+				printf("xcom: failed to decompress data\n");
+		}
+
+		return true;
+
+	default:
+		printf("unsupported-compression method\n");
+		return false;
+	}
+}
+
+uint recv_packet(uint8* buffer, int length, bool burst)
+{
+	uint count = 3;
+	uint8 recvbuf[0x4000];
+	uint8 c;
+
+	//if (burst) 
+	//	unc = -1, sio.SetMode(baud * 2);
+
+	do
+	{
+		if (unc != -1)
+		{
+			c = unc, unc = -1;
+		}
+		//else if (SIO::OK != sio.Read(&c, 1))
+		else if (read(RSPORT, &c, 1) < 0)
+		{
+			if (!--count)
+				return 2;
+			continue;
+		}
+	} while (c != '%' && c != '#' && c != '$');
+
+	try
+	{
+		init_pack();
+		uint i = recv_word();
+		if (i != xc_index)
+			printf("protocol fail");
+
+		uint l = recv_word() & 0x3fff;
+//		printf("RECV[%.4x][%.4x(%.4x)]", index, l, length);
+		
+		if (c != '$')
+		{
+			for (; length > 0 && l > 0; length--, l--)
+				*buffer++ = recv_byte();
+			for (; l > 0; l--)
+				recv_byte();
+		}
+		else
+		{
+			for (uint j=0; j<l; j++)
+				recvbuf[j] = recv_byte();
+		}
+
+		if (crc != recv_word(false))
+			printf("crc fail");
+
+		//if (burst)
+		//	sio.SetMode(baud);
+
+		if (c == '$')
+		{
+			if (!decompress_packet(buffer, length, recvbuf, l))
+				printf("decompress fail");
+#if 0
+			char buf[100];
+			static int c = 0;
+			sprintf(buf, "packet%.3d.bin", c++);
+			FileIO fio(buf, FileIO::create);
+			uint orgsize = (recvbuf[0] + recvbuf[1] * 256) & 0x3fff;
+			fio.Write(buffer, orgsize);
+#endif
+		}
+		return 0;
+	}
+	catch (int err)
+	{
+		//if (burst)
+		//	sio.SetMode(baud);
+		return err;
+	}
+}
+
 
 uint send_packet(const uint8_t* buffer, int length, bool cmd, bool data)
 {
-	int pf = open_port(port);
-	if(pf == -1)
-	{
-		printf("Failed to initialize communication device.\n");
-		return 1;
-	}
+
 	uint8_t buf[0x4000];
 	if(data)
 	{
@@ -108,7 +347,7 @@ uint send_packet(const uint8_t* buffer, int length, bool cmd, bool data)
 		// Calculate CRC
 		crc = -1;
 		for(t = 0; t<length; t++)
-			crc = (crc << 8) ^ crctable[(data ^ (crc >> 8)) & 0xff];
+			calc_crc(buffer[t]);
 		int cl = enc.Encode(buffer, length, buf, sizeof(buf));
 		buf[cl] = crc & 0xff;
 		buf[cl+1] = (crc >> 8) & 0xff;
@@ -132,12 +371,27 @@ uint send_packet(const uint8_t* buffer, int length, bool cmd, bool data)
 		try{
 			// header chars
 			uint8_t hdr = cmd ? '!' : data ? '$' : '#';
-			if(write(pf, &hdr, 1) < 0){
+			if(write(RSPORT, &hdr, 1) < 0){
 				fputs("write() failed.\n", stderr);
 				return 1;
 			}
-			//InitPack()
-			// TODO here
+			init_pack();
+			if(cmd) xc_index++;
+			send_word(xc_index);
+			send_word(length);
+			for(int l=0; l<length; l++)
+				send_byte(buffer[l]);
+			send_word(crc, false);
+			send_flush();
+			if(!cmd)
+				return 0;
+			uint8_t buf;
+			if(recv_packet(&buf, 1) > 0)
+			{
+				if(buf == 0)
+					return 1;
+				return 0;
+			}
 		}
 		catch(int e)
 		{
@@ -146,6 +400,32 @@ uint send_packet(const uint8_t* buffer, int length, bool cmd, bool data)
 
 	}
 	return err;
+}
+
+struct IDR
+{
+	uint8 c, h, r, n;
+	uint8 density;
+	uint8 status;
+	uint8 deleted;
+	uint8* buffer;
+	uint length;
+};
+
+struct SectorHeader
+{
+	uint8 c, h, r, n;
+	uint16 sectors;
+	uint8 density;
+	uint8 deleted;
+	uint8 status;
+	uint8 reserved[5];
+	uint16 length;
+};
+
+int make_write_seq(uint8* dest, IDR* idr, int nsec)
+{
+	return 0;
 }
 
 bool send_disk(int drive, FILE* f)
@@ -158,9 +438,16 @@ bool send_disk(int drive, FILE* f)
 	ImageHeader ih;
 	fread(&ih, sizeof(ImageHeader), 1, f);
 	// TODO: Check validity of image header 
+	//if (!CheckHeader(&ih))
+	//	return false;
 	media = ih.disktype == 0x20 ? 3 : ih.disktype == 0x10 ? 1 : 0;
 	printf("Writing disk: [%.16s] (%s)\n", ih.title, type[media]);
 	// TODO: GetSysInfo()
+	//if (!GetSysInfo()->fddtype && media)
+	//{
+	//	printf("„Åì„ÅÆÊ©üÁ®Æ„Åß„ÅØ %s „ÅÆ„Éá„Ç£„Çπ„ÇØ„Ç§„É°„Éº„Ç∏„ÅØÊõ∏„ÅçÊàª„Åó„Åß„Åç„Åæ„Åõ„ÇìÔºé\n", type[media]);
+	//	return false;
+	//}
 	while (1) 
 	{
 		printf("Please insert a new disk into your PC88 drive %d and press any key.\n", drive+1, type[media]);
@@ -186,17 +473,75 @@ bool send_disk(int drive, FILE* f)
 	
 		if (buffer[0] == 0xf9)
 		{
-			printf("•«•£•π•Ø§œ•È•§•»•◊•Ì•∆•Ø•»§µ§Ï§∆§§§ﬁ§π.\n");
+			printf("Disk is write protected.\n");
 			return false;
 		}
 
 		if (buffer[0] != 0xfe)
 		{
-			printf("•«•£•π•Ø¡‡∫Ó§À¥ÿ§π§Î•®•È°º§¨¿∏§∏§ﬁ§∑§ø.\n");
+			printf("Disk control error.\n");
 			return false;
 		}
 	}
+	int ntracks = media & 1 ? 164 : 84;
 
+	IDR idr[64];
+
+	for(int tr=0; tr<ntracks; tr++)
+	{
+		printf("Track %3d:", tr);
+		int i =0;
+		if(ih.trackptr[tr])
+		{
+			fseek(f, ih.trackptr[tr], SEEK_SET);
+			uint8* buf = buffer;
+			int buffre = 0x3000;
+			SectorHeader sh;
+			do {
+				fread(&sh, sizeof(SectorHeader), 1, f);
+				int length = sh.length > buffre ? buffre : sh.length;
+				fread(buf, length, 1, f);
+				if(sh.length - length)
+					fseek(f, sh.length-length, SEEK_CUR);
+				memset(&idr[i], 0, sizeof(IDR));
+				idr[i].c = sh.c;
+				idr[i].h = sh.h;
+				idr[i].r = sh.r;
+				idr[i].n = sh.n;
+				idr[i].density = sh.density ^ 0x40;
+				idr[i].buffer = buf;
+				idr[i].length = length;
+				idr[i].deleted = sh.deleted;
+				idr[i].status = sh.status;
+				buf += length;
+				buffre -= length;
+			} while ( ++i < sh.sectors);
+			printf(" %2d sectors", i);
+		}
+		else { 
+			printf(" unformatted");
+		}
+
+		uint8_t seq[0x3800];
+		int l = make_write_seq(seq, idr, i);
+		if(l < 0)
+			return false;
+		uint8 cmd[4];
+		cmd[0] = 9;
+		cmd[1] = tr;
+		cmd[2] = l & 0xff;
+		cmd[3] = l >> 8;
+		if(send_packet(cmd, 4, true) > 0)
+			return false;
+		if(send_packet(seq, l, false, true) > 0)
+			return false;
+		if(recv_packet(cmd, 1) > 0)
+			return false;
+		printf(".\n");
+	}
+	static const uint8_t cmd[] = { 0x00 };
+	send_packet(cmd, 1, true);
+	return true;
 }
 
 // ---------------------------------------------------------------------------
@@ -212,7 +557,7 @@ int main(int ac, char** av)
 	if (ac < 2)
 		Usage();
 	
-	int mode = (av[1][0]);
+	mode = (av[1][0]);
 	
 	av += 2;
 	for (int i=2; i<ac; i++, av++)
@@ -264,11 +609,11 @@ int main(int ac, char** av)
 					Usage();
 
 				case '1':
-					baud = 19200;
+					baud = B19200;
 					break;
 				
 				case '9':
-					baud = 9600;
+					baud = B9600;
 					break;
 				
 				default:
@@ -298,8 +643,8 @@ next:
 	if (mode == 'b')
 	{
 		printf("Connecting to transfer port %d.\n\n", port);//, baud);
-		int pf = open_port(port);
-		if(pf == -1)
+		RSPORT = open_port(port);
+		if(RSPORT == -1)
 		{
 			printf("Failed to initialize communication device.\n");
 			return 1;
@@ -314,18 +659,17 @@ next:
 		// send_basic() :
 		int n;
 		for(int i = 0; i < sizeof(xdisk2bas); i++) {
-			n = write(pf, &xdisk2bas[i], 1);
-			if((i-1)%256==0)std::cout<<"."<<std::flush;
+			n = write(RSPORT, &xdisk2bas[i], 1);
 			if (n < 0)
 				fputs("write() failed.\n", stderr);
 		}
-		close(pf);
+		close(RSPORT);
 		// :
 		printf("Complete.\n");
 		return 0;
 	}
 
-	int e = open_port(port);
+	RSPORT = open_port(port);
 	if(e == -1) { 
 		printf("Failed to initialize communication device.\n");
 	}
@@ -340,7 +684,7 @@ next:
 			if (!file.Open(filename, FileIO::openalways) 
 				|| (file.GetFlags() & FileIO::readonly))
 			{
-				fprintf(stderr, "•’•°•§•Î§Ú∫Ó§Ï§ﬁ§ª§Û.\n");
+				fprintf(stderr, "ÔøΩ’•ÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩÔøΩﬁ§ÔøΩÔøΩÔøΩ.\n");
 				return 1;
 			}
 			D88Seek(file, 99999);
@@ -375,26 +719,7 @@ next:
 			// D88Seek sets a file pointer to the disk's data start,
 			//  and records the total size of the disk.
 			//  If its false it's not a disk...
-			/*
-			FileIO file;
 			
-			_mbstok((uchar*) filename, (uchar*) ";");
-			char* x = (char*) _mbstok(0, (uchar*) ";");
-			int index = x ? atoi(x) : 1;
-
-			if (!file.Open(filename, FileIO::readonly))
-			{
-				fprintf(stderr, "•’•°•§•Î§Ú≥´§±§ﬁ§ª§Û.\n");
-				return 1;
-			}
-			if (!D88Seek(file, index))
-			{
-				fprintf(stderr, "ªÿƒÍ§µ§Ï§ø•«•£•π•Ø§¨§¢§Í§ﬁ§ª§Û.\n");
-				return 1;
-			}
-			xdisk.SendDisk(drive-1, file);
-			*/
-
 		}
 		break;
 
@@ -450,7 +775,7 @@ void Usage()
 		   "    -m#   Set media type for read disk (0:2D 1:2DD 2:2HD)\n"
 		   "    -v    Detailed output\n"
 		   "    -w    Set write protect on the disk image\n"
-		   //"    -s    88 -> PC ¥÷§«π‚¬Æ≈æ¡˜§Úπ‘§Ô§ §§ (19200 bps ª˛§Œ§ﬂ)\n"
+		   //"    -s    88 -> PC ÔøΩ÷§«πÔøΩ¬Æ≈æÔøΩÔøΩÔøΩÔøΩ‘§ÔøΩ §ÔøΩ (19200 bps ÔøΩÔøΩÔøΩŒ§ÔøΩ)\n"
 		   "    -t    Set disk title to...\n");
 	return;
 }
