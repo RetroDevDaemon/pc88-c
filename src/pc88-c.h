@@ -68,7 +68,14 @@ typedef struct xypos {
 // Please read me! Lots of info!
 ///////////////////////
 
+#define RS232_IRQ 0xf300
 #define CRTC_IRQ 0xf302
+#define CLOCK_IRQ 0xf304
+#define USR_IRQ4 0xf306
+#define USR_IRQ3 0xf308
+#define USR_IRQ2 0xf30a
+#define FM_IRQ1 USR_IRQ4 
+#define FM_IRQ2 USR_IRQ3 
 
 #define VBLANK_SIGNAL 0b100000
 #define TMODE_BIT 0b10000
