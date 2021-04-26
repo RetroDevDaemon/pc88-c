@@ -28,7 +28,7 @@ Main:
     ld      de,#((0 << 8) | 2)  ; track 0, sector 2 
     ld      bc,#((0x5f << 8) | 0)   ; sector size, drive no
     call    DISK_Load 
-    ld      sp,#0x0080 
+    ld      sp,#0x0100 
     ei 
     jp      0x1000
 

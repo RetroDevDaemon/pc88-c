@@ -2,7 +2,7 @@
 import re 
 import sys
 
-f = open('main.map', 'r')
+f = open('out/main.map', 'r')
 s = []
 tr = ' '
 while tr != '':

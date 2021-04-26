@@ -20,9 +20,14 @@ PROJECT=examples/helloworld
 # $ make PROJECT=myproj
 
 ## MEMORY LOCATIONS ##
-STACK=0x100
-DATA=0x100
-CODE=0x1000
+
+default: STACK=0x100
+default: DATA=0x100
+default: CODE=0x1000
+binary: STACK=0xe000
+binary: DATA=0xd000
+binary: CODE=0xb000
+
 # Stack should stay in ZP.
 # This is due to VRAM being in C000~.
 
@@ -39,27 +44,25 @@ PC88CFILES=out/crt0.rel out/math.rel out/getkeydown.rel out/waitvblank.rel out/d
 
 out/%.rel: src/lib/%.c
 	@if [ ! -d "out" ]; then mkdir out; fi
+	@if [ ! -d "build" ]; then mkdir build; fi
 	sdcc -c -mz80 $(CFLAGS) -o $@ $< 
+
 
 default: $(PROJECT) $(PC88CFILES)
 	$(PY) tools/maked88.py $(APPNAME)
 	$(PY) tools/hexer.py src/ipl.bin 0x2f $(USEDSEC)
-	$(CC) $(88FLAGS) $(CFLAGS) $(CMDFLAGS) $(PROJECT)/main.c out/*.rel 
+	$(CC) $(88FLAGS) $(CFLAGS) $(CMDFLAGS) $(PROJECT)/main.c out/*.rel -o out/main.ihx
 	$(PY) tools/fixboot.py src/ipl.bin 
-	$(PY) tools/hex2bin.py main.ihx main.bin
+	$(PY) tools/hex2bin.py out/main.ihx main.bin
 	$(PY) tools/maked88.py $(APPNAME) src/ipl.bin 0 0 1
 	$(PY) tools/maked88.py $(APPNAME) main.bin 0 0 2	
-	@$(DEL) *.ihx
-	@$(DEL) *.lk
-	@$(DEL) *.lst
-	@$(DEL) *.map
-	@$(DEL) *.noi
-	@$(DEL) *.rel
-	@$(DEL) *.sym
-	@$(DEL) out/*.asm 
-	@$(DEL) out/*.sym 
-	@$(DEL) out/*.lst   
 	$(EMUEXE)
+
+
+binary: $(PROJECT) $(PC88FILES)
+	$(CC) $(88FLAGS) $(CFLAGS) $(CMDFLAGS) $(PROJECT)/main.c out/*.rel 
+	$(PY) tools/hex2bin.py main.ihx main.bin
+
 
 IPL: src/ipl.z80 src/disk.z80 
 	sdasz80 -o ipl.rel src/ipl.z80 

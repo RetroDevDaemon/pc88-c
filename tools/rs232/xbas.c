@@ -31,21 +31,33 @@ int open_port(unsigned char port) {
     // O_NOCTTY - do not make TTY for the port
     // O_NDELAY - does not care if other side is ready (data carrier detect)
     fpa[11] = port | 0x30;
-    int fd = open(fpa, O_RDWR | O_NOCTTY | O_NDELAY);
+    int fd = open(fpa, O_RDWR | O_NOCTTY);
     
     // set options 
+    
     tcgetattr(fd, &options);
-    cfsetispeed(&options, baud);
-    cfsetospeed(&options, baud);
-    options.c_cflag |= (CLOCAL | CREAD);
+    //baud = B4800;
+    //cfsetispeed(&options, baud);
+    //cfsetospeed(&options, baud);
+    options.c_iflag |= (IXON | IXOFF | IXANY | IGNCR);
+    options.c_oflag &= ~(OPOST);
+    options.c_oflag &= ~(ONLCR | ONLRET | OCRNL);
+    options.c_oflag &= ~(NLDLY);
+    options.c_oflag |= NLDLY;
+    options.c_oflag &= ~(CRDLY);
+    options.c_oflag |= CR0;
+    options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
+    
+    //options.c_cflag |= (CLOCAL | CREAD);
+    options.c_cflag &= ~CBAUD;
+    options.c_cflag |= baud;
     options.c_cflag &= ~PARENB; // mask parity =N
     options.c_cflag &= ~CSTOPB; // mask stop bit =1
     options.c_cflag &= ~CSIZE; // mask size =8
     options.c_cflag |= CS8;     // set
     tcsetattr(fd, TCSANOW, &options); // (N81X)
-    
-    if(fd != -1)
-        fcntl(fd, F_SETFL, 0); // blocking wait
+        
+    fcntl(fd, F_SETFL, 0); // blocking wait
     
     return (fd);
 }
@@ -64,7 +76,7 @@ int main(int argc, char* argv[])
                     port = (argv[act][2] - 0x30);
                     break;
                 case 's':
-                    switch(argv[act][2]){
+                    switch(argv[act][2] - 0x30){
                       case(9):
                         baud=B9600;
                         break;
@@ -79,9 +91,7 @@ int main(int argc, char* argv[])
         }
         
         if(argv[act][0] == 'b') {
-            printf("ok");
             mode = 'b';
-            //printf("ok");
         }
         else if(argv[act][0] == 'w') {
             mode = 'w';
@@ -123,18 +133,28 @@ int main(int argc, char* argv[])
         fseek(diskf, 0L, SEEK_END);
         sz = ftell(diskf);              // get filesize 
         fseek(diskf, 0x0, SEEK_SET);    // and reset file pointer
-        fread((void*)&buf, 1, sz, diskf);  // read the entire thing into ram
+        fread((void*)&buf, sz, 1, diskf);  // read the entire thing into ram
         fclose(diskf);      // .. and close the file
 
         // Write the file
         int n;
-        for(int i = 0; i < sz; i++) {
-            n = write(fp, &buf[i], 1);
+        /*
+        for(int i = 0; i < 256+4; i += 1) {
+            n = write(fp, (u8*)&buf[i], 1);
             if (n < 0) {
                 fputs("write() failed.\n", stderr);
-                return 1;
             }
         }
+        */
+        diskf = fopen("b.bin", "wb");
+        fwrite(&buf, sz, 1, diskf);
+        fclose(diskf);
+        
+         write(fp, &buf, sz);
+         //for(int i = 0; i < sz; i++)
+         //{
+        //    write(fp, &buf[i], 1);
+        // }
     }
 
     // cleanup
@@ -146,7 +166,7 @@ int main(int argc, char* argv[])
 _man:
     printf(" -= XBAS v1.0 =-\nBased on Xdisk2 by Cisc\nAdapted by @RetroDevDiscord\n\n\
   Usage: xbas <mode> [-p#] [-s#] <file.bas>\n\n\
-  Where:\n\tmode:\tb : Write BASIC program to 88\n\t\tw : Write d88 image to 88\n\tp#:\t\
+  Where:\n\tmode:\tb : Copy over TransDisk/88 BASIC prog\n\t\tw : Write binary file to 88\n\tp#:\t\
 USB-Serial port no., e.g. /dev/ttyUSB#\n\ts#:\tBaudrate, 1=19200, 9=9600\n\n");
     return 1;    
 }
