@@ -5,7 +5,7 @@
 #include <errno.h>      // error number definitions
 #include <termios.h>    // posix terminal stuff
 
-#include "xdisk2bas.h"
+//#include "xdisk2bas.h"
 
 typedef unsigned char u8;
 typedef unsigned short u16;
@@ -37,18 +37,8 @@ int open_port(unsigned char port) {
     
     tcgetattr(fd, &options);
     //baud = B4800;
-    //cfsetispeed(&options, baud);
-    //cfsetospeed(&options, baud);
-    options.c_iflag |= (IXON | IXOFF | IXANY | IGNCR);
-    options.c_oflag &= ~(OPOST);
-    options.c_oflag &= ~(ONLCR | ONLRET | OCRNL);
-    options.c_oflag &= ~(NLDLY);
-    options.c_oflag |= NLDLY;
-    options.c_oflag &= ~(CRDLY);
-    options.c_oflag |= CR0;
-    options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
-    
-    //options.c_cflag |= (CLOCAL | CREAD);
+    cfsetispeed(&options, baud);
+    cfsetospeed(&options, baud);
     options.c_cflag &= ~CBAUD;
     options.c_cflag |= baud;
     options.c_cflag &= ~PARENB; // mask parity =N
@@ -90,15 +80,8 @@ int main(int argc, char* argv[])
             } // end switch
         }
         
-        if(argv[act][0] == 'b') {
-            mode = 'b';
-        }
-        else if(argv[act][0] == 'w') {
-            mode = 'w';
-        }
-        else if(argv[act][0] == 'q') {
-            goto _man;
-        }
+        mode = argv[act][0];
+        if(mode == 'q') goto _man;
         
         act--;
     }
@@ -115,13 +98,12 @@ int main(int argc, char* argv[])
     if(mode == 'b')
     {
         int n;
-		for(int i = 0; i < sizeof(xdisk2bas); i++) {
-			n = write(fp, &xdisk2bas[i], 1);
-			if (n < 0)
-				fputs("write() failed.\n", stderr);
-		}
+//		n = write(fp, &xdisk2bas, sizeof(xdisk2bas));
 		close(fp);
-		printf("Complete: Enter RUN to start TransDisk/88.\n");
+        if (n < 0)
+            fputs("write() failed.\n", stderr);
+		else 
+		    printf("Complete: Enter RUN to start TransDisk/88.\n");
 		return 0;
     }
     else if(mode == 'w'){
@@ -138,23 +120,8 @@ int main(int argc, char* argv[])
 
         // Write the file
         int n;
-        /*
-        for(int i = 0; i < 256+4; i += 1) {
-            n = write(fp, (u8*)&buf[i], 1);
-            if (n < 0) {
-                fputs("write() failed.\n", stderr);
-            }
-        }
-        */
-        diskf = fopen("b.bin", "wb");
-        fwrite(&buf, sz, 1, diskf);
-        fclose(diskf);
-        
-         write(fp, &buf, sz);
-         //for(int i = 0; i < sz; i++)
-         //{
-        //    write(fp, &buf[i], 1);
-        // }
+
+        write(fp, &buf, sz);
     }
 
     // cleanup

@@ -24,9 +24,9 @@ PROJECT=examples/helloworld
 default: STACK=0x100
 default: DATA=0x100
 default: CODE=0x1000
-binary: STACK=0xe000
-binary: DATA=0xd000
-binary: CODE=0xb000
+binary: STACK=0xc000
+binary: DATA=0xd800
+binary: CODE=0xc000
 
 # Stack should stay in ZP.
 # This is due to VRAM being in C000~.
@@ -60,8 +60,10 @@ default: $(PROJECT) $(PC88CFILES)
 
 
 binary: $(PROJECT) $(PC88FILES)
-	$(CC) $(88FLAGS) $(CFLAGS) $(CMDFLAGS) $(PROJECT)/main.c out/*.rel 
-	$(PY) tools/hex2bin.py main.ihx main.bin
+	$(DEL) out/main.*
+	$(CC) $(88FLAGS) $(CFLAGS) $(CMDFLAGS) $(PROJECT)/main.c out/*.rel -o out/main.ihx
+	$(PY) tools/hex2bin.py out/main.ihx main.bin
+	$(PY) tools/bin2bas2.py main.bin
 
 
 IPL: src/ipl.z80 src/disk.z80 
