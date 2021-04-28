@@ -140,15 +140,15 @@ uint XComm2::SendPacket(const uint8* buffer, int length, bool cmd, bool data)
 				Throw(e_connect);
 
 			InitPack();
-			if (cmd) xc_index++;
+			if (cmd) xc_index++; // packet number
 //		printf("SEND[%.4x][%.4x]¥n", xc_index, length);
 			SendWord(xc_index);
-			SendWord(length);
+			SendWord(length); // data size 
 			
 			for (int l=0; l<length; l++)
-				SendByte(buffer[l]);
+				SendByte(buffer[l]); // data
 
-			SendWord(crc, false);
+			SendWord(crc, false); // crc 
 			SendFlush();
 
 			if (!cmd)

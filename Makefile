@@ -9,7 +9,7 @@ PY=python3
 DEL=rm -rf
 
 ## USED SECTORS ON DISC ##
-USEDSEC=0x5f
+USEDSEC=0x7f
 # If this number isn't correct, 
 # the app won't load right!
 # Make sure it's big enough!
@@ -40,7 +40,9 @@ APPNAME=app.d88
 EMUEXE=#C:\Users\Bent\Downloads\m88\m88x5.exe 
 
 # This is updated when new .c files are added
-PC88CFILES=out/crt0.rel out/math.rel out/getkeydown.rel out/waitvblank.rel out/diskload.rel out/ioreg.rel out/draw.rel out/textmode.rel out/beep.rel out/vram_util.rel  
+#PC88CFILES=out/crt0.rel out/math.rel out/getkeydown.rel out/waitvblank.rel out/diskload.rel out/ioreg.rel out/draw.rel out/textmode.rel out/beep.rel out/vram_util.rel out/sys.rel 
+PC88CFILES=out/crt0.rel out/ioreg.rel out/textmode.rel out/sys.rel 
+
 
 out/%.rel: src/lib/%.c
 	@if [ ! -d "out" ]; then mkdir out; fi
@@ -63,7 +65,7 @@ binary: $(PROJECT) $(PC88FILES)
 	$(DEL) out/main.*
 	$(CC) $(88FLAGS) $(CFLAGS) $(CMDFLAGS) $(PROJECT)/main.c out/*.rel -o out/main.ihx
 	$(PY) tools/hex2bin.py out/main.ihx main.bin
-	$(PY) tools/bin2bas2.py main.bin
+	$(PY) tools/bin2bas.py main.bin
 
 
 IPL: src/ipl.z80 src/disk.z80 

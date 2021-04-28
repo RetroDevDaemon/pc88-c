@@ -13,12 +13,14 @@
 #include <termios.h> // posix terminal stuff
 #include <stdlib.h> //atoi
 #include <iostream>
+#include <sys/ioctl.h>
 
 #include "lz77e.h"
-#include "xdisk2bas.h"
+
 
 typedef signed char s8;
 typedef unsigned char u8;
+typedef unsigned short u16;
 
 void Usage();
 
@@ -36,6 +38,7 @@ uint baud = B19200;
 uint port = 0;
 uint16_t crc = -1;
 LZ77Enc enc;
+u8 basbuf[0x40000];
 static u8 fpa[] = "/dev/ttyUSB ";
 
 uint16_t crctable[0x100] = { 123 };
@@ -50,7 +53,7 @@ struct termios options;
 //u16 baud = B9600;
 // TODO FIX BAUD BURST RATE
 int RSPORT = 0;
-
+int status;
 void send_byte(int a, bool cc = true);
 inline void send_word(int a, bool cc = true);
 uint send_packet(const uint8_t* buffer, int length, bool cmd = false, bool data = false);
@@ -59,8 +62,10 @@ int recv_word(bool cc=true);
 int recv_byte(bool cc=true);
 uint recv_c();
 
-#define calc_crc(d) crc = (crc << 8) ^ crctable[(d ^ (crc >> 8)) & 0xff]
-
+inline void calc_crc(int data)
+{
+	crc = (crc << 8) ^ crctable[(data ^ (crc >> 8)) & 0xff];
+}
 static bool D88Seek(FILE* f);
 bool send_disk(int drive, FILE* f);
 bool decompress_packet(uint8* buf, uint bufsize, const uint8* src, uint pksize);
@@ -89,12 +94,41 @@ int open_port(unsigned char port)
 	if(mode == 'b') baud = B9600;
     cfsetispeed(&options, baud);
     cfsetospeed(&options, baud);
+	//ioctl(fd, TIOCMGET, &status);
+	/*
     options.c_cflag |= (CLOCAL | CREAD);
-    options.c_cflag &= ~PARENB; // mask parity =N
-    options.c_cflag &= ~CSTOPB; // mask stop bit =1
-    options.c_cflag &= ~CSIZE; // mask size =8
+    
+    */
+	/*dcb.BaudRate		= baud; OK
+	dcb.fBinary			= TRUE; // RAW?
+	dcb.fParity			= FALSE; // no parity bit OK
+	dcb.fOutxCtsFlow	= TRUE; // cts
+	dcb.fOutxDsrFlow	= TRUE; // dsr
+	dcb.fDtrControl		= DTR_CONTROL_ENABLE; // dtr
+	dcb.fDsrSensitivity	= FALSE; // ?
+	dcb.fTXContinueOnXoff = FALSE; // ???
+	dcb.fOutX			= TRUE; //ixon
+	dcb.fInX			= FALSE; // no ixoff
+	dcb.fNull			= FALSE; // ?
+	dcb.fRtsControl		= RTS_CONTROL_HANDSHAKE; // ?
+	dcb.fAbortOnError	= FALSE; // ?
+	dcb.ByteSize		= 8; // ok
+	dcb.Parity			= NOPARITY; // ok
+	dcb.StopBits		= ONESTOPBIT; // ok
+	dcb.EvtChar			= 10; ok */
+	//options.c_cc[VINTR] = 10;
+	//status |= TIOCM_CTS;
+	//status |= TIOCM_DSR;
+	//status |= TIOCM_DTR;
+	options.c_cflag &= ~CSIZE; // mask size =8
     options.c_cflag |= CS8;     // set
-    tcsetattr(fd, TCSANOW, &options); // (N81X)
+	options.c_cflag &= ~PARENB; // mask parity =N
+	options.c_cflag &= ~CSTOPB; // mask stop bit =1
+	
+	//options.c_iflag |= IXON;
+	//options.c_cflag |= CRTSCTS;
+	//ioctl(fd, TIOCMSET, status);
+	tcsetattr(fd, TCSANOW, &options); // (N81X)
 
     if(fd == -1)
     {   // couldn't open?
@@ -130,7 +164,7 @@ uint recv_c()
 	{
 		unc = c;
 		//Throw(e_protocol);
-		printf("fail to read");
+		printf("malformed byte");
 		//return 0;
 	}
 	return c - 0x40;
@@ -423,9 +457,178 @@ struct SectorHeader
 	uint16 length;
 };
 
+void make_normal_id(uint8*& dest, IDR* idr, int nsec, int le)
+{
+	le = le > 8 ? 8 : le;
+	int slen = (0x80 << le);
+	int gap3;
+	int tracksize = media & 2 ? 10416 : 6250;
+	
+	if (!idr->density)
+	{
+		tracksize >>= 1;
+		gap3 = (tracksize - 137 - nsec * ((0x80 << le) + 32)) / nsec;
+		if (gap3 < 12)
+			gap3 = (tracksize - 73 - nsec * ((0x80 << le) + 32)) / nsec;
+		if (gap3 < 8)
+			gap3 = (tracksize - 32 - nsec * ((0x80 << le) + 32)) / nsec;
+	}
+	else
+	{
+		gap3 = (tracksize - 274 - nsec * ((0x80 << le) + 62)) / nsec;
+		if (gap3 < 24)
+			gap3 = (tracksize - 146 - nsec * ((0x80 << le) + 62)) / nsec;
+		if (gap3 < 16)
+			gap3 = (tracksize - 64 - nsec * ((0x80 << le) + 62)) / nsec;
+	}
+	
+	*dest++ = 1 | idr->density;	// WRITE ID
+	*dest++ = le;	// LE
+	*dest++ = nsec;	// NS
+	*dest++ = gap3; // GAP
+	*dest++ = 0;	// D
+	for (int i=0; i<nsec; i++)
+	{
+		*dest++ = idr[i].c;
+		*dest++ = idr[i].h;
+		*dest++ = idr[i].r;
+		*dest++ = idr[i].n;
+	}
+	printf(" (N:%d Gap3:%.2xh)", le, gap3);
+}
+
+void make_mix_length_id(uint8*& dest, IDR* idr, int nsec, int le, int gap)
+{
+	*dest++ = 1 | idr->density;	// WRITE ID
+	*dest++ = le;	// LE
+	uint8* psec = dest++;
+	*dest++ = gap; // GAP
+	*dest++ = 0x4e;	// D
+	printf(" (N:%d Gap3:%.2xh[Mixed])", le, gap);
+	int misc = idr->density ? 64 : 34;
+	int sos = (0x80 << le) + 0x3e + gap;
+	int ws = 0;
+	for (int s=0; s<nsec; s++)
+	{
+		if (!idr->status)
+		{
+			int size = sos - ((0x80 << idr->n) + misc);
+			*dest++ = idr->c;
+			*dest++ = idr->h;
+			*dest++ = idr->r;
+			*dest++ = idr->n;
+			idr++, ws++;
+			
+			if (s < nsec - 1 && size < 0)
+			{
+				while (size<0)
+				{
+					dest += 4, size += sos, ws++;
+				}
+			}
+		}
+	}
+	*psec = ws;
+}
+
+bool calc_mix_length_condition(IDR* idr, int nsec, int* mle, int* mgap, int tracksize)
+{
+	int le;
+	int gap3;
+	int max = 0;
+	int misc = idr->density ? 62 : 33;
+	for (le=0; le<=3; le++)
+	{
+		for (gap3=2; gap3<256; gap3++)
+		{
+			int sgap = 9999;
+			int sos = (0x80 << le) + misc + gap3;
+			int bytes = 0;
+			IDR* i = idr;
+			int ns = 0;
+			for (int s=0; s<nsec; s++, i++)
+			{
+				if (!i->status)
+				{
+					int size = -((0x80 << i->n) + misc + 2);
+					while (size<0)
+						size += sos, bytes += sos, ns++;
+					if (sgap >= size)
+						sgap = size;
+				}
+			}
+			if (bytes < tracksize && ns < 64)
+			{
+				if (max < sgap)
+				{
+//					printf("sgap: %d  bytes: %d¥n", sgap, bytes);
+					max = sgap, *mle = le, *mgap = gap3;
+				}
+			}
+		}
+	}
+	return max > 0;
+}
+
 int make_write_seq(uint8* dest, IDR* idr, int nsec)
 {
-	return 0;
+	int i;
+	//ID
+	if(!nsec){
+		dest[0] = 0x41; // id
+		dest[1] = media & 2 ? 7 : 6; // le
+		dest[2] = 1; // ns 
+		dest[3] = 6; //gap
+		dest[4] = 0x4e; // D
+		dest[5] = 0;
+		return 6;
+
+	}
+	uint8_t* dorg = dest;
+	int le = -1;
+	bool mlen = false;
+	for(i=0;i<nsec;i++)
+	{
+		if(!(idr[i].status))
+		{
+			if(le!=-1 && le!= idr[i].n)
+				mlen = true;
+			else 
+				le = idr[i].n;
+		}
+	}
+	if(mlen)
+	{
+		int gap3;
+		int tracksize = (media & 2 ? 10416 : 6250) - 50;
+		if(idr[0].density == 0) tracksize >>= 1;
+		if(!calc_mix_length_condition(idr, nsec, &le, &gap3, tracksize))
+		{
+			printf("[TOO DIFFICULT!]");
+		}
+		make_mix_length_id(dest, idr, nsec, le, gap3);
+	}
+	else { 
+		make_normal_id(dest, idr, nsec, le);
+	}
+	//data 
+	for(i=0;i<nsec;i++){
+		if(idr[i].status)
+			continue;
+
+		*dest++ = 2 | idr[i].density | (idr[i].deleted ? 0x80 : 0);
+		*dest++ = idr[i].c;
+		*dest++ = idr[i].h;
+		*dest++ = idr[i].r;
+		*dest++ = idr[i].n;
+		*dest++ = idr[i].length & 0xff;
+		*dest++ = (idr[i].length >> 8) & 0xff;
+		memcpy(dest, idr[i].buffer, idr[i].length);
+		dest += idr[i].length;
+	}
+	*dest++ = 0;
+
+	return dest - dorg;
 }
 
 bool send_disk(int drive, FILE* f)
@@ -457,10 +660,14 @@ bool send_disk(int drive, FILE* f)
 		buffer[0] = 2;
 		buffer[1] = drive;
 		buffer[2] = media | 0x80; // This is the packet format for all drive commands
-		r = send_packet(buffer, 3, true);
-		if (r < 0)
-			return false;
-		//return false;
+		init_pack();
+		u8 hdr = '!';
+		send_byte(hdr, false);
+		send_word((u16)0);
+		send_word((u16)3);
+		for(u8 w = 0; w < 3; w++) send_byte(buffer[w]);
+		send_word(crc, false);
+		
 		r = recv_packet(buffer, 1);
 		if (r < 0)
 			return false;
@@ -483,6 +690,7 @@ bool send_disk(int drive, FILE* f)
 			return false;
 		}
 	}
+	return 0;
 	int ntracks = media & 1 ? 164 : 84;
 
 	IDR idr[64];
@@ -550,7 +758,7 @@ bool send_disk(int drive, FILE* f)
 int main(int ac, char** av)
 {
 
-	int index = 1;
+	//int index = 1;
 	printf("TransDisk 2.%.2d\n"
 		   "Copyright (C) 2000 cisc.\n\n", version_l);
 
@@ -642,6 +850,7 @@ next:
 	
 	if (mode == 'b')
 	{
+		//printf(filename);
 		printf("Connecting to transfer port %d.\n\n", port);//, baud);
 		RSPORT = open_port(port);
 		if(RSPORT == -1)
@@ -657,13 +866,19 @@ next:
 		getchar();
 		printf("\n");
 		// send_basic() :
-		int n;
-		for(int i = 0; i < sizeof(xdisk2bas); i++) {
-			n = write(RSPORT, &xdisk2bas[i], 1);
-			if (n < 0)
-				fputs("write() failed.\n", stderr);
-		}
-		close(RSPORT);
+		        // read file to write into buffer     
+        FILE* diskf;
+        diskf = fopen(filename, "rb");
+        unsigned long sz = 0;
+        fseek(diskf, 0L, SEEK_END);
+        sz = ftell(diskf);              // get filesize 
+        fseek(diskf, 0x0, SEEK_SET);    // and reset file pointer
+        fread((void*)&basbuf, sz, 1, diskf);  // read the entire thing into ram
+        fclose(diskf);      // .. and close the file
+
+        // Write the file
+        int n;
+        write(RSPORT, &basbuf, sz);
 		// :
 		printf("Complete.\n");
 		return 0;

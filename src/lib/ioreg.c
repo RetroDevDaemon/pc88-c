@@ -14,6 +14,8 @@ u8 ReadIOReg(u8 r) __naked
     __endasm;
 }
 
+
+
 void SetIOReg(u8 r, u8 v) __naked 
 {   
     r; v; 
