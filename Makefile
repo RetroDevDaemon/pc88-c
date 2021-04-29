@@ -40,8 +40,8 @@ APPNAME=app.d88
 EMUEXE=#C:\Users\Bent\Downloads\m88\m88x5.exe 
 
 # This is updated when new .c files are added
-#PC88CFILES=out/crt0.rel out/math.rel out/getkeydown.rel out/waitvblank.rel out/diskload.rel out/ioreg.rel out/draw.rel out/textmode.rel out/beep.rel out/vram_util.rel out/sys.rel 
-PC88CFILES=out/crt0.rel out/ioreg.rel out/textmode.rel out/sys.rel 
+PC88CFILES=out/crt0.rel out/math.rel out/getkeydown.rel out/waitvblank.rel out/diskload.rel out/ioreg.rel out/draw.rel out/textmode.rel out/beep.rel out/vram_util.rel out/sys.rel 
+#PC88CFILES=out/crt0.rel out/ioreg.rel out/textmode.rel out/sys.rel 
 
 
 out/%.rel: src/lib/%.c

@@ -41,9 +41,9 @@ const String fs3 = "IT IS KILL OR BE KILLED";
 const String fs4 = "Instructions:\x00";
 const String fs5 = "[A]/[D]  or  [4]/[6] :\x00";
 const String fs6 = "Move BLOCK-BUSTER left / right\x00";
-const String fs7 = " [SPACE] :\x00";
+const String fs7 = " [SPACE or C] :\x00";
 const String fs8 = "Fire BUSTER-WAVE (requires 5 Edge)\x00";
-const String fs9 = "[0 - 9] : Select Battlefield\n[SPACE] : START BATTLE\x00";
+const String fs9 = "[0 - 9] : Select Battlefield\n[SPACE or C] : START BATTLE\x00";
 
 typedef struct levelblock { 
     u8 x;
@@ -61,7 +61,7 @@ u16 pScore;
 u8 currentLevel;
 bool cln;
 
-void DrawSpritePlane(u8* dat, XYpos* xy, u8 w, u8 h);
+void DrawSpritePlane(const u8* dat, XYpos* xy, u8 w, u8 h);
 void DrawSprite(Sprite* spr, signed int x, signed int y);
 //void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y);
 void InitGUI();
@@ -80,9 +80,8 @@ void TickPrint(u8* str, u8 len);
 void main()
 {
     //cln = CLEANRESET;
-    __asm 
-      ld sp,#0x0100
-    __endasm;
+    __asm__("ld sp,#0x0100");
+    
     GAME_INIT();
     
     while(1)
@@ -340,7 +339,7 @@ inline void GAME_INIT()
         Wait_VBLANK();
         GetTitleInput();
         
-        if( GetKeyDown(KB_SPACE)){
+        if( GetKeyDown(KB_SPACE) || GetKeyDown(KB_C) ){
             goto lblContinue;
         }
     }
@@ -362,7 +361,7 @@ inline void GAME_INIT()
 void CPUWAIT(u16 n)
 {
     for(u32 i = n * 1000; i > 0; i--) { 
-        __asm nop __endasm;
+        __asm__("nop");
     }
 }
 
@@ -586,7 +585,7 @@ inline void GAME_UPDATE()
             print("SpaceBar to restart?\x00");
             while(1){
                 // Loop until space
-                if(GetKeyDown(KB_SPACE)){
+                if(GetKeyDown(KB_SPACE) || GetKeyDown(KB_C)){
                     pScore = 0;
                     ClearAttributeRam();
                     ClearAllVRAM();
@@ -625,7 +624,7 @@ inline void GAME_INPUT()
             playerDir = LEFT;
         } else { bar_pos.x = PLAYFIELD_LEFT; }
     }
-    if(GetKeyDown(KB_SPACE)) {
+    if(GetKeyDown(KB_SPACE) || GetKeyDown(KB_C)) {
         if(starting) { // Shooting the ball? 
             starting = false;
             bx_speed = lastMoved * 2;
