@@ -68,7 +68,14 @@ typedef struct xypos {
 // Please read me! Lots of info!
 ///////////////////////
 
+#define RS232_IRQ 0xf300
 #define CRTC_IRQ 0xf302
+#define CLOCK_IRQ 0xf304
+#define USR_IRQ4 0xf306
+#define USR_IRQ3 0xf308
+#define USR_IRQ2 0xf30a
+#define FM_IRQ1 USR_IRQ4 
+#define FM_IRQ2 USR_IRQ3 
 
 #define VBLANK_SIGNAL 0b100000
 #define TMODE_BIT 0b10000
@@ -106,6 +113,7 @@ void SetCursorPos(u8 x, u8 y);
 /**/void SetCursorPos40(u8 x, u8 y);
 
 // IOREGS
+//#define SetIOReg(r, v) r = v;//__asm__("ld a, %d", r) 
 u8 ReadIOReg(u8 r);
 void SetIOReg(u8 r, u8 v);
 /* Attributes must be set in ascending X order on each row. 
@@ -128,6 +136,72 @@ void DiskLoad(u8* dst, u8 track, u8 sector, u8 numSecs, u8 drive);
 void beep(u16 tone, u8 length);
 // VRAM_UTIL
 void EraseVRAMArea(XYpos* xy, u8 w, u8 h);
+
+// SSG
+/* R0, R1 (b0-3) : 12 bit period for Ch. A
+*  R2, R3 (b0-3) : 12 bit period for Ch. B
+*  R4, R5 (b0-3) : 12 bit period for Ch. C
+*  R6            : 5 bit noise period
+*  R7            : Output ctl: ~BANNNTTT
+*        BA: Input enable on IO port A/B
+*       NNN: Noise enable on Ch. CBA
+*       TTT:  Tone enable on Ch. CBA
+*  R8,R9,RA      : b0-3 amplitude (if b4=0)
+*                  b4 enable/disable envelope
+*  RB,RC         : 16-bit envelope period
+*  RD            : 4 bit envelope shape
+*  RE/RF         : I/O Ports A/B
+*/
+#define OPN_REG 0x44
+#define OPN_DAT 0x45
+//[7] = 0b00111110
+// derivative:
+// TONE = CLOCK / (16 * PERIOD)
+// PERIOD = 256*COARSE + FINE
+// relational:
+// PERIOD = CLOCK / (TONE * 16)
+// COARSE + (FINE / 256) = TONE / 256
+// https://pages.mtu.edu/~suits/notefreqs.html
+
+// Z80 actual speed:
+#define CPU4MHZ 3993600
+// 440 Tunings:
+#define C2_440  65.41
+#define C4_440  261.63
+#define C4S_440 277.18	
+#define D4_440  293.66
+#define D4S_440 311.13
+#define E4_440  329.63
+#define F4_440  349.23
+#define F4S_440 369.99
+#define G4_440  392
+#define G4S_440 415.30
+#define A4_440  440
+#define A4S_440 466.16
+#define B4_440  493.88
+// SSG Period inputs:
+#define SSG_C4 (u16)(CPU4MHZ / (C4_440 * 32))
+#define SSG_D4 (u16)(CPU4MHZ / (D4_440 * 32))
+#define SSG_E4 (u16)(CPU4MHZ / (E4_440 * 32))
+#define SSG_F4 (u16)(CPU4MHZ / (F4_440 * 32))
+#define SSG_G4 (u16)(CPU4MHZ / (G4_440 * 32))
+#define SSG_A4 (u16)(CPU4MHZ / (A4_440 * 32))
+#define SSG_B4 (u16)(CPU4MHZ / (B4_440 * 32))
+// max is 4095 or 4095 = 3993600 / 16X
+//65520X = 3993600 or B1, but C2 is better starting
+#define SSG_C2 (u16)(CPU4MHZ / (C2_440 * 32))
+
+
+
+// SYS
+//;bit7:0=8MHz 1=4MHz (FH以降)
+//;bit76.w:10=V1S 11=V1H 01=V2
+#define V1S_MODE_FLAG   (2<<14)
+#define V2_MODE_FLAG    (1<<14)
+#define V1H_MODE_FLAG   (3<<14)
+#define FOURMHZ_FLAG    (0x80)
+u8 GetN88Rom();
+u16 GetSysMode();
 
 // MATH
 u8 abs(s8 n);
