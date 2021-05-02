@@ -1,5 +1,7 @@
 #include <pc88-c.h>
 
+#include "song.h"
+
 inline void SetIRQs();
 void Vblank() __critical __interrupt;
 void ClockInterrupt() __critical __interrupt;
@@ -52,63 +54,7 @@ void main()
     //if(h & FOURMHZ_FLAG) print("8mhz detected.");
     //else print("4mhz detected.");
 
-/*** READ AND WRITE TEST **
-    // OPN REGISTER SELECT - 0x44
-    // OPN REGISTER DATA - 0x45
-    u8 ymarr[16];
-    for(u8 i = 0; i <= 0xd; i++)
-    {
-        SetIOReg(OPN_REG, i);
-        SetIOReg(OPN_DAT, 0x33);
-        ymarr[i] = ReadIOReg(OPN_DAT);
-        
-        u8 ob[3];
-        byToHex(ymarr[i], &ob[0]);
-        SetCursorPos(0, i);
-        print("R ");
-        u8 ch[2] = { 0, 0 }; 
-        ch[0] = i < 10 ? i + 0x30 : i + 0x37;
-        print(ch);
-        print(": ");
-        print(ob);
-    }
-    for (u8 i = 0; i < 2; i ++)
-    {
-        SetIOReg(OPN_REG, i + 14);
-        ymarr[i + 14] = ReadIOReg(OPN_DAT);
-        SetCursorPos(0, i + 15);
-        print("R ");
-        u8 ob[3];
-        byToHex(ymarr[i + 14], &ob[0]);
-        u8 ch[2] = { 0, 0 };
-        ch[0] = i + 0x37 + 14;
-        print(ch); print(": "); print(ob);
-    }
-/////////////////////////////
-*/
     // Tone is 12 bits, coarse goes in 01, fine in 00
-#define CHA_TONEH 1
-#define CHA_TONEL 0
-#define CHB_TONEH 3
-#define CHB_TONEL 2
-#define CHC_TONEH 5
-#define CHC_TONEL 4
-#define SSG_MIXER 7
-#define SSG_NOISETONE 6
-#define CHA_AMP 8
-#define CHB_AMP 9
-#define CHC_AMP 10
-#define SSG_ENVPDH 0xb
-#define SSG_ENVPDL 0xc
-#define SSG_ENVTYPE 0xd
-#define SSG_IOA 0xe
-#define SSG_IOB 0xf
-#define CHA_NOISE_OFF 0b1000
-#define CHB_NOISE_OFF 0b10000
-#define CHC_NOISE_OFF 0b100000
-#define CHA_TONE 0b1
-#define CHB_TONE_OFF 0b10
-#define CHC_TONE_OFF 0b100
 
     // 6 bytes per map change (last 3 are 0 if no envelope)
     // +1 for mixer
@@ -123,17 +69,44 @@ void main()
     /// (env pd L)
     /// (env type)
 
-    u16 e = SSG_C4;
+    // Play C4 on Ch A, vol 15, no envelope, mute all other
     SetIOReg(OPN_REG, CHA_TONEL);
-    SetIOReg(OPN_DAT, e & 0xff);
+    SetIOReg(OPN_DAT, SSG_C4 & 0xff);
     SetIOReg(OPN_REG, CHA_TONEH);
-    SetIOReg(OPN_DAT, (e & 0xf00) >> 8);
-
-    SetIOReg(OPN_REG, SSG_MIXER);
+    SetIOReg(OPN_DAT, (SSG_C4 & 0xf00) >> 8);
     //0b00111110:
+    SetIOReg(OPN_REG, SSG_MIXER);
     SetIOReg(OPN_DAT, ~(CHA_TONE | 0xc0));
     SetIOReg(OPN_REG, CHA_AMP);
     SetIOReg(OPN_DAT, 15);
+
+    u8* sctr = &song[0];
+    struct m88header { 
+        u8 numSongs;
+        u8* FMOfs;
+        u16 binSize;
+    };
+    struct m88header abc;
+    abc.numSongs = *sctr++;
+    abc.FMOfs = *sctr++ + *sctr++*256 + &song[0] + 5;
+    abc.binSize = *sctr++ + *sctr++*256;
+    struct m88data { 
+        u8 tempo; 
+        u16* partOffsets[11];
+        u16 partLoops[11];
+        u16* dataEndLoc;
+    };
+    struct m88data ab; 
+    ab.tempo = *sctr++;
+    for(u8 i = 0; i < 11; i+=4) { 
+        ab.partOffsets[i] = (*sctr++ + *sctr++*256) + &song[0] + 5;
+        ab.partLoops[i] = (*sctr++ + *sctr++*256);
+    }
+    ab.dataEndLoc = *sctr++ + *sctr*256 + &song[0] + 5;
+    u8 answ[3];
+    byToHex((u8)((u16)ab.partOffsets[3] & 0xff), answ);
+    
+    print(answ);
     // First, Write the address of the Vblank routine to the CRTC IRQ vector @ f302
     __asm 
         ld hl, #_Vblank

@@ -179,6 +179,41 @@ void EraseVRAMArea(XYpos* xy, u8 w, u8 h);
 #define A4_440  440
 #define A4S_440 466.16
 #define B4_440  493.88
+// Bit flags
+#define CHA_TONEH 1
+#define CHA_TONEL 0
+#define CHB_TONEH 3
+#define CHB_TONEL 2
+#define CHC_TONEH 5
+#define CHC_TONEL 4
+#define SSG_MIXER 7
+#define SSG_NOISETONE 6
+#define CHA_AMP 8
+#define CHB_AMP 9
+#define CHC_AMP 10
+#define SSG_ENVPDH 0xb
+#define SSG_ENVPDL 0xc
+#define SSG_ENVTYPE 0xd
+#define SSG_IOA 0xe
+#define SSG_IOB 0xf
+#define CHA_NOISE_OFF 0b1000
+#define CHB_NOISE_OFF 0b10000
+#define CHC_NOISE_OFF 0b100000
+#define CHA_TONE 0b1
+#define CHB_TONE_OFF 0b10
+#define CHC_TONE_OFF 0b100
+/***** Usage from examples/psg : ********
+// Play C4 on Ch A, vol 15, no envelope, mute all other
+SetIOReg(OPN_REG, CHA_TONEL);
+SetIOReg(OPN_DAT, SSG_C4 & 0xff);
+SetIOReg(OPN_REG, CHA_TONEH);
+SetIOReg(OPN_DAT, (SSG_C4 & 0xf00) >> 8);
+//0b00111110:
+SetIOReg(OPN_REG, SSG_MIXER);
+SetIOReg(OPN_DAT, ~(CHA_TONE | 0xc0));
+SetIOReg(OPN_REG, CHA_AMP);
+SetIOReg(OPN_DAT, 15);
+**************************************/
 // SSG Period inputs:
 #define SSG_C4 (u16)(CPU4MHZ / (C4_440 * 32))
 #define SSG_D4 (u16)(CPU4MHZ / (D4_440 * 32))

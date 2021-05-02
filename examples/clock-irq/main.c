@@ -1,5 +1,6 @@
 #include <pc88-c.h>
 
+
 void Vblank() __critical __interrupt;
 void ClockInterrupt() __critical __interrupt;
 
@@ -13,12 +14,10 @@ inline void SetIRQs()
     SetIOReg(IRQ_MASK, 0b11);        // Reset mask for vbl+clock   R E6
 }
 
-
 void Vblank() __critical __interrupt
 {
     IRQ_OFF 
     print("Hi!");
-    
     
     SetIRQs(); 
     IRQ_ON

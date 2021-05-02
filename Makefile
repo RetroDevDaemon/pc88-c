@@ -9,7 +9,7 @@ PY=python3
 DEL=rm -rf
 
 ## USED SECTORS ON DISC ##
-USEDSEC=0x7f
+USEDSEC=0x5f
 # If this number isn't correct, 
 # the app won't load right!
 # Make sure it's big enough!
@@ -37,27 +37,38 @@ binary: CODE=0xc000
 APPNAME=app.d88
 
 ## EMULATOR EXECUTABLE ##
-EMUEXE=#C:\Users\Bent\Downloads\m88\m88x5.exe 
+#EMUEXE=#C:\Users\Bent\Downloads\m88\m88x5.exe 
+EMUEXE=quasi88 app.d88
 
 # This is updated when new .c files are added
-PC88CFILES=out/crt0.rel out/math.rel out/getkeydown.rel out/waitvblank.rel out/diskload.rel out/ioreg.rel out/draw.rel out/textmode.rel out/beep.rel out/vram_util.rel out/sys.rel 
-#PC88CFILES=out/crt0.rel out/ioreg.rel out/textmode.rel out/sys.rel 
+PC88CFILES=out/crt0.rel \
+	out/math.rel \
+	out/getkeydown.rel \
+	out/waitvblank.rel \
+	out/diskload.rel \
+	out/ioreg.rel \
+	out/draw.rel \
+	out/textmode.rel \
+	out/beep.rel \
+	out/vram_util.rel \
+	out/sys.rel
+#PC88CFILES=out/crt0.rel out/ioreg.rel out/textmode.rel out/sys.rel
 
 
 out/%.rel: src/lib/%.c
 	@if [ ! -d "out" ]; then mkdir out; fi
 	@if [ ! -d "build" ]; then mkdir build; fi
-	sdcc -c -mz80 $(CFLAGS) -o $@ $< 
+	sdcc -c -mz80 $(CFLAGS) -o $@ $<
 
 
 default: $(PROJECT) $(PC88CFILES)
 	$(PY) tools/maked88.py $(APPNAME)
 	$(PY) tools/hexer.py src/ipl.bin 0x2f $(USEDSEC)
 	$(CC) $(88FLAGS) $(CFLAGS) $(CMDFLAGS) $(PROJECT)/main.c out/*.rel -o out/main.ihx
-	$(PY) tools/fixboot.py src/ipl.bin 
+	$(PY) tools/fixboot.py src/ipl.bin
 	$(PY) tools/hex2bin.py out/main.ihx main.bin
 	$(PY) tools/maked88.py $(APPNAME) src/ipl.bin 0 0 1
-	$(PY) tools/maked88.py $(APPNAME) main.bin 0 0 2	
+	$(PY) tools/maked88.py $(APPNAME) main.bin 0 0 2
 	$(EMUEXE)
 
 
