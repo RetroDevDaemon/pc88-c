@@ -123,12 +123,14 @@ def AddFile(filename, cyl, hed, rec):
     f.write(indat)
     f.close()
 
+
 if(len(sys.argv) == 1):
     print('MakeD88.py\n\tUsage: $ python3 maked88.py <diskname> [<filename> <C> <H> <R>]\n\
 Where:\n<diskname> is the name of the disk file.\n  (Without further arguments this generates a blank 2D PC-88 disk.)\n\
 <filename> File to add to target CHR location\n<C> Target cylinder (0-39)\n<H> Target head (0 or 1)\n<R> Record no (1-16)\n\
 e.g. $ python3 maked88.py new.d88 ipl.bin 0 0 1\n Adds ipl.bin to the boot sector, and makes the disk if it does not exist.')
 elif(len(sys.argv) > 2):
+    # CLI:
     if(len(sys.argv) != 6):
         print('Error parsing arguments. Run `python3 maked88.py` to see instructions.')
     else:
