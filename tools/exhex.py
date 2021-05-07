@@ -1,18 +1,17 @@
 #!/usr/bin/python3
-#exhex.py
-# requires: $ python3 exhex.py [.d88 file] 
-#ref: D88STRUC.TXT
+# exhex.py
+#  $ python3 exhex.py [.d88 file] 
+# Run with no argument to open GUI mode.
+# ref: D88STRUC.TXT
 
 import sys, math
-
-f = open(sys.argv[1],'rb')
-inby = f.read()
-f.close()
 
 BASICFILE = 0x80
 BINFILE = 0x01
 RAWFILE = 0x00
-f_ind = 0
+fileindex=0x277c0
+dirlen=1072
+inby=[]
 
 class dheader():
 	def __init__(self, dn='                ',wp=0,med=0,ds=0,tl=[]):
@@ -32,6 +31,12 @@ class dbfile():
 		self.fsz = 0
 		self.index = i
 
+def ReadFile(fn):
+	f = open(fn,'rb')
+	a = f.read()
+	f.close()
+	return a
+
 def ReadD88Header(inby):
 	k = 0
 	dn = ''
@@ -48,10 +53,11 @@ def ReadD88Header(inby):
 		i += 4
 	return dheader(dn, wp, med, ds, tl)
 
-def GetSizes(db, hdr):
+def GetSizes(db, hdr, inby):
 	i = 0
-	while i < len(db)-1:
-		db[i].fsz = db[i+1].ptr - db[i].ptr
+	while i < len(db):
+		if(i < len(db)-1):
+			db[i].fsz = db[i+1].ptr - db[i].ptr
 		r = db[i].ptr % 2
 		trg = int(db[i].ptr/2)
 		db[i].start_addr = (hdr.tracklist[trg] + 0x880*r)
@@ -62,8 +68,10 @@ def GetSizes(db, hdr):
 			p = 0
 			s = 0
 			while p < 0xffff:
-				if (inby[db[i].start_addr + 16 + p] == 0) and (inby[db[i].start_addr + 16 + p+1] == 0) and (inby[db[i].start_addr + 16 + p+2] == 0):
-						break
+				if (inby[db[i].start_addr + 16 + p] == 0) and \
+				 (inby[db[i].start_addr + 16 + p+1] == 0) and \
+				 (inby[db[i].start_addr + 16 + p+2] == 0):
+					break
 				p += 1
 				s += 1
 				if (s == 256):
@@ -79,7 +87,6 @@ def GetSizes(db, hdr):
 		elif(db[i].type == 0xff):
 			db[i].fsz = -1
 		i += 1
-
 	return
 
 def GetFType(g):
@@ -105,91 +112,91 @@ def SortFiles(db):
 		db.pop(next)
 	return arranged
 
-# Get header
-diskhead = ReadD88Header(inby)
 
-# Populate files
-fileindex=0x277c0
-file_database=[]
-s = 0
-i = fileindex
-while i < 0x27bef:
-	fn = ''
-	k = 0
-	while k < 9:
-		fn += chr(inby[i+k])
-		k += 1
-	if(inby[i] != 0x12):
-		file_database.append(dbfile(inby[i+10], fn, inby[i+9], 0,f_ind)) 
-		f_ind += 1
-	i += 16
+def GetFileDB(adr, inby):
+	db = []
+	s = 0
+	i = adr
+	f_ind = 0
+	while i < adr+1072:
+		fn = ''
+		k = 0
+		while k < 9:
+			fn += chr(inby[i+k])
+			k += 1
+		if( (inby[i] != 0x12) and \
+		(fn != '\xff\xff\xff\xff\xff\xff\xff\xff\xff')):
+			db.append(dbfile(inby[i+10], fn, inby[i+9], 0,f_ind)) 
+			f_ind += 1
+		i += 16
+	return db
 
-# Sort
-file_database = SortFiles(file_database)
-
-# Populate sizes
-GetSizes(file_database, diskhead)
-
-# print files
-print("No.\tName\t\tType\tLoc\tDisk Addr\tSize")
-i = 0
-while i < len(file_database):
-	if file_database[i].name != "\xff\xff\xff\xff\xff\xff\xff\xff\xff": #"ÿÿÿÿÿÿÿÿÿ":
-		print('#' + str(file_database[i].index) + '\t',file_database[i].name,end='\t')
-		ft = file_database[i].type
-		print(GetFType(ft), end='\t')
-		r = file_database[i].ptr % 2
-		trg = int(file_database[i].ptr/2)
-		if(ft == 0):
-			print(str(trg) + '-' + str(r) + '\t@' + hex(file_database[i].start_addr), 
-				'\t(' + str(file_database[i].fsz) + ' blk)')
-		else:
-			print(str(trg) + '-' + str(r) + '\t@' + hex(file_database[i].start_addr), 
-				'\t' + str(file_database[i].fsz) + ' bytes')
-	i += 1
-# Get input
-exnum = input("Extract which file? (0-63, or 'a' for 'all'): ")
-try:
-	if(exnum != 'a'):
-		exnum = int(exnum)
-except:
-	print("Invalid. Type a number or the letter 'a'.")
-	sys.exit()
-
-# Get selected index
-i = 0
-sel = -1
-if(exnum != 'a'):
+def PrintFileList(db):
+	print("No.\tName\t\tType\tLoc\tDisk Addr\tSize")
+	i = 0
 	while i < len(file_database):
-		if(file_database[i].index == exnum):
-			sel = i
-			i = 99
+		#"ÿÿÿÿÿÿÿÿÿ":
+		if file_database[i].name != "\xff\xff\xff\xff\xff\xff\xff\xff\xff":
+			print('#' + str(file_database[i].index) + '\t', \
+				file_database[i].name,end='\t')
+			ft = file_database[i].type
+			print(GetFType(ft), end='\t')
+			r = file_database[i].ptr % 2
+			trg = int(file_database[i].ptr/2)
+			if(ft == 0):
+				print(str(trg) + '-' + str(r) + '\t@' + \
+					hex(file_database[i].start_addr), '\t(' + \
+					str(file_database[i].fsz) + ' blk)')
+			else:
+				print(str(trg) + '-' + str(r) + '\t@' + \
+					hex(file_database[i].start_addr), '\t' + \
+					str(file_database[i].fsz) + ' bytes')
 		i += 1
 
-# Initiate file writing loop
-t = 0
-fc = 0
-if (sel != -1):
-	t = sel
-else: 
+def Get_FileToExtract(db):
+	e = input("Extract which file? (0-63, or 'a' for 'all'): ")
+	try:
+		if(e != 'a'):
+			e = int(e)
+	except:
+		print("Invalid. Type a number or the letter 'a'.")
+		sys.exit()
+	# Get selected index
+	i = 0
+	sel = -1
+	if(e != 'a'):
+		while i < len(db):
+			if(db[i].index == e):
+				sel = i
+				i = 99
+			i += 1
+	return sel
+
+def WriteFiles(e, db):
 	t = 0
-	sel = len(file_database)-1
-while t <= sel:
-	# extract and write file, skipping disk headers
-	if(file_database[t].fsz > 0):
-		#try:
-			f = open(file_database[t].name + '.' + GetFType(file_database[t].type),'wb')
-			if(file_database[t].type == 0):
-				print("Estimated file size for file " + file_database[t].name + ":", file_database[t].fsz * (2*1024))
-				nfz = input("Enter new file size, or press return for (" + 
-					str(file_database[t].fsz * 2 * 1024) + "): ")
+	fc = 0
+	if (e != -1):
+		t = e
+	else: 
+		t = 0
+		e = len(db)-1
+	while t <= e:
+		# extract and write file, skipping disk headers
+		if(db[t].fsz > 0):
+			#try:
+			f = open(db[t].name + '.' + GetFType(db[t].type),'wb')
+			if(db[t].type == 0):
+				print("Estimated file size for file " + db[t].name + ":", \
+					db[t].fsz * (2*1024))
+				nfz = input("Enter new file size, or press return for (" + \
+					str(db[t].fsz * 2 * 1024) + "): ")
 				if nfz == '':
-					nfz = file_database[t].fsz * 2048
-				file_database[t].fsz = nfz
+					nfz = db[t].fsz * 2048
+				db[t].fsz = nfz
 			s = 0
-			i = file_database[t].start_addr
+			i = db[t].start_addr
 			ofs = 16
-			while i < (file_database[t].start_addr + (file_database[t].fsz) ):
+			while i < (db[t].start_addr + (db[t].fsz) ):
 				f.write(bytes([inby[i+ ofs]]))
 				i += 1
 				s += 1
@@ -197,8 +204,104 @@ while t <= sel:
 					ofs += 16
 					s = 0
 			fc += 1
-		#except:
-		#	print("Writing " + file_database[t].name + " failed...")
-	t += 1
-	f.close()
-print(str(fc) + " file(s) written successfully!")
+			#except:
+			#	print("Writing " + file_database[t].name + " failed...")
+		t += 1
+		f.close()
+	print(str(fc) + " file(s) written successfully!")
+
+## Script:
+if(len(sys.argv) > 1):
+	inby = ReadFile(sys.argv[1])
+	# Get header
+	diskhead = ReadD88Header(inby)
+	# Populate files
+	file_database = GetFileDB(fileindex, inby)
+	# Sort
+	file_database = SortFiles(file_database)
+	# Populate sizes
+	GetSizes(file_database, diskhead, inby)
+	# print files
+	PrintFileList(file_database)
+	# Get input
+	sel = Get_FileToExtract(file_database)
+	# Initiate file writing loop
+	WriteFiles(sel, file_database)
+## App: 
+else:
+	import tkinter as tk 
+	import tkinter.filedialog
+	import tkinter.font
+	class d88app(tk.Tk):
+		def __init__(self):
+			super().__init__()
+			# Vars init
+			self.diskbytes = []
+			self.diskheader = None
+			self.file_db = []
+			# Frame:
+			self.myFrame = tk.Frame(width=640, height=480)
+			self.myFrame.pack()
+			# Labels:
+			self.lblF = tk.Label(self.myFrame, text="Files list:")
+			self.lblF.place(x=10, y=10)
+			# File list box:
+			self.filelist = tk.Listbox(self.myFrame, width=40,height=20, \
+				font=tk.font.Font(family='Courier'))
+			self.filelist.place(x=10, y=30)
+			# Scrollbar
+			w = tk.Scrollbar(self.filelist)
+			w.place(x=380,y=0, height=400,width=20)
+			self.filelist.config(yscrollcommand=w.set)
+			w.config(command=self.filelist.yview)
+			# Window title / menu
+			self.title("D88App")
+			self.SetUpMenu()
+			#	
+		def SetUpMenu(self):
+			self.menubar = tk.Menu(self)
+			self.filemenu = tk.Menu(self.menubar, tearoff=0)
+			self.filemenu.add_command(label="Open .d88 file...", \
+				command=self.LoadD88Dialog)
+			self.filemenu.add_command(label="Save", \
+				command=None)
+			self.filemenu.add_command(label="Save as...", \
+				command=None)
+			self.filemenu.add_command(label="-----------", \
+				command=None)
+			self.filemenu.add_command(label="Quit", \
+				command=sys.exit)
+			
+			self.menubar.add_cascade(label="File", menu=self.filemenu)
+			self.config(menu=self.menubar)
+			#
+		def LoadD88Dialog(self):
+			fn = tk.filedialog.askopenfilename(parent=self, \
+				title="Select .d88 file", initialdir='.',\
+				filetypes=(("D88 files","*.d88"),("all files","*.*")))
+			self.diskbytes = ReadFile(fn)
+			print(fn + ' loaded.')
+			self.diskheader = ReadD88Header(self.diskbytes)
+			self.file_db = GetFileDB(0x277c0, self.diskbytes)
+			self.file_db = SortFiles(self.file_db)
+			GetSizes(self.file_db, self.diskheader, self.diskbytes)
+			self.PopulateList(self.file_db)
+			#
+		def PopulateList(self, db):
+			self.filelist.insert(1,'No.| Filename  | Address |Type | Size ')
+			self.filelist.insert(2,'--------------------------------------')
+			i = 0
+			while i < len(db):
+				fstr = ''
+				fstr += '{:2d}'.format(db[i].index) + ' : '
+				fstr += db[i].name + ' : '
+				fstr += '${:06x}'.format(db[i].start_addr) + ' : '
+				fstr += GetFType(db[i].type) + ' : '
+				fstr += '{:5d}'.format(db[i].fsz)
+				self.filelist.insert(i+3, fstr)
+				i += 1
+
+			#
+
+	app = d88app()
+	app.mainloop()
