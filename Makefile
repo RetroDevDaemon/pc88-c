@@ -3,6 +3,8 @@
 #  i.e. do not use the one distributed with SGDK etc.
 
 CC=sdcc
+LD=sdldz80 
+AS=sdasz80
 CFLAGS=-Isrc -Isrc/lib 
 CMDFLAGS=#--cyclomatic
 PY=python3
@@ -31,7 +33,9 @@ binary: CODE=0xc000
 # Stack should stay in ZP.
 # This is due to VRAM being in C000~.
 
-88FLAGS=-mz80 --stack-loc $(STACK) --code-loc $(CODE) --data-loc $(DATA) --fomit-frame-pointer --no-std-crt0
+88FLAGS=-mz80 \
+	--stack-loc $(STACK) --code-loc $(CODE) --data-loc $(DATA) \
+	--fomit-frame-pointer --no-std-crt0
 
 ## DISC FILE NAME ##
 APPNAME=app.d88
@@ -61,15 +65,21 @@ out/%.rel: src/lib/%.c
 	sdcc -c -mz80 $(CFLAGS) -o $@ $<
 
 
-default: $(PROJECT) $(PC88CFILES)
+default: $(PROJECT) $(PC88CFILES) m88bin
 	$(PY) tools/maked88.py $(APPNAME)
 	$(PY) tools/hexer.py src/ipl.bin 0x2f $(USEDSEC)
 	$(CC) $(88FLAGS) $(CFLAGS) $(CMDFLAGS) $(PROJECT)/main.c out/*.rel -o out/main.ihx
 	$(PY) tools/fixboot.py src/ipl.bin
 	$(PY) tools/hex2bin.py out/main.ihx main.bin
 	$(PY) tools/maked88.py $(APPNAME) src/ipl.bin 0 0 1
-	$(PY) tools/maked88.py $(APPNAME) main.bin 0 0 2
-	$(EMUEXE)
+	$(PY) tools/maked88.py $(APPNAME) main.bin 0 0 2	
+	$(PY) tools/maked88.py $(APPNAME) music2.bin 10 0 1
+	#$(EMUEXE)
+
+m88bin: 
+	$(AS) -los build/music2.rel src/music2.z80
+	$(LD) -i build/music2.ihx build/music2.rel
+	$(PY) tools/hex2bin.py build/music2.ihx music2.bin
 
 
 binary: $(PROJECT) $(PC88FILES)

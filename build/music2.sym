@@ -1,0 +1,118 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 1.
+Hexadecimal [24-Bits]
+
+Symbol Table
+
+    .__.$$$.=  002710 L   |     .__.ABS.=  000000 G   |     .__.CPU.=  000000 L
+    .__.H$L.=  000000 L   |   2 AKYOF2     00B438 R   |   2 AKYOFF     00B42F R
+  2 AS72       00B350 R   |   2 ASUB7      00B33E R   |   2 ASUB72     00B344 R
+  2 BRESET     00B3D8 R   |   2 C2NUM      00C06F R   |   2 CH1DAT     00BEA9 R
+  2 CH2DAT     00BECF R   |   2 CH3DAT     00BEF5 R   |   2 CH4DAT     00BF1B R
+  2 CH5DAT     00BF41 R   |   2 CH6DAT     00BF67 R   |   2 CHADAT     00BFB3 R
+  2 CHBDAT     00BFD9 R   |   2 CHCDAT     00BFFF R   |   2 CHK        00BE38 R
+  2 CHNUM      00C06E R   |   2 CRYDAT     00BE99 R   |   2 CTLFO      00B851 R
+  2 CTLFO1     00B85C R   |   2 DELT_N     00C079 R   |   2 DETDAT     00C05E R
+  2 DKEYOF     00B3FA R   |   2 DKEYON     00B423 R   |   2 DMY        00C074 R
+  2 DRAMDAT    00BF8D R   |   2 DRIVE      00B1C9 R   |   2 DRMF1      00BE80 R
+  2 DRMFQ      00B313 R   |   2 DRMVOL     00C062 R   |   2 DV2        00B6FF R
+  2 DVOLSET    00B6EC R   |   2 EFC        00B01F R   |     EFCTBL  =  00AA00 
+  2 EFECT      00B02B R   |   2 EFECT2     00B032 R   |   2 ENBL       00B145 R
+  2 ENDADR     00C077 R   |   2 ENVLP      00B77F R   |   2 ENVPOD     00BB29 R
+  2 ENVPST     00BB71 R   |   2 EXMLP      00B3BC R   |   2 EXMODE     00B3A9 R
+  2 FD2        00B71B R   |   2 FDCO       00BE7D R   |   2 FDL2       00B0E4 R
+  2 FDO        00B08C R   |   2 FDO2       00B0A2 R   |   2 FDO3       00B0F3 R
+  2 FDOFM      00B0E2 R   |   2 FDOSSG     00B0B4 R   |   2 FDOUT      00B092 R
+  2 FLGADR     00B00F R   |   2 FLGSET     00B4D4 R   |   2 FMCOM      00B476 R
+  2 FMCOM2     00B4A6 R   |   2 FMEND      00BC86 R   |   2 FMENT      00B246 R
+  2 FMGFQ      00B357 R   |   2 FMI2       00BD4E R   |   2 FMINIT     00BD15 R
+  2 FMPORT     00BE82 R   |   2 FMS92      00B385 R   |   2 FMSUB      00B24D R
+  2 FMSUB0     00B25D R   |   2 FMSUB1     00B282 R   |   2 FMSUB2     00B2AB R
+  2 FMSUB3     00B2BA R   |   2 FMSUB4     00B2EC R   |   2 FMSUB5     00B2D0 R
+  2 FMSUB6     00B392 R   |   2 FMSUB7     00B3A1 R   |   2 FMSUB8     00B38F R
+  2 FMSUB9     00B303 R   |   2 FMSUBA     00B463 R   |   2 FMSUBB     00B2AA R
+  2 FMSUBC     00B296 R   |   2 FMSUBE     00B291 R   |   2 FMVDAT     00BE85 R
+  2 FNUM       00BE83 R   |   2 FNUMB      00C084 R   |   2 FPORT      00B394 R
+  2 FRQ_DF     00B704 R   |   2 FS2        00B271 R   |   2 FS3        00B2CC R
+  2 HLFOON     00B583 R   |   2 HLSTC0     00B3C6 R   |   2 HRDENV     00BB17 R
+  2 INITF2     00B12A R   |   2 INITPM     00C055 R   |     INT3    =  00F308 
+  2 INT57      00B0FB R   |   2 INT573     00B116 R   |   2 KEYBUF     00BE81 R
+  2 KEYOFF     00B3E0 R   |   2 KEYON      00B408 R   |   2 KEYON2     00B412 R
+  2 LFOOFF     00B628 R   |   2 LFOON      00B5B5 R   |   2 LFOON2     00B623 R
+  2 LFOON3     00B5CC R   |   2 LFOP3      00B8FF R   |   2 LFOP4      00B8F6 R
+  2 LFOP5      00B8E0 R   |   2 LFOP6      00B934 R   |   2 LFORST     00B955 R
+  2 LFORST2    00B960 R   |   2 LFOTBL     00B5DA R   |   2 LFP62      00B94E R
+    MAXCH   =  00000B     |   2 MDSET      00B577 R   |   2 MONO       00B157 R
+  2 MONO2      00B161 R   |   2 MONO3      00B16B R   |   2 MONO4      00B17A R
+  2 MONO5      00B195 R   |   2 MSTART     00B05F R   |   2 MSTOP      00B079 R
+    MUSNUM  =  00C200     |     MU_TOP  =  00C205     |   2 M_VECTR    00BE79 R
+  2 NEWFNM     00C068 R   |   2 NOISE      00BB3F R   |   2 NOISE1     00BB4E R
+  2 NOISE2     00BB56 R   |   2 NOISEW     00BB65 R   |   2 NOTSB2     00BE76 R
+  2 NTMEAN     00B4CE R   |   2 OP_SEL     00C06A R   |   2 OTOCAL     00BB93 R
+    OTODAT  =  00C201     |   2 OTODRM     00B669 R   |   2 OTOPCM     00B66F R
+  2 OTOPST     00B651 R   |   2 OTOSSG     00BB88 R   |   2 PALDAT     00BEA1 R
+    PCMADR  =  00E300     |   2 PCMDAT     00C025 R   |   2 PCMEND     00BC96 R
+  2 PCMFLG     00C07C R   |   2 PCMGFQ     00B31C R   |   2 PCMLR      00BEA8 R
+  2 PCMNMB     00C0B4 R   |   2 PCMNUM     00C07B R   |   2 PCMO2      00BE27 R
+  2 PCMO3      00BE2E R   |   2 PCMOUT     00BE22 R   |   2 PCMV2      00B6E8 R
+  2 PCMVOL     00B6DC R   |   2 PL1        00BDFE R   |   2 PL2        00BE0A R
+  2 PLAY       00BD9B R   |   2 PLLFO      00B82B R   |   2 PLLFO1     00B884 R
+  2 PLLFO2     00B922 R   |   2 PLS2       00B891 R   |   2 PLSET1     00B1A9 R
+  2 PLSET2     00B1B0 R   |   2 PLSKI2     00B8AB R   |   2 PLSND3     00B1BB R
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 2.
+Hexadecimal [24-Bits]
+
+Symbol Table
+
+  2 PL_SND     00B1A0 R   |   2 PORT13     00BE7A R   |   2 PREGBF     00C04C R
+  2 PRI        00C07D R   |   2 PRISSG     00C073 R   |   2 PSGCOM     00BAE7 R
+  2 PSGO4      00B458 R   |   2 PSGOE      00B45F R   |   2 PSGOUT     00B442 R
+  2 PSGVOL     00BBB9 R   |   2 PV1        00BBC4 R   |   2 PV2        00BBCD R
+  2 PVMCHG     00B500 R   |   2 PVMODE     00BE77 R   |   2 P_OUT      00BE78 R
+  2 REPENF     00B75C R   |   2 REPENF2    00B769 R   |   2 REPSTF     00B74F R
+  2 RETW       00B010 R   |   2 RETW2      00B019 R   |   2 REVERVE    00B4DA R
+  2 REVMOD     00B4F1 R   |   2 REVSW      00B4E4 R   |   2 RHYTHM     00C04B R
+  2 RM2        00B4FB R   |   2 RSKIP      00B739 R   |   2 RSKIP2     00B747 R
+  2 RV1        00B4DF R   |     R_TIME  =  00F304     |     S.ILVL  =  00E6C3 
+  2 SECPRC     00B4BE R   |   2 SETCO      00B5F8 R   |   2 SETDEL     00B5EF R
+  2 SETPEK     00B618 R   |   2 SETPT      00BA9E R   |   2 SETQ       00B64B R
+  2 SETVC2     00B612 R   |   2 SETVCT     00B601 R   |   2 SKYOFF     00BBE0 R
+  2 SNUMB      00C09C R   |   2 SNUMGETL   00B8CD R   |   2 SOFENV     00BBEC R
+  2 SOFEV1     00BBFD R   |   2 SOFEV2     00BC0E R   |   2 SOFEV3     00BC24 R
+  2 SOFEV4     00BC34 R   |   2 SOFEV5     00BC44 R   |   2 SOFEV6     00BC71 R
+  2 SOFEV7     00BC61 R   |   2 SOFEV8     00BC23 R   |   2 SOFEV9     00BC54 R
+  2 SOFEVA     00BC5E R   |   2 SSG        00B984 R   |   2 SSGDAT     00C0CC R
+  2 SSGEND     00BCA9 R   |   2 SSGENT     00B23F R   |   2 SSGF1      00BE7F R
+  2 SSGOF1     00BBD9 R   |   2 SSGOFF     00BBD3 R   |   2 SSGSUB     00B984 R
+  2 SSINIT     00BD6B R   |   2 SSLFO2     00B8D3 R   |   2 SSSKIP0    00BA07 R
+  2 SSSUB0     00B9A6 R   |   2 SSSUB1     00B9E1 R   |   2 SSSUB2     00B9E2 R
+  2 SSSUB3     00BA91 R   |   2 SSSUB4     00BA39 R   |   2 SSSUB5     00BA33 R
+  2 SSSUB6     00B9F6 R   |   2 SSSUB7     00B9B6 R   |   2 SSSUB8     00BAD4 R
+  2 SSSUB9     00BA90 R   |   2 SSSUBA     00BAA5 R   |   2 SSSUBB     00B9CD R
+  2 SSSUBE     00B9C9 R   |   2 SSSUBF     00BA50 R   |   2 SSSUBG     00BA6B R
+  2 SSSUBH     00BA82 R   |   2 SSUB0      00B9A2 R   |   2 SSUB1      00B9C1 R
+  2 SSUBAB     00BAB3 R   |   2 SSUBAC     00BAC0 R   |   2 START      00B06F R
+  2 STE2       00B53B R   |   2 STENV      00B772 R   |   2 STENV0     00B78A R
+  2 STENV1     00B7AB R   |   2 STENV2     00B7B4 R   |   2 STENV3     00B7B5 R
+  2 STER2      00B518 R   |   2 STEREO     00B506 R   |   2 STT1       00BE6B R
+  2 STT2       00BE5D R   |   2 STTADR     00C075 R   |   2 STTE       00BE75 R
+  2 STTMB      00B811 R   |   2 STTMB2     00B813 R   |   2 STV1       00B7E1 R
+  2 STV12      00B7ED R   |   2 STV2       00B7EE R   |   2 STVOL      00B7D7 R
+  2 STVOL2     00B806 R   |   2 TB_TOP     00C070 R   |   2 TIE        00B4CF R
+  2 TIMER_B    00C072 R   |   2 TLL2       00B637 R   |   2 TLLFO      00B62D R
+  2 TNML2      00BD88 R   |   2 TOTALV     00BE7C R   |   2 TO_EFC     00BD92 R
+  2 TO_NML     00BD81 R   |   2 TYPE1      00C07E R   |   2 TYPE2      00C081 R
+  2 VOLDR1     00B6BD R   |   2 VOLDR2     00B6C2 R   |   2 VOLDRM     00B6B5 R
+  2 VOLPST     00B6A0 R   |   2 VOLUPF     00B55F R   |   2 VOLUPS     00BB9F R
+    VRTC    =  00F302     |   2 WI1        00BCC7 R   |   2 WI2        00BCD9 R
+  2 WI4        00BCE7 R   |   2 WI6        00BD08 R   |     WKLENG  =  000026 
+  2 WORKINIT   00BCB7 R   |   2 W_REG      00BB37 R
+
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 3.
+Hexadecimal [24-Bits]
+
+Area Table
+
+   0 _CODE      size      0   flags    0
+   1 SOUNDDRV   size      0   flags    8
+   2 SOUNDDRV   size   112C   flags    8
+

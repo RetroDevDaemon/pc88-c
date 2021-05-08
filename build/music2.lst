@@ -1,0 +1,3290 @@
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 1.
+Hexadecimal [24-Bits]
+
+
+
+                                      1 ;   MUSIC DRIVE Ver 1.0
+                                      2 ;   FOR PC-8801MK2SR/FR/MR/TR
+                                      3 ;   1987/3~	FH/MH/FA/MA & VA
+                                      4 ;   PROGRAMED BY YUZO KOSHIRO
+                                      5 ; modified by @RetroDevDiscord	
+                                      6 ;  for sdasz80
+                                      7 
+                                      8 	.area SOUNDDRV (ABS)
+                                      9 
+                                     10 
+                           00F302    11 VRTC = 0xf302; :	EQU	0F302H
+                           00F304    12 R_TIME = 0xf304;:	EQU	0F304H
+                           00F308    13 INT3 = 0xf308;:	EQU	0F308H
+                           00E6C3    14 S.ILVL = 0xe6c3;:	EQU	0E6C3H
+                           00000B    15 MAXCH = 11;:		EQU	11
+                                     16 	
+                           00C200    17 MUSNUM = 0xC200	; data start address
+                           00E300    18 PCMADR = 0xE300	; ADPCM data table start addr
+                           00AA00    19 EFCTBL = 0xAA00	; sfx start addr
+                                     20 	
+                           00C201    21 OTODAT = MUSNUM+1
+                           00C205    22 MU_TOP .equ	MUSNUM+5
+                                     23 	
+                                     24 	
+      00B000                         25 	.org 0xb000
+                                     26 	
+                                     27 ; cmd list:	
+      00B000 C3 5F B0         [10]   28 	JP	MSTART
+      00B003 C3 79 B0         [10]   29 	JP	MSTOP
+      00B006 C3 8C B0         [10]   30 	JP	FDO
+      00B009 C3 2B B0         [10]   31 	JP	EFECT
+      00B00C C3 10 B0         [10]   32 	JP	RETW
+                                     33 
+                                     34 ;; Commands List 
+                                     35 ;
+                                     36 ; ld a, TrackNo
+                                     37 ; call 0xb000 - play
+                                     38 
+                                     39 ; call 0xb003 - stop
+                                     40 
+                                     41 ; call 0xb006 - fadeout 
+                                     42 
+                                     43 ; ld hl, priority << 8 | sfx number
+                                     44 ; call 0xb009 - SFX
+                                     45 
+                                     46 ; call 0xb00c - Return work address
+                                     47 
+                                     48 ;;;
+                                     49 
+      00B00F 00                      50 FLGADR: .db	0	;#n	
+                                     51 	
+                                     52 ; **	RETURN WORK ADR	**
+                                     53 	
+                                     54 	;IN:	A<-���������(0-10)
+                                     55 	;EXIT:	IX
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 2.
+Hexadecimal [24-Bits]
+
+
+
+      00B010                         56 RETW:
+      00B010 DD 21 A9 BE      [14]   57 	LD	IX,#CH1DAT
+      00B014 B7               [ 4]   58 	OR	A
+      00B015 C8               [11]   59 	RET	Z
+      00B016 11 26 00         [10]   60 	LD	DE,#CH2DAT-#CH1DAT
+      00B019                         61 RETW2:
+      00B019 DD 19            [15]   62 	ADD	IX,DE
+      00B01B 3D               [ 4]   63 	DEC	A
+      00B01C C8               [11]   64 	RET	Z
+      00B01D 18 FA            [12]   65 	JR	RETW2
+                                     66 	
+                                     67 ; **	EFC FROM BASIC	**
+                                     68 	
+                                     69 	;USR(n):	n=0<->max255
+      00B01F                         70 EFC:
+                                     71 	
+      00B01F FE 02            [ 7]   72 	CP	#2
+      00B021 C0               [11]   73 	RET	NZ
+      00B022 CD A0 21         [17]   74 	CALL	#0x21A0	;FACC->BIN
+      00B025 26 01            [ 7]   75 	LD	H,#1	;PRI
+      00B027 CD 2B B0         [17]   76 	CALL	EFECT
+      00B02A C9               [10]   77 	RET
+                                     78 	
+                                     79 	
+                                     80 ; **	EFECT	***
+                                     81 	
+                                     82 	;IN:	H<=��ײ��è
+                                     83 	;	L<=EFC ����
+                                     84 	
+      00B02B                         85 EFECT:
+      00B02B 3A 73 C0         [13]   86 	LD	A,(PRISSG)
+      00B02E BC               [ 4]   87 	CP	H
+      00B02F 28 01            [12]   88 	JR	Z,EFECT2
+      00B031 D0               [11]   89 	RET	NC
+      00B032                         90 EFECT2:
+      00B032 F3               [ 4]   91 	DI
+      00B033 7C               [ 4]   92 	LD	A,H
+      00B034 32 73 C0         [13]   93 	LD	(PRISSG),A
+      00B037 7D               [ 4]   94 	LD	A,L
+      00B038 87               [ 4]   95 	ADD	A,A
+      00B039 6F               [ 4]   96 	LD	L,A
+      00B03A 26 00            [ 7]   97 	LD	H,#0
+      00B03C 11 00 AA         [10]   98 	LD	DE,#EFCTBL
+      00B03F 19               [11]   99 	ADD	HL,DE
+      00B040 7E               [ 7]  100 	LD	A,(HL)
+      00B041 23               [ 6]  101 	INC	HL
+      00B042 66               [ 7]  102 	LD	H,(HL)
+      00B043 6F               [ 4]  103 	LD	L,A
+      00B044 11 00 00         [10]  104 	LD	DE,#0
+      00B047 3E 01            [ 7]  105 	LD	A,#1
+      00B049 22 69 BF         [16]  106 	LD	(CH6DAT+2),HL
+      00B04C ED 53 6B BF      [20]  107 	LD	(CH6DAT+4),DE
+      00B050 32 67 BF         [13]  108 	LD	(CH6DAT),A
+      00B053 DD 21 67 BF      [14]  109 	LD	IX,#CH6DAT
+      00B057 21 74 C0         [10]  110 	LD	HL,#DMY
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 3.
+Hexadecimal [24-Bits]
+
+
+
+      00B05A CD 3F BB         [17]  111 	CALL	NOISE
+      00B05D FB               [ 4]  112 	EI
+      00B05E C9               [10]  113 	RET
+                                    114 	
+                                    115 	
+                                    116 	
+                                    117 ; **	MUSIC START/STOP	**
+                                    118 	
+                                    119 ;	IN: A<= MUSIC NUMBER (0->)
+                                    120 	
+      00B05F                        121 MSTART:
+                                    122 	;LD	A,#0	;!
+                                    123 	
+      00B05F F3               [ 4]  124 	DI
+      00B060 32 00 C2         [13]  125 	LD	(MUSNUM),A
+      00B063 CD 38 BE         [17]  126 	CALL	CHK
+      00B066 CD 2F B4         [17]  127 	CALL	AKYOFF
+      00B069 CD D3 BB         [17]  128 	CALL	SSGOFF
+      00B06C CD B7 BC         [17]  129 	CALL	WORKINIT
+      00B06F                        130 START:
+      00B06F E5               [11]  131 	PUSH	HL
+      00B070 CD FB B0         [17]  132 	CALL	INT57 ; this fails
+                                    133 	;CALL	ENBL  ; this fails 
+      00B073 CD 81 BD         [17]  134 	CALL	TO_NML
+      00B076 E1               [10]  135 	POP	HL
+      00B077 FB               [ 4]  136 	EI
+      00B078 C9               [10]  137 	RET
+      00B079                        138 MSTOP:
+      00B079 F3               [ 4]  139 	DI
+      00B07A CD 2F B4         [17]  140 	CALL	AKYOFF
+      00B07D CD D3 BB         [17]  141 	CALL	SSGOFF
+      00B080 3A 79 BE         [13]  142 	LD	A,(M_VECTR)
+      00B083 4F               [ 4]  143 	LD	C,A
+      00B084 ED 78            [12]  144 	IN	A,(C)
+      00B086 F6 80            [ 7]  145 	OR	#0b10000000
+      00B088 ED 79            [12]  146 	OUT	(C),A
+      00B08A FB               [ 4]  147 	EI
+      00B08B C9               [10]  148 	RET
+                                    149 	
+                                    150 	
+                                    151 ; **	FADEOUT		**
+                                    152 	
+      00B08C                        153 FDO:
+      00B08C 3E 10            [ 7]  154 	LD	A,#16
+      00B08E 32 7D BE         [13]  155 	LD	(FDCO),A
+      00B091 C9               [10]  156 	RET
+      00B092                        157 FDOUT:
+      00B092 21 7E BE         [10]  158 	LD	HL,#FDCO+1
+      00B095 35               [11]  159 	DEC	(HL)
+      00B096 C0               [11]  160 	RET	NZ
+      00B097 36 10            [10]  161 	LD	(HL),#16
+      00B099 3A 7D BE         [13]  162 	LD	A,(FDCO)
+      00B09C B7               [ 4]  163 	OR	A
+      00B09D C8               [11]  164 	RET	Z
+      00B09E 3D               [ 4]  165 	DEC	A
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 4.
+Hexadecimal [24-Bits]
+
+
+
+      00B09F 32 7D BE         [13]  166 	LD	(FDCO),A
+      00B0A2                        167 FDO2:
+      00B0A2 C6 F0            [ 7]  168 	ADD	A,#0xF0
+      00B0A4 32 7C BE         [13]  169 	LD	(TOTALV),A
+      00B0A7 AF               [ 4]  170 	XOR	A
+      00B0A8 32 82 BE         [13]  171 	LD	(FMPORT),A
+      00B0AB DD 21 A9 BE      [14]  172 	LD	IX,#CH1DAT
+      00B0AF CD E2 B0         [17]  173 	CALL	FDOFM
+      00B0B2 06 03            [ 7]  174 	LD	B,#3
+      00B0B4                        175 FDOSSG:
+      00B0B4 C5               [11]  176 	PUSH	BC
+      00B0B5 DD 7E 06         [19]  177 	LD	A,6(IX)
+      00B0B8 4F               [ 4]  178 	LD	C,A
+      00B0B9 E6 F0            [ 7]  179 	AND	#0b11110000
+      00B0BB 5F               [ 4]  180 	LD	E,A
+      00B0BC 79               [ 4]  181 	LD	A,C
+      00B0BD E6 0F            [ 7]  182 	AND	#0b00001111
+      00B0BF 4F               [ 4]  183 	LD	C,A
+      00B0C0 CD C4 BB         [17]  184 	CALL	PV1
+      00B0C3 11 26 00         [10]  185 	LD	DE,#WKLENG
+      00B0C6 DD 19            [15]  186 	ADD	IX,DE
+      00B0C8 C1               [10]  187 	POP	BC
+      00B0C9 10 E9            [13]  188 	DJNZ	FDOSSG
+                                    189 	
+      00B0CB CD EC B6         [17]  190 	CALL	DVOLSET
+                                    191 	
+      00B0CE 3E 04            [ 7]  192 	LD	A,#4
+      00B0D0 32 82 BE         [13]  193 	LD	(FMPORT),A
+      00B0D3 11 26 00         [10]  194 	LD	DE,#WKLENG
+      00B0D6 DD 19            [15]  195 	ADD	IX,DE
+      00B0D8 CD E2 B0         [17]  196 	CALL	FDOFM
+                                    197 	
+      00B0DB 3A 7D BE         [13]  198 	LD	A,(FDCO)
+      00B0DE B7               [ 4]  199 	OR	A
+      00B0DF 28 12            [12]  200 	JR	Z,FDO3
+      00B0E1 C9               [10]  201 	RET
+      00B0E2                        202 FDOFM:
+      00B0E2 06 03            [ 7]  203 	LD	B,#3
+      00B0E4                        204 FDL2:
+      00B0E4 C5               [11]  205 	PUSH	BC
+      00B0E5 CD D7 B7         [17]  206 	CALL	STVOL
+      00B0E8 11 26 00         [10]  207 	LD	DE,#WKLENG
+      00B0EB DD 19            [15]  208 	ADD	IX,DE
+      00B0ED C1               [10]  209 	POP	BC
+      00B0EE 10 F4            [13]  210 	DJNZ	FDL2
+      00B0F0 06 03            [ 7]  211 	LD	B,#3
+      00B0F2 C9               [10]  212 	RET
+      00B0F3                        213 FDO3:
+      00B0F3 CD 79 B0         [17]  214 	CALL MSTOP
+                                    215 ;.ds 4096
+      00B0F6 AF               [ 4]  216 	XOR	A
+      00B0F7 32 7C BE         [13]  217 	LD	(TOTALV),A
+      00B0FA C9               [10]  218 	RET
+                                    219 	
+                                    220 
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 5.
+Hexadecimal [24-Bits]
+
+
+
+                                    221 ; **	�غ� � ���� ��� �����ò � ��ų	**
+                                    222 
+      00B0FB                        223 INT57:
+      00B0FB F5               [11]  224 	PUSH	AF
+      00B0FC E5               [11]  225 	PUSH	HL
+      00B0FD 3E 05            [ 7]  226 	LD	A,#5
+                                    227 	;LD	(S.ILVL),A
+      00B0FF D3 E4            [11]  228 	OUT	(#0xE4),A	;  CUT INT 5-7
+      00B101 3E 03            [ 7]  229 	LD	A,#3
+      00B103 D3 E6            [11]  230 	OUT	(#0xE6),A	;  VRTC=ON;RTCLOCK=ON;USART=OFF
+      00B105 ED 57            [ 9]  231 	LD	A,I
+      00B107 67               [ 4]  232 	LD	H,A
+      00B108 2E 08            [ 7]  233 	LD	L,#8
+      00B10A 11 A0 B1         [10]  234 	LD	DE,#PL_SND
+      00B10D 73               [ 7]  235 	LD	(HL),E
+      00B10E 23               [ 6]  236 	INC	HL
+      00B10F 72               [ 7]  237 	LD	(HL),D
+      00B110 E1               [10]  238 	pop hl 
+      00B111 F1               [10]  239 	pop af 
+      00B112 C9               [10]  240 	ret 
+                                    241 	
+      00B113 CD 81 BD         [17]  242 	CALL	TO_NML
+      00B116                        243 INT573:
+      00B116 CD 57 B1         [17]  244 	CALL	MONO
+                                    245 	
+      00B119 CD 2F B4         [17]  246 	CALL	AKYOFF		;  ALL KEY OFF
+      00B11C CD D3 BB         [17]  247 	CALL	SSGOFF
+                                    248 	
+      00B11F 11 83 29         [10]  249 	LD	DE,#0x2983	; CH 4-6 ENABLE
+      00B122 CD 42 B4         [17]  250 	CALL	PSGOUT
+                                    251 	
+      00B125 11 00 00         [10]  252         LD	DE,#0
+      00B128 06 06            [ 7]  253 	LD	B,#6
+      00B12A                        254 INITF2:
+      00B12A CD 42 B4         [17]  255 	CALL	PSGOUT
+      00B12D 14               [ 4]  256 	INC	D
+      00B12E 10 FA            [13]  257 	DJNZ	INITF2
+                                    258 	
+      00B130 16 07            [ 7]  259 	LD	D,#7
+      00B132 1E 38            [ 7]  260 	LD	E,#0b00111000
+      00B134 CD 42 B4         [17]  261 	CALL	PSGOUT
+      00B137 21 55 C0         [10]  262 	LD	HL,#INITPM
+      00B13A 11 4C C0         [10]  263 	LD	DE,#PREGBF
+      00B13D 01 09 00         [10]  264 	LD	BC,#9
+      00B140 ED B0            [21]  265 	LDIR			; PSG�ޯ̧ �Ƽ�ײ��
+                                    266 	
+      00B142 E1               [10]  267 	POP	HL
+      00B143 F1               [10]  268 	POP	AF
+      00B144 C9               [10]  269 	RET
+                                    270 
+                                    271 ; **	Э��ޯ� �غ� ENABLE	**
+                                    272 
+      00B145                        273 ENBL:
+                                    274 	;ret 
+      00B145 3A 72 C0         [13]  275 	LD	A,(TIMER_B)
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 6.
+Hexadecimal [24-Bits]
+
+
+
+      00B148 5F               [ 4]  276 	LD	E,A
+      00B149 CD 11 B8         [17]  277 	CALL	STTMB		;  SET Timer-B
+                                    278 
+      00B14C 3A 79 BE         [13]  279 	LD	A,(M_VECTR)
+      00B14F 4F               [ 4]  280 	LD	C,A
+      00B150 ED 78            [12]  281 	IN	A,(C)
+      00B152 E6 7F            [ 7]  282 	AND	#0x7F
+      00B154 ED 79            [12]  283 	OUT	(C),A
+      00B156 C9               [10]  284 	RET
+                                    285 	
+                                    286 ; **	ALL MONORAL / H.LFO OFF	***
+                                    287 	
+      00B157                        288 MONO:
+      00B157 16 B4            [ 7]  289 	LD	D,#0xB4
+      00B159 1E C0            [ 7]  290 	LD	E,#0xC0
+      00B15B AF               [ 4]  291 	XOR	A
+      00B15C 32 82 BE         [13]  292 	LD	(FMPORT),A
+      00B15F 06 03            [ 7]  293 	LD	B,#3
+      00B161                        294 MONO2:
+      00B161 CD 42 B4         [17]  295 	CALL	PSGOUT
+      00B164 14               [ 4]  296 	INC	D
+      00B165 10 FA            [13]  297 	DJNZ	MONO2
+                                    298 	
+      00B167 16 18            [ 7]  299 	LD	D,#0x18
+      00B169 06 06            [ 7]  300         LD	B,#6
+      00B16B                        301 MONO3:
+      00B16B CD 42 B4         [17]  302 	CALL	PSGOUT
+      00B16E 14               [ 4]  303 	INC	D
+      00B16F 10 FA            [13]  304 	DJNZ	MONO3
+                                    305 	
+      00B171 06 03            [ 7]  306 	LD	B,#3
+      00B173 16 B4            [ 7]  307 	LD	D,#0xB4
+      00B175 3E 04            [ 7]  308 	LD	A,#4
+      00B177 32 82 BE         [13]  309 	LD	(FMPORT),A
+      00B17A                        310 MONO4:
+      00B17A CD 42 B4         [17]  311 	CALL	PSGOUT
+      00B17D 14               [ 4]  312 	INC	D
+      00B17E 10 FA            [13]  313 	DJNZ	MONO4
+                                    314 	
+      00B180 AF               [ 4]  315 	XOR	A
+      00B181 32 82 BE         [13]  316 	LD	(FMPORT),A
+                                    317 	
+      00B184 11 00 22         [10]  318 	LD	DE,#0x2200
+      00B187 CD 42 B4         [17]  319 	CALL	PSGOUT
+      00B18A 11 00 12         [10]  320 	LD	DE,#0x1200
+      00B18D CD 42 B4         [17]  321 	CALL	PSGOUT
+                                    322 	
+      00B190 21 A1 BE         [10]  323 	LD	HL,#PALDAT
+      00B193 06 07            [ 7]  324 	LD	B,#7
+      00B195                        325 MONO5:
+      00B195 36 C0            [10]  326 	LD	(HL),#0xC0
+      00B197 23               [ 6]  327 	INC	HL
+      00B198 10 FB            [13]  328 	DJNZ	MONO5
+                                    329 	
+      00B19A 3E 03            [ 7]  330 	LD	A,#3
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 7.
+Hexadecimal [24-Bits]
+
+
+
+      00B19C 32 A8 BE         [13]  331 	LD	(PCMLR),A
+      00B19F C9               [10]  332 	RET
+                                    333 	
+                                    334 ; **	MUSIC MAIN	**
+                                    335 
+      00B1A0                        336 PL_SND:
+      00B1A0 F3               [ 4]  337 	DI
+      00B1A1 F5               [11]  338 	PUSH	AF
+      00B1A2 E5               [11]  339 	PUSH	HL
+      00B1A3 D5               [11]  340 	PUSH	DE
+      00B1A4 C5               [11]  341 	PUSH	BC
+      00B1A5 DD E5            [15]  342 	PUSH	IX
+      00B1A7 FD E5            [15]  343 	PUSH	IY
+                                    344 	
+      00B1A9                        345 PLSET1:
+      00B1A9 1E 38            [ 7]  346  	LD	E,#0x38		;  TIMER-OFF DATA
+      00B1AB 16 27            [ 7]  347  	LD	D,#0x27
+      00B1AD CD 42 B4         [17]  348   	CALL	PSGOUT		;  TIMER-OFF
+      00B1B0                        349 PLSET2:
+      00B1B0 1E 3A            [ 7]  350 	LD	E,#0x3A
+      00B1B2 CD 42 B4         [17]  351 	CALL	PSGOUT		;  TIMER-ON
+                                    352 
+      00B1B5 CD C9 B1         [17]  353 	CALL	DRIVE
+      00B1B8 CD 92 B0         [17]  354 	CALL	FDOUT
+      00B1BB                        355 PLSND3:
+                                    356 	
+                                    357 	;LD	A,(S.ILVL)
+      00B1BB 3E 05            [ 7]  358 	LD	A,#5
+      00B1BD D3 E4            [11]  359 	OUT	(#0xE4),A	;CUT INT 5-7
+                                    360 	
+      00B1BF FD E1            [14]  361 	POP	IY
+      00B1C1 DD E1            [14]  362 	POP	IX
+      00B1C3 C1               [10]  363 	POP	BC
+      00B1C4 D1               [10]  364 	POP	DE
+      00B1C5 E1               [10]  365 	POP	HL
+      00B1C6 F1               [10]  366 	POP	AF
+                                    367 	
+      00B1C7 FB               [ 4]  368 	EI
+      00B1C8 C9               [10]  369 	RET
+                                    370 	
+                                    371 ; **	CALL FM		**
+                                    372 	
+      00B1C9                        373 DRIVE:
+      00B1C9 AF               [ 4]  374 	XOR	A
+      00B1CA 32 82 BE         [13]  375 	LD	(FMPORT),A
+                                    376 	
+      00B1CD DD 21 A9 BE      [14]  377 	LD	IX,#CH1DAT
+      00B1D1 CD 46 B2         [17]  378 	CALL	FMENT
+      00B1D4 DD 21 CF BE      [14]  379 	LD	IX,#CH2DAT
+      00B1D8 CD 46 B2         [17]  380 	CALL	FMENT
+      00B1DB DD 21 F5 BE      [14]  381 	LD	IX,#CH3DAT
+      00B1DF CD 46 B2         [17]  382 	CALL	FMENT
+                                    383 	
+                                    384 ; **	CALL SSG	**
+                                    385 	
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 8.
+Hexadecimal [24-Bits]
+
+
+
+      00B1E2 3E FF            [ 7]  386 	LD	A,#0xFF
+      00B1E4 32 7F BE         [13]  387 	LD	(SSGF1),A
+                                    388 	
+      00B1E7 DD 21 1B BF      [14]  389  	LD	IX,#CH4DAT
+      00B1EB CD 3F B2         [17]  390   	CALL	SSGENT
+      00B1EE DD 21 41 BF      [14]  391  	LD	IX,#CH5DAT
+      00B1F2 CD 3F B2         [17]  392  	CALL	SSGENT
+      00B1F5 DD 21 67 BF      [14]  393  	LD	IX,#CH6DAT
+      00B1F9 CD 3F B2         [17]  394  	CALL	SSGENT
+      00B1FC AF               [ 4]  395 	XOR	A
+      00B1FD 32 7F BE         [13]  396 	LD	(SSGF1),A
+                                    397 	
+      00B200 3A 76 BE         [13]  398 	LD	A,(NOTSB2)
+      00B203 B7               [ 4]  399 	OR	A
+      00B204 C0               [11]  400 	RET	NZ
+                                    401 	
+      00B205 3C               [ 4]  402 	INC	A
+      00B206 32 80 BE         [13]  403 	LD	(DRMF1),A
+      00B209 DD 21 8D BF      [14]  404 	LD	IX,#DRAMDAT
+      00B20D CD 46 B2         [17]  405 	CALL	FMENT
+      00B210 AF               [ 4]  406 	XOR	A
+      00B211 32 80 BE         [13]  407 	LD	(DRMF1),A
+                                    408 	
+      00B214 3E 04            [ 7]  409 	LD	A,#4
+      00B216 32 82 BE         [13]  410 	LD	(FMPORT),A
+      00B219 DD 21 B3 BF      [14]  411 	LD	IX,#CHADAT
+      00B21D CD 46 B2         [17]  412 	CALL	FMENT
+      00B220 DD 21 D9 BF      [14]  413 	LD	IX,#CHBDAT
+      00B224 CD 46 B2         [17]  414 	CALL	FMENT
+      00B227 DD 21 FF BF      [14]  415 	LD	IX,#CHCDAT
+      00B22B CD 46 B2         [17]  416 	CALL	FMENT
+      00B22E 3E FF            [ 7]  417 	LD	A,#0xFF
+      00B230 32 7C C0         [13]  418 	LD	(PCMFLG),A
+      00B233 DD 21 25 C0      [14]  419 	LD	IX,#PCMDAT
+      00B237 CD 46 B2         [17]  420 	CALL	FMENT
+      00B23A AF               [ 4]  421 	XOR	A
+      00B23B 32 7C C0         [13]  422 	LD	(PCMFLG),A
+      00B23E C9               [10]  423 	RET
+                                    424 	
+      00B23F                        425 SSGENT:
+      00B23F CD 84 B9         [17]  426 	CALL	SSGSUB
+      00B242 CD 2B B8         [17]  427 	CALL	PLLFO
+      00B245 C9               [10]  428 	RET
+      00B246                        429 FMENT:
+      00B246 CD 4D B2         [17]  430 	CALL	FMSUB
+      00B249 CD 2B B8         [17]  431 	CALL	PLLFO
+      00B24C C9               [10]  432 	RET
+                                    433 	
+                                    434 ;**	FM �ݹ�� � ���� �ݿ� ٰ��	**
+                                    435 
+      00B24D                        436 FMSUB:
+      00B24D DD 7E 00         [19]  437 	LD	A,(IX)
+      00B250 3D               [ 4]  438 	DEC	A
+      00B251 DD 77 00         [19]  439 	LD	(IX),A
+      00B254 28 2C            [12]  440 	JR	Z,FMSUB1
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 9.
+Hexadecimal [24-Bits]
+
+
+
+                                    441 	
+      00B256 DD 46 12         [19]  442 	LD	B,18(IX)	;  'q'
+      00B259 B8               [ 4]  443 	CP	B
+      00B25A 28 01            [12]  444 	JR	Z,FMSUB0
+      00B25C D0               [11]  445 	RET	NC
+                                    446 
+      00B25D                        447 FMSUB0:
+      00B25D DD 66 03         [19]  448 	LD	H,3(IX)
+      00B260 DD 6E 02         [19]  449 	LD	L,2(IX)	;  HL=SOUND DATA ADD
+      00B263 7E               [ 7]  450 	LD	A,(HL)		;  A=DATA
+      00B264 FE FD            [ 7]  451 	CP	#0xFD		; COUNT OVER ?
+      00B266 C8               [11]  452 	RET	Z
+      00B267 DD CB 21 6E      [20]  453 	BIT	5,33(IX)
+      00B26B 20 04            [12]  454 	JR	NZ,FS2
+      00B26D CD E0 B3         [17]  455 	CALL	KEYOFF
+      00B270 C9               [10]  456 	RET
+      00B271                        457 FS2:
+      00B271 DD 7E 06         [19]  458 	LD	A,6(IX)
+      00B274 DD 86 11         [19]  459 	ADD	A,17(IX)
+      00B277 4F               [ 4]  460 	LD	C,A
+      00B278 CB 39            [ 8]  461 	SRL	C
+      00B27A CD EE B7         [17]  462 	CALL	STV2
+      00B27D DD CB 1F F6      [23]  463 	SET	6,31(IX)	;  SET KEYOFF FLAG
+      00B281 C9               [10]  464 	RET
+                                    465 
+                                    466 ; **	SET NEW SOUND	**
+                                    467 	
+      00B282                        468 FMSUB1:
+      00B282 DD CB 1F F6      [23]  469 	SET	6,31(IX)
+      00B286 DD 66 03         [19]  470 	LD	H,3(IX)
+      00B289 DD 6E 02         [19]  471 	LD	L,2(IX)	; HL=SOUND DATA ADD
+      00B28C 7E               [ 7]  472 	LD	A,(HL)		; A=DATA
+      00B28D FE FD            [ 7]  473 	CP	#0xFD		; COUNT OVER?
+      00B28F 20 05            [12]  474 	JR	NZ,FMSUBC
+      00B291                        475 FMSUBE:
+      00B291 DD CB 1F B6      [23]  476 	RES	6,31(IX)	; RES KEYOFF FLAG
+      00B295 23               [ 6]  477 	INC	HL
+      00B296                        478 FMSUBC:
+      00B296 7E               [ 7]  479 	LD	A,(HL)		;
+      00B297 B7               [ 4]  480 	OR	A		; �ް� ���خ� � �����
+      00B298 20 11            [12]  481 	JR	NZ,FMSUB2	;* 00H as end
+                                    482 
+      00B29A DD CB 1F C6      [23]  483 	SET	0,31(IX)
+      00B29E DD 56 05         [19]  484 	LD	D,5(IX)
+      00B2A1 DD 5E 04         [19]  485 	LD	E,4(IX)	; HL=DATA TOP ADDRES
+      00B2A4 7B               [ 4]  486 	LD	A,E
+      00B2A5 B2               [ 4]  487 	OR	D
+      00B2A6 CA 86 BC         [10]  488 	JP	Z,FMEND		;* DATA TOP ADRESS �� 0000H �� BGM
+                                    489 				; � ���خ� � ��ò �� ��޲� �ض��
+      00B2A9 EB               [ 4]  490 	EX	DE,HL
+      00B2AA                        491 FMSUBB:
+      00B2AA 7E               [ 7]  492 	LD	A,(HL)		; GET FLAG & LENGTH
+                                    493 
+                                    494 ; **	SET LENGTH	**
+                                    495 
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 10.
+Hexadecimal [24-Bits]
+
+
+
+      00B2AB                        496 FMSUB2:
+      00B2AB 23               [ 6]  497 	INC	HL
+      00B2AC FE F0            [ 7]  498 	CP	#0xF0		;
+      00B2AE D2 63 B4         [10]  499 	JP	NC,FMSUBA	; DATA �� ����� �� FMSUBA �
+                                    500 
+      00B2B1 07               [ 4]  501 	RLCA
+      00B2B2 CB 3F            [ 8]  502 	SRL	A		; GET CY=7TH BIT (���� �׸�) : A=LENGTH
+      00B2B4 DD 77 00         [19]  503 	LD	(IX),A		; SET WAIT COUNTER
+      00B2B7 D2 D0 B2         [10]  504 	JP	NC,FMSUB5	; ���� �� FMSUB5 �
+                                    505 
+                                    506 ; **	SET F-NUMBER	**
+                                    507 
+      00B2BA                        508 FMSUB3:
+      00B2BA DD 74 03         [19]  509 	LD	3(IX),H
+      00B2BD DD 75 02         [19]  510 	LD 	2(IX),L	; SET NEXT SOUND DATA ADD
+      00B2C0 DD CB 21 66      [20]  511 	BIT	4,33(IX)
+      00B2C4 20 06            [12]  512 	JR	NZ,FS3
+      00B2C6 DD CB 21 6E      [20]  513 	BIT	5,33(IX)
+      00B2CA 20 A5            [12]  514 	JR	NZ,FS2
+      00B2CC                        515 FS3:
+      00B2CC CD E0 B3         [17]  516 	CALL	KEYOFF
+      00B2CF C9               [10]  517 	RET
+                                    518 
+      00B2D0                        519 FMSUB5:
+      00B2D0 DD CB 1F 76      [20]  520 	BIT	6,31(IX)
+      00B2D4 C4 E0 B3         [17]  521 	CALL	NZ,KEYOFF
+                                    522 	
+      00B2D7 3A AA B1         [13]  523 	LD	A,(PLSET1+1)
+      00B2DA FE 78            [ 7]  524 	CP	#0x78
+      00B2DC 20 0E            [12]  525 	JR	NZ,FMSUB4
+                                    526 	
+      00B2DE 3A 82 BE         [13]  527 	LD	A,(FMPORT)
+      00B2E1 B7               [ 4]  528 	OR	A
+      00B2E2 20 08            [12]  529 	JR	NZ,FMSUB4
+      00B2E4 DD 7E 08         [19]  530 	LD	A,8(IX)
+      00B2E7 FE 02            [ 7]  531 	CP	#2		; CH=3?
+      00B2E9 CA A9 B3         [10]  532 	JP	Z,EXMODE
+      00B2EC                        533 FMSUB4:
+      00B2EC 7E               [ 7]  534 	LD	A,(HL)		; A=BLOCK( OCTAVE-1 ) & KEY CODE DATA
+      00B2ED 23               [ 6]  535 	INC	HL
+      00B2EE DD 74 03         [19]  536 	LD	3(IX),H
+      00B2F1 DD 75 02         [19]  537 	LD	2(IX),L	; SET NEXT SOUND DATA ADD
+                                    538 
+      00B2F4 47               [ 4]  539 	LD	B,A		; STORE
+      00B2F5 DD CB 1F 76      [20]  540 	BIT	6,31(IX)	; CHECK KEYOFF FLAG
+      00B2F9 20 08            [12]  541 	JR	NZ,FMSUB9
+                                    542 
+      00B2FB DD 7E 20         [19]  543 	LD	A,32(IX)	; GET BEFORE CODE DATA
+      00B2FE 90               [ 4]  544 	SUB	B
+      00B2FF 20 02            [12]  545 	JR	NZ,FMSUB9
+      00B301 37               [ 4]  546 	SCF
+      00B302 C9               [10]  547 	RET
+      00B303                        548 FMSUB9:
+      00B303 78               [ 4]  549 	LD	A,B
+      00B304 DD 77 20         [19]  550 	LD	32(IX),A
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 11.
+Hexadecimal [24-Bits]
+
+
+
+      00B307 3A 7C C0         [13]  551 	LD	A,(PCMFLG)
+      00B30A B7               [ 4]  552 	OR	A
+      00B30B 20 0F            [12]  553 	JR	NZ,PCMGFQ
+      00B30D 3A 80 BE         [13]  554 	LD	A,(DRMF1)
+      00B310 B7               [ 4]  555 	OR	A
+      00B311 28 44            [12]  556 	JR	Z,FMGFQ
+      00B313                        557 DRMFQ:
+      00B313 DD CB 1F 76      [20]  558 	BIT	6,31(IX)
+      00B317 C8               [11]  559 	RET	Z
+      00B318 CD 23 B4         [17]  560 	CALL	DKEYON
+      00B31B C9               [10]  561 	RET
+      00B31C                        562 PCMGFQ:
+      00B31C 78               [ 4]  563 	LD	A,B
+      00B31D E6 0F            [ 7]  564 	AND	#0b00001111
+      00B31F 21 B4 C0         [10]  565 	LD	HL,#PCMNMB
+      00B322 87               [ 4]  566 	ADD	A,A
+      00B323 5F               [ 4]  567 	LD	E,A
+      00B324 16 00            [ 7]  568 	LD	D,#0
+      00B326 19               [11]  569 	ADD	HL,DE
+      00B327 7E               [ 7]  570 	LD	A,(HL)
+      00B328 23               [ 6]  571 	INC	HL
+      00B329 66               [ 7]  572 	LD	H,(HL)
+      00B32A 6F               [ 4]  573 	LD	L,A
+      00B32B DD 5E 09         [19]  574 	LD	E,9(IX)
+      00B32E DD 56 0A         [19]  575 	LD	D,10(IX)
+      00B331 19               [11]  576 	ADD	HL,DE
+                                    577 	
+      00B332 78               [ 4]  578 	LD	A,B
+      00B333 E6 F0            [ 7]  579 	AND	#0b11110000
+      00B335 0F               [ 4]  580 	RRCA
+      00B336 0F               [ 4]  581 	RRCA
+      00B337 0F               [ 4]  582 	RRCA
+      00B338 0F               [ 4]  583 	RRCA
+      00B339 47               [ 4]  584 	LD	B,A
+      00B33A 05               [ 4]  585 	DEC	B
+      00B33B 04               [ 4]  586 	INC	B
+      00B33C 28 06            [12]  587 	JR	Z,ASUB72
+      00B33E                        588 ASUB7:
+      00B33E CB 3C            [ 8]  589 	SRL	H
+      00B340 CB 1D            [ 8]  590 	RR	L
+      00B342 10 FA            [13]  591 	DJNZ	ASUB7
+      00B344                        592 ASUB72:
+      00B344 22 79 C0         [16]  593 	LD	(DELT_N),HL
+      00B347 DD CB 1F 76      [20]  594 	BIT	6,31(IX)
+      00B34B 20 03            [12]  595 	JR	NZ,AS72
+      00B34D CD 55 B9         [17]  596 	CALL	LFORST
+      00B350                        597 AS72:
+      00B350 CD 60 B9         [17]  598 	CALL	LFORST2
+      00B353 CD 9B BD         [17]  599 	CALL	PLAY
+      00B356 C9               [10]  600 	RET
+      00B357                        601 FMGFQ:
+      00B357 78               [ 4]  602 	LD	A,B
+      00B358 4F               [ 4]  603 	LD 	C,A		; STORE
+      00B359 E6 70            [ 7]  604 	AND 	#0x70		; GET BLOCK DATA
+      00B35B CB 3F            [ 8]  605 	SRL	A		; A4-A6 �߰� ���خ�ֳ � �ܾ�
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 12.
+Hexadecimal [24-Bits]
+
+
+
+      00B35D 47               [ 4]  606 	LD 	B,A
+                                    607 
+      00B35E 79               [ 4]  608 	LD	A,C		; RESTORE A
+      00B35F E6 0F            [ 7]  609 	AND	#0x0F		; GET KEY CODE (C,C+,D ... B)
+                                    610 
+      00B361 87               [ 4]  611 	ADD	A,A
+      00B362 5F               [ 4]  612 	LD	E,A
+      00B363 16 00            [ 7]  613 	LD	D,#0
+      00B365 21 84 C0         [10]  614 	LD	HL,#FNUMB
+      00B368 19               [11]  615 	ADD	HL,DE
+                                    616 
+      00B369 4E               [ 7]  617 	LD	C,(HL)
+      00B36A 23               [ 6]  618 	INC	HL
+      00B36B 7E               [ 7]  619 	LD	A,(HL)		; GET FNUM2
+      00B36C B0               [ 4]  620 	OR	B		; A= KEY CODE & FNUM HI
+                                    621 
+      00B36D 69               [ 4]  622 	LD	L,C
+      00B36E 67               [ 4]  623 	LD	H,A
+      00B36F DD 56 0A         [19]  624 	LD	D,10(IX)	;
+      00B372 DD 5E 09         [19]  625 	LD	E,9(IX)	; GET DETUNE DATA
+      00B375 19               [11]  626 	ADD	HL,DE		; DETUNE PLUS
+      00B376 DD CB 21 76      [20]  627 	BIT	6,33(IX)
+      00B37A 20 09            [12]  628 	JR	NZ,FMS92
+      00B37C DD 75 1D         [19]  629 	LD	29(IX),L	; FOR LFO
+      00B37F DD 74 1E         [19]  630 	LD	30(IX),H	; FOR LFO
+                                    631 	
+      00B382 22 83 BE         [16]  632 	LD	(FNUM),HL
+      00B385                        633 FMS92:
+      00B385 DD CB 1F 76      [20]  634 	BIT	6,31(IX)
+      00B389 C4 55 B9         [17]  635 	CALL	NZ,LFORST
+      00B38C CD 60 B9         [17]  636 	CALL	LFORST2
+      00B38F                        637 FMSUB8:
+      00B38F 01 00 00         [10]  638 	LD	BC,#0
+      00B392                        639 FMSUB6:
+      00B392 09               [11]  640 	ADD	HL,BC		; BLOCK/FNUM1&2 DETUNE PLUS (for SE MODE)
+      00B393 5C               [ 4]  641 	LD	E,H		; BLOCK/F-NUMBER2 DATA
+      00B394                        642 FPORT:
+      00B394 3E A4            [ 7]  643 	LD	A,#0xA4		; PORT A4H
+      00B396 DD 86 08         [19]  644 	ADD	A,8(IX)
+      00B399 57               [ 4]  645 	LD	D,A
+      00B39A CD 42 B4         [17]  646 	CALL	PSGOUT
+                                    647 
+      00B39D D6 04            [ 7]  648 	SUB	#4
+      00B39F 57               [ 4]  649 	LD	D,A
+      00B3A0 5D               [ 4]  650 	LD	E,L		; F-NUMBER1 DATA
+      00B3A1                        651 FMSUB7:
+      00B3A1 CD 42 B4         [17]  652 	CALL	PSGOUT
+      00B3A4 CD 08 B4         [17]  653 	CALL	KEYON
+      00B3A7 A7               [ 4]  654         AND	A
+      00B3A8 C9               [10]  655 	RET
+                                    656 
+                                    657 ; **	SE MODE � DETUNE ��ò	**
+                                    658 
+      00B3A9                        659 EXMODE:
+      00B3A9 ED 4B 5E C0      [20]  660 	LD	BC,(DETDAT)
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 13.
+Hexadecimal [24-Bits]
+
+
+
+      00B3AD 06 00            [ 7]  661 	LD	B,#0
+      00B3AF ED 43 90 B3      [20]  662 	LD	(FMSUB8+1),BC
+      00B3B3 CD EC B2         [17]  663 	CALL	FMSUB4		; SET OP1
+      00B3B6 D8               [11]  664 	RET	C
+                                    665 
+      00B3B7 21 5F C0         [10]  666 	LD	HL,#DETDAT+1
+      00B3BA 3E AA            [ 7]  667 	LD	A,#0xAA		;  A = CH3 F-NUM2 OP1 PORT - 2
+      00B3BC                        668 EXMLP:
+      00B3BC 32 95 B3         [13]  669 	LD	(FPORT+1),A
+      00B3BF 3C               [ 4]  670 	INC	A
+      00B3C0 F5               [11]  671 	PUSH	AF
+      00B3C1 4E               [ 7]  672 	LD	C,(HL)
+      00B3C2 06 00            [ 7]  673 	LD	B,#0
+      00B3C4 23               [ 6]  674 	INC	HL
+      00B3C5 E5               [11]  675 	PUSH	HL
+      00B3C6                        676 HLSTC0:
+      00B3C6 2A 83 BE         [16]  677 	LD	HL,(FNUM)
+      00B3C9 CD 92 B3         [17]  678 	CALL	FMSUB6		; SET OP2-OP4
+                                    679 
+      00B3CC E1               [10]  680 	POP	HL
+      00B3CD F1               [10]  681 	POP	AF
+      00B3CE FE AD            [ 7]  682 	CP	#0xAD		; END PORT+1
+      00B3D0 C2 BC B3         [10]  683 	JP 	NZ,EXMLP
+                                    684 
+      00B3D3 3E A4            [ 7]  685 	LD	A,#0xA4
+      00B3D5 32 95 B3         [13]  686 	LD	(FPORT+1),A
+      00B3D8                        687 BRESET:
+      00B3D8 01 00 00         [10]  688 	LD	BC,#0
+      00B3DB ED 43 90 B3      [20]  689 	LD	(FMSUB8+1),BC
+      00B3DF C9               [10]  690 	RET			;  RET TO MAIN
+                                    691 
+                                    692 ; **	KEY-OFF ROUTINE		**
+                                    693 
+      00B3E0                        694 KEYOFF:
+      00B3E0 3A 7C C0         [13]  695 	LD	A,(PCMFLG)
+      00B3E3 B7               [ 4]  696 	OR	A
+      00B3E4 C2 96 BC         [10]  697 	JP	NZ,PCMEND
+      00B3E7 3A 80 BE         [13]  698 	LD	A,(DRMF1)
+      00B3EA B7               [ 4]  699 	OR	A
+      00B3EB 20 0D            [12]  700 	JR	NZ,DKEYOF
+      00B3ED 3A 82 BE         [13]  701 	LD	A,(FMPORT)
+      00B3F0 DD 86 08         [19]  702 	ADD	A,8(IX)
+      00B3F3 5F               [ 4]  703 	LD	E,A
+      00B3F4 16 28            [ 7]  704 	LD	D,#0x28		;  PORT 28H
+      00B3F6 CD 42 B4         [17]  705 	CALL	PSGOUT		;  KEY-OFF
+      00B3F9 C9               [10]  706 	RET
+                                    707 	
+                                    708 ; --	ؽ�� �ݹ�� � ����	--
+                                    709 	
+      00B3FA                        710 DKEYOF:
+      00B3FA 16 10            [ 7]  711 	LD	D,#0x10
+      00B3FC 3A 4B C0         [13]  712 	LD	A,(RHYTHM)	; GET RETHM PARAMETER
+      00B3FF E6 3F            [ 7]  713 	AND	#0b00111111
+      00B401 F6 80            [ 7]  714 	OR	#0x80
+      00B403 5F               [ 4]  715 	LD	E,A
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 14.
+Hexadecimal [24-Bits]
+
+
+
+      00B404 CD 42 B4         [17]  716 	CALL	PSGOUT
+      00B407 C9               [10]  717 	RET
+                                    718 
+                                    719 ; **	KEY-ON  ROUTINE   **
+                                    720 
+      00B408                        721 KEYON:
+      00B408 3A 82 BE         [13]  722 	LD	A,(FMPORT)
+      00B40B B7               [ 4]  723 	OR	A
+      00B40C 3E F0            [ 7]  724 	LD	A,#0xF0
+      00B40E 28 02            [12]  725 	JR	Z,KEYON2
+      00B410 3E F4            [ 7]  726 	LD	A,#0xF4
+      00B412                        727 KEYON2:
+      00B412 DD 86 08         [19]  728 	ADD	A,8(IX)
+      00B415 5F               [ 4]  729 	LD	E,A
+      00B416 16 28            [ 7]  730 	LD	D,#0x28
+      00B418 CD 42 B4         [17]  731 	CALL	PSGOUT		;  KEY-ON
+      00B41B DD CB 21 6E      [20]  732 	BIT	5,33(IX)
+      00B41F C4 D7 B7         [17]  733 	CALL	NZ,STVOL
+      00B422 C9               [10]  734 	RET
+                                    735 	
+                                    736 ; **   ؽ�� �ݹ�� � ����   **
+                                    737 	
+      00B423                        738 DKEYON:
+      00B423 16 10            [ 7]  739 	LD	D,#0x10
+      00B425 3A 4B C0         [13]  740 	LD	A,(RHYTHM)	; GET RETHM PARAMETER
+      00B428 E6 3F            [ 7]  741 	AND	#0b00111111
+      00B42A 5F               [ 4]  742 	LD	E,A		; KEY ON
+      00B42B CD 42 B4         [17]  743 	CALL	PSGOUT
+      00B42E C9               [10]  744 	RET
+                                    745 
+                                    746 ; **	ALL KEY-OFF ROUTINE   **
+                                    747 
+      00B42F                        748 AKYOFF:
+      00B42F F5               [11]  749 	PUSH	AF
+      00B430 C5               [11]  750 	PUSH	BC
+      00B431 D5               [11]  751 	PUSH	DE
+                                    752 	
+      00B432 1E 00            [ 7]  753 	LD	E,#0
+      00B434 16 28            [ 7]  754 	LD	D,#0x28
+      00B436 06 07            [ 7]  755 	LD	B,#7
+      00B438                        756 AKYOF2:
+      00B438 CD 42 B4         [17]  757 	CALL	PSGOUT
+      00B43B 1C               [ 4]  758 	INC	E
+      00B43C 10 FA            [13]  759 	DJNZ	AKYOF2
+                                    760 	
+      00B43E D1               [10]  761 	POP	DE
+      00B43F C1               [10]  762 	POP	BC
+      00B440 F1               [10]  763 	POP	AF
+      00B441 C9               [10]  764 	RET
+                                    765 
+                                    766 ; **	FM DATA OUT ROUTINE	**
+                                    767 ;
+                                    768 ; ENTRY: D<= REGISTER No.
+                                    769 ;	 E<= DATA
+                                    770 
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 15.
+Hexadecimal [24-Bits]
+
+
+
+      00B442                        771 PSGOUT:
+      00B442 F5               [11]  772 	PUSH	AF
+      00B443 C5               [11]  773 	PUSH	BC
+      00B444 E5               [11]  774 	PUSH	HL
+                                    775 	
+                                    776 	
+      00B445 3A 7A BE         [13]  777 	LD	A,(PORT13)
+      00B448 4F               [ 4]  778 	LD	C,A
+                                    779 	
+      00B449 7A               [ 4]  780 	LD	A,D
+      00B44A FE 30            [ 7]  781 	CP	#0x30
+      00B44C 38 0A            [12]  782 	JR	C,PSGO4
+      00B44E 3A 82 BE         [13]  783 	LD	A,(FMPORT)
+      00B451 A7               [ 4]  784 	AND	A
+      00B452 28 04            [12]  785 	JR	Z,PSGO4
+                                    786 	
+      00B454 3A 7B BE         [13]  787 	LD	A,(PORT13+1)
+      00B457 4F               [ 4]  788 	LD	C,A
+      00B458                        789 PSGO4:
+      00B458 ED 51            [12]  790 	OUT	(C),D
+      00B45A C5               [11]  791 	PUSH	BC
+      00B45B C1               [10]  792 	POP	BC
+      00B45C 03               [ 6]  793 	INC	BC
+      00B45D ED 59            [12]  794 	OUT	(C),E
+                                    795 	
+      00B45F                        796 PSGOE:
+      00B45F E1               [10]  797 	POP	HL
+      00B460 C1               [10]  798 	POP	BC
+      00B461 F1               [10]  799 	POP	AF
+      00B462 C9               [10]  800 	RET
+                                    801 
+                                    802 
+                                    803 ; **	��ޥ����� � ��ò	**
+                                    804 
+      00B463                        805 FMSUBA:
+      00B463 E6 0F            [ 7]  806 	AND	#0x0F		; A=COMMAND No.(0-F)
+      00B465 11 96 B2         [10]  807 	LD	DE,#FMSUBC
+      00B468 D5               [11]  808 	PUSH	DE		; STORE RETURN ADDRES
+      00B469 11 76 B4         [10]  809 	LD	DE,#FMCOM
+      00B46C 47               [ 4]  810 	LD	B,A
+      00B46D 87               [ 4]  811 	ADD	A,A
+      00B46E 80               [ 4]  812 	ADD	A,B		; A*3
+      00B46F 83               [ 4]  813 	ADD	A,E
+      00B470 5F               [ 4]  814 	LD	E,A
+      00B471 8A               [ 4]  815 	ADC	A,D
+      00B472 93               [ 4]  816 	SUB	E
+      00B473 57               [ 4]  817 	LD	D,A		; DE+A*3
+      00B474 D5               [11]  818 	PUSH	DE
+      00B475 C9               [10]  819 	RET
+                                    820 
+                                    821 ; **	FM CONTROL COMMAND(s)   **
+                                    822 
+      00B476                        823 FMCOM:
+      00B476 C3 51 B6         [10]  824 	JP	OTOPST		; F0-�ݼ�� ���    '@'
+      00B479 C3 A0 B6         [10]  825 	JP	VOLPST		; F1-VOLUME SET   'v'
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 16.
+Hexadecimal [24-Bits]
+
+
+
+      00B47C C3 04 B7         [10]  826 	JP	FRQ_DF		; F2-DETUNE(���ʽ� ��׼) 'D'
+      00B47F C3 4B B6         [10]  827 	JP	SETQ		; F3-SET COMMAND 'q'
+      00B482 C3 B5 B5         [10]  828 	JP	LFOON		; F4-LFO SET
+      00B485 C3 4F B7         [10]  829 	JP	REPSTF		; F5-REPEAT START SET  '['
+      00B488 C3 5C B7         [10]  830 	JP	REPENF		; F6-REPEAT END SET    ']'
+      00B48B C3 77 B5         [10]  831 	JP	MDSET		; F7-FM�ݹ�� Ӱ�޾��
+      00B48E C3 06 B5         [10]  832 	JP	STEREO		; F8-STEREO MODE
+      00B491 C3 D4 B4         [10]  833 	JP	FLGSET		; F9-FLAG SET
+      00B494 C3 37 BB         [10]  834 	JP	W_REG		; FA-COMMAND OF   'y'
+      00B497 C3 5F B5         [10]  835 	JP	VOLUPF		; FB-VOLUME UP    ')'
+      00B49A C3 83 B5         [10]  836     JP	HLFOON		; FC-HARD LFO
+      00B49D C3 CF B4         [10]  837 	JP	TIE		; (CANT USE)
+      00B4A0 C3 39 B7         [10]  838 	JP	RSKIP		; FE-REPEAT JUMP'/'
+      00B4A3 C3 BE B4         [10]  839 	JP	SECPRC		; FF-to second com
+                                    840 	
+      00B4A6                        841 FMCOM2:
+      00B4A6 C3 00 B5         [10]  842 	JP	PVMCHG		;FFF0-PCM VOLUME MODE
+      00B4A9 C3 17 BB         [10]  843 	JP	HRDENV		;FFF1-HARD ENVE SET 's'
+      00B4AC C3 29 BB         [10]  844 	JP	ENVPOD		;FFF2-HARD ENVE PERIOD
+      00B4AF C3 DA B4         [10]  845 	JP	REVERVE		;FFF3-��ް��
+      00B4B2 C3 F1 B4         [10]  846 	JP	REVMOD		;FFF4-��ް��Ӱ��
+      00B4B5 C3 E4 B4         [10]  847 	JP	REVSW		;FFF5-��ް�� ����
+      00B4B8 C3 CE B4         [10]  848 	JP	NTMEAN
+      00B4BB C3 CE B4         [10]  849 	JP	NTMEAN
+                                    850 	
+      00B4BE                        851 SECPRC:
+      00B4BE 7E               [ 7]  852 	LD	A,(HL)
+      00B4BF 23               [ 6]  853 	INC	HL
+      00B4C0 E6 0F            [ 7]  854 	AND	#0x0F		; A=COMMAND No.(0-F)
+      00B4C2 11 A6 B4         [10]  855 	LD	DE,#FMCOM2
+      00B4C5 47               [ 4]  856 	LD	B,A
+      00B4C6 87               [ 4]  857 	ADD	A,A
+      00B4C7 80               [ 4]  858 	ADD	A,B
+      00B4C8 83               [ 4]  859 	ADD	A,E
+      00B4C9 5F               [ 4]  860 	LD	E,A
+      00B4CA 8A               [ 4]  861 	ADC	A,D
+      00B4CB 93               [ 4]  862 	SUB	E
+      00B4CC 57               [ 4]  863 	LD	D,A
+      00B4CD D5               [11]  864 	PUSH	DE
+                                    865 	
+      00B4CE                        866 NTMEAN:
+      00B4CE C9               [10]  867 	RET
+                                    868 	
+      00B4CF                        869 TIE:
+      00B4CF DD CB 1F B6      [23]  870 	RES	6,31(IX)
+      00B4D3 C9               [10]  871 	RET
+                                    872 	
+                                    873 ; **	�׸޾��	**
+                                    874 	
+      00B4D4                        875 FLGSET:
+      00B4D4 7E               [ 7]  876 	LD	A,(HL)
+      00B4D5 23               [ 6]  877 	INC	HL
+      00B4D6 32 0F B0         [13]  878 	LD	(FLGADR),A
+      00B4D9 C9               [10]  879 	RET
+                                    880 	
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 17.
+Hexadecimal [24-Bits]
+
+
+
+                                    881 ; **	��ް��	**
+                                    882 	
+      00B4DA                        883 REVERVE:
+      00B4DA 7E               [ 7]  884 	LD	A,(HL)
+      00B4DB 23               [ 6]  885 	INC	HL
+      00B4DC DD 77 11         [19]  886 	LD	17(IX),A
+      00B4DF                        887 RV1:
+      00B4DF DD CB 21 EE      [23]  888 	SET	5,33(IX)
+      00B4E3 C9               [10]  889         RET
+      00B4E4                        890 REVSW:
+      00B4E4 7E               [ 7]  891 	LD	A,(HL)
+      00B4E5 23               [ 6]  892 	INC	HL
+      00B4E6 B7               [ 4]  893 	OR	A
+      00B4E7 20 F6            [12]  894 	JR	NZ,RV1
+      00B4E9 DD CB 21 AE      [23]  895 	RES	5,33(IX)
+      00B4ED CD D7 B7         [17]  896 	CALL	STVOL
+      00B4F0 C9               [10]  897 	RET
+      00B4F1                        898 REVMOD:
+      00B4F1 7E               [ 7]  899 	LD	A,(HL)
+      00B4F2 23               [ 6]  900 	INC	HL
+      00B4F3 B7               [ 4]  901 	OR	A
+      00B4F4 28 05            [12]  902 	JR	Z,RM2
+      00B4F6 DD CB 21 E6      [23]  903 	SET	4,33(IX)
+      00B4FA C9               [10]  904 	RET
+      00B4FB                        905 RM2:
+      00B4FB DD CB 21 A6      [23]  906 	RES	4,33(IX)
+      00B4FF C9               [10]  907 	RET
+                                    908 	
+                                    909 ; **	PCM VMODE CHANGE	**
+                                    910 	
+      00B500                        911 PVMCHG:
+      00B500 7E               [ 7]  912 	LD	A,(HL)
+      00B501 23               [ 6]  913 	INC	HL
+      00B502 32 77 BE         [13]  914 	LD	(PVMODE),A
+      00B505 C9               [10]  915 	RET
+                                    916 	
+                                    917 ; **	STEREO	**
+                                    918 	
+      00B506                        919 STEREO:
+      00B506 3A 80 BE         [13]  920 	LD	A,(DRMF1)
+      00B509 B7               [ 4]  921 	OR	A
+      00B50A 20 2F            [12]  922 	JR	NZ,STE2
+      00B50C 3A 7C C0         [13]  923 	LD	A,(PCMFLG)
+      00B50F B7               [ 4]  924 	OR	A
+      00B510 28 06            [12]  925 	JR	Z,STER2
+      00B512 7E               [ 7]  926 	LD	A,(HL)
+      00B513 23               [ 6]  927 	INC	HL
+      00B514 32 A8 BE         [13]  928 	LD	(PCMLR),A
+      00B517 C9               [10]  929 	RET
+      00B518                        930 STER2:
+      00B518 7E               [ 7]  931 	LD	A,(HL)
+      00B519 23               [ 6]  932 	INC	HL
+      00B51A 0F               [ 4]  933 	RRCA
+      00B51B 0F               [ 4]  934 	RRCA
+      00B51C 4F               [ 4]  935 	LD	C,A
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 18.
+Hexadecimal [24-Bits]
+
+
+
+      00B51D 11 A1 BE         [10]  936 	LD	DE,#PALDAT
+      00B520 3A 82 BE         [13]  937 	LD	A,(FMPORT)
+      00B523 DD 86 08         [19]  938 	ADD	A,8(IX)
+      00B526 83               [ 4]  939 	ADD	A,E
+      00B527 5F               [ 4]  940 	LD	E,A
+      00B528 8A               [ 4]  941 	ADC	A,D
+      00B529 93               [ 4]  942 	SUB	E
+      00B52A 57               [ 4]  943 	LD	D,A
+      00B52B 1A               [ 7]  944 	LD	A,(DE)
+      00B52C E6 3F            [ 7]  945 	AND	#0b00111111
+      00B52E B1               [ 4]  946 	OR	C
+      00B52F 12               [ 7]  947 	LD	(DE),A
+                                    948 	
+      00B530 5F               [ 4]  949 	LD	E,A
+      00B531 3E B4            [ 7]  950 	LD	A,#0xB4
+      00B533 DD 86 08         [19]  951 	ADD	A,8(IX)
+      00B536 57               [ 4]  952 	LD	D,A
+      00B537 CD 42 B4         [17]  953 	CALL	PSGOUT
+      00B53A C9               [10]  954 	RET
+      00B53B                        955 STE2:
+      00B53B 7E               [ 7]  956 	LD	A,(HL)
+      00B53C 23               [ 6]  957 	INC	HL
+      00B53D 4F               [ 4]  958 	LD	C,A
+      00B53E E6 0F            [ 7]  959 	AND	#0b00001111
+      00B540 47               [ 4]  960 	LD	B,A
+      00B541 11 62 C0         [10]  961 	LD	DE,#DRMVOL
+      00B544 83               [ 4]  962 	ADD	A,E
+      00B545 5F               [ 4]  963 	LD	E,A
+      00B546 8A               [ 4]  964 	ADC	A,D
+      00B547 93               [ 4]  965 	SUB	E
+      00B548 57               [ 4]  966 	LD	D,A
+      00B549 1A               [ 7]  967 	LD	A,(DE)
+      00B54A D5               [11]  968 	PUSH	DE
+      00B54B E6 1F            [ 7]  969 	AND	#0b00011111
+      00B54D 5F               [ 4]  970 	LD	E,A
+      00B54E 79               [ 4]  971 	LD	A,C
+      00B54F 07               [ 4]  972 	RLCA
+      00B550 07               [ 4]  973 	RLCA
+      00B551 E6 C0            [ 7]  974 	AND	#0b11000000
+      00B553 B3               [ 4]  975 	OR	E
+      00B554 D1               [10]  976 	POP	DE
+      00B555 12               [ 7]  977 	LD	(DE),A
+      00B556 5F               [ 4]  978 	LD	E,A
+      00B557 78               [ 4]  979 	LD	A,B
+      00B558 C6 18            [ 7]  980 	ADD	A,#0x18
+      00B55A 57               [ 4]  981 	LD	D,A
+      00B55B CD 42 B4         [17]  982 	CALL	PSGOUT
+      00B55E C9               [10]  983 	RET
+                                    984 	
+                                    985 	
+                                    986 ; **	VOLUME UP & DOWN	**
+                                    987 	
+      00B55F                        988 VOLUPF:
+      00B55F 7E               [ 7]  989 	LD	A,(HL)
+      00B560 23               [ 6]  990 	INC	HL
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 19.
+Hexadecimal [24-Bits]
+
+
+
+      00B561 DD 86 06         [19]  991 	ADD	A,6(IX)
+      00B564 DD 77 06         [19]  992 	LD	6(IX),A
+      00B567 3A 7C C0         [13]  993 	LD	A,(PCMFLG)
+      00B56A B7               [ 4]  994 	OR	A
+      00B56B C0               [11]  995 	RET	NZ
+      00B56C 3A 80 BE         [13]  996 	LD	A,(DRMF1)
+      00B56F B7               [ 4]  997 	OR	A
+      00B570 C2 EC B6         [10]  998 	JP	NZ,DVOLSET
+      00B573 CD D7 B7         [17]  999 	CALL	STVOL
+      00B576 C9               [10] 1000 	RET
+                                   1001 	
+                                   1002 ; **	SE DETUNE SET SUB ROUTINE	**
+                                   1003 
+      00B577                       1004 MDSET:
+      00B577 CD 92 BD         [17] 1005 	CALL	TO_EFC
+      00B57A 11 5E C0         [10] 1006 	LD	DE,#DETDAT
+      00B57D 01 04 00         [10] 1007 	LD	BC,#4
+      00B580 ED B0            [21] 1008 	LDIR
+      00B582 C9               [10] 1009 	RET
+                                   1010 
+                                   1011 ; **	HARD LFO SET	**
+                                   1012 	
+      00B583                       1013 HLFOON:
+      00B583 7E               [ 7] 1014 	LD	A,(HL)	; FREQ CONT
+      00B584 23               [ 6] 1015 	INC	HL
+      00B585 F6 08            [ 7] 1016 	OR	#0b00001000
+      00B587 5F               [ 4] 1017 	LD	E,A
+      00B588 16 22            [ 7] 1018 	LD	D,#0x22
+      00B58A CD 42 B4         [17] 1019 	CALL	PSGOUT
+                                   1020 	
+      00B58D 4E               [ 7] 1021 	LD	C,(HL)	; PMS
+      00B58E 23               [ 6] 1022 	INC	HL
+      00B58F 7E               [ 7] 1023 	LD	A,(HL)	; AMS
+      00B590 23               [ 6] 1024 	INC	HL
+      00B591 07               [ 4] 1025 	RLCA
+      00B592 07               [ 4] 1026 	RLCA
+      00B593 07               [ 4] 1027 	RLCA
+      00B594 07               [ 4] 1028 	RLCA
+      00B595 B1               [ 4] 1029 	OR	C
+      00B596 4F               [ 4] 1030 	LD	C,A	; AMS+PMS
+                                   1031 	
+      00B597 3A 82 BE         [13] 1032 	LD	A,(FMPORT)
+      00B59A DD 86 08         [19] 1033 	ADD	A,8(IX)
+      00B59D 11 A1 BE         [10] 1034 	LD	DE,#PALDAT
+      00B5A0 83               [ 4] 1035 	ADD	A,E
+      00B5A1 5F               [ 4] 1036 	LD	E,A
+      00B5A2 8A               [ 4] 1037 	ADC	A,D
+      00B5A3 93               [ 4] 1038 	SUB	E
+      00B5A4 57               [ 4] 1039 	LD	D,A
+      00B5A5 1A               [ 7] 1040 	LD	A,(DE)
+      00B5A6 E6 C0            [ 7] 1041 	AND	#0b11000000
+      00B5A8 B1               [ 4] 1042 	OR	C
+      00B5A9 12               [ 7] 1043 	LD	(DE),A
+                                   1044 	
+      00B5AA 5F               [ 4] 1045 	LD	E,A
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 20.
+Hexadecimal [24-Bits]
+
+
+
+      00B5AB 3E B4            [ 7] 1046 	LD	A,#0xB4
+      00B5AD DD 86 08         [19] 1047 	ADD	A,8(IX)
+      00B5B0 57               [ 4] 1048 	LD	D,A
+      00B5B1 CD 42 B4         [17] 1049 	CALL	PSGOUT
+      00B5B4 C9               [10] 1050 	RET
+                                   1051 	
+                                   1052 ; **	SOFT LFO SET(RESET)	**
+                                   1053 
+      00B5B5                       1054 LFOON:
+      00B5B5 7E               [ 7] 1055 	LD	A,(HL)		; GET SUB COMMAND
+      00B5B6 23               [ 6] 1056 	INC	HL
+                                   1057 	
+      00B5B7 B7               [ 4] 1058 	OR	A
+      00B5B8 C2 CC B5         [10] 1059 	JP	NZ,LFOON3
+                                   1060 	
+      00B5BB CD EF B5         [17] 1061 	CALL	SETDEL
+      00B5BE CD F8 B5         [17] 1062 	CALL	SETCO
+      00B5C1 CD 01 B6         [17] 1063 	CALL	SETVCT
+      00B5C4 CD 18 B6         [17] 1064 	CALL	SETPEK
+                                   1065 	
+      00B5C7 DD CB 1F FE      [23] 1066 	SET	7,31(IX)	;  SET LFO FLAG
+      00B5CB C9               [10] 1067 	RET
+                                   1068 	
+      00B5CC                       1069 LFOON3:
+      00B5CC 3D               [ 4] 1070 	DEC	A
+      00B5CD 4F               [ 4] 1071 	LD	C,A
+      00B5CE 87               [ 4] 1072 	ADD	A,A
+      00B5CF 81               [ 4] 1073 	ADD	A,C
+      00B5D0 11 DA B5         [10] 1074 	LD	DE,#LFOTBL
+                                   1075 	
+      00B5D3 83               [ 4] 1076 	ADD	A,E
+      00B5D4 5F               [ 4] 1077 	LD	E,A
+      00B5D5 8A               [ 4] 1078 	ADC	A,D
+      00B5D6 93               [ 4] 1079 	SUB	E
+      00B5D7 57               [ 4] 1080 	LD	D,A
+                                   1081 	
+      00B5D8 D5               [11] 1082 	PUSH	DE
+      00B5D9 C9               [10] 1083 	RET
+                                   1084 	
+      00B5DA                       1085 LFOTBL:
+      00B5DA C3 28 B6         [10] 1086 	JP	LFOOFF
+      00B5DD C3 23 B6         [10] 1087 	JP	LFOON2
+      00B5E0 C3 EF B5         [10] 1088 	JP	SETDEL
+      00B5E3 C3 F8 B5         [10] 1089 	JP	SETCO
+      00B5E6 C3 12 B6         [10] 1090 	JP	SETVC2
+      00B5E9 C3 18 B6         [10] 1091 	JP	SETPEK
+      00B5EC C3 2D B6         [10] 1092 	JP	TLLFO
+      00B5EF                       1093 SETDEL:
+      00B5EF 7E               [ 7] 1094 	LD	A,(HL)
+      00B5F0 23               [ 6] 1095 	INC	HL
+      00B5F1 DD 77 13         [19] 1096 	LD 	19(IX),A	; SET DELAY
+      00B5F4 DD 77 14         [19] 1097 	LD	20(IX),A
+      00B5F7 C9               [10] 1098 	RET
+      00B5F8                       1099 SETCO:
+      00B5F8 7E               [ 7] 1100 	LD	A,(HL)
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 21.
+Hexadecimal [24-Bits]
+
+
+
+      00B5F9 23               [ 6] 1101 	INC	HL
+      00B5FA DD 77 15         [19] 1102 	LD	21(IX),A	; SET COUNTER
+      00B5FD DD 77 16         [19] 1103 	LD	22(IX),A
+      00B600 C9               [10] 1104 	RET
+      00B601                       1105 SETVCT:
+      00B601 5E               [ 7] 1106 	LD	E,(HL)
+      00B602 23               [ 6] 1107 	INC	HL
+      00B603 56               [ 7] 1108 	LD	D,(HL)
+      00B604 23               [ 6] 1109 	INC	HL
+      00B605 DD 73 17         [19] 1110 	LD	23(IX),E	; SET �ݶخ�
+      00B608 DD 73 19         [19] 1111 	LD	25(IX),E
+      00B60B DD 72 18         [19] 1112 	LD	24(IX),D
+      00B60E DD 72 1A         [19] 1113 	LD	26(IX),D
+      00B611 C9               [10] 1114 	RET
+      00B612                       1115 SETVC2:
+      00B612 CD 01 B6         [17] 1116 	CALL	SETVCT
+      00B615 C3 55 B9         [10] 1117 	JP	LFORST
+      00B618                       1118 SETPEK:
+      00B618 7E               [ 7] 1119 	LD	A,(HL)
+      00B619 23               [ 6] 1120 	INC	HL
+      00B61A DD 77 1B         [19] 1121 	LD	27(IX),A	; SET PEAK LEVEL
+      00B61D CB 3F            [ 8] 1122 	SRL	A
+      00B61F DD 77 1C         [19] 1123 	LD	28(IX),A
+      00B622 C9               [10] 1124 	RET
+                                   1125 	
+      00B623                       1126 LFOON2:
+      00B623 DD CB 1F FE      [23] 1127 	SET	7,31(IX)	; LFOON
+      00B627 C9               [10] 1128         RET
+      00B628                       1129 LFOOFF:
+      00B628 DD CB 1F BE      [23] 1130 	RES	7,31(IX)	; RESET LFO
+      00B62C C9               [10] 1131 	RET
+                                   1132 	
+      00B62D                       1133 TLLFO:
+      00B62D 7E               [ 7] 1134 	LD	A,(HL)
+      00B62E 23               [ 6] 1135 	INC	HL
+      00B62F B7               [ 4] 1136 	OR	A
+      00B630 20 05            [12] 1137 	JR	NZ,TLL2
+      00B632 DD CB 21 B6      [23] 1138 	RES	6,33(IX)
+      00B636 C9               [10] 1139 	RET
+      00B637                       1140 TLL2:
+      00B637 32 35 B9         [13] 1141 	LD	(LFOP6+1),A
+      00B63A DD CB 21 F6      [23] 1142 	SET	6,33(IX)
+      00B63E 7E               [ 7] 1143 	LD	A,(HL)
+      00B63F 23               [ 6] 1144 	INC	HL
+      00B640 DD 77 1D         [19] 1145 	LD	29(IX),A
+      00B643 DD 36 1E 00      [19] 1146 	LD	30(IX),#0
+      00B647 DD 77 0B         [19] 1147 	LD	11(IX),A
+      00B64A C9               [10] 1148 	RET
+                                   1149 	
+                                   1150 ; **	SET Q COMMAND	**
+                                   1151 
+      00B64B                       1152 SETQ:
+      00B64B 7E               [ 7] 1153 	LD	A,(HL)
+      00B64C 23               [ 6] 1154 	INC	HL
+      00B64D DD 77 12         [19] 1155 	LD	18(IX),A
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 22.
+Hexadecimal [24-Bits]
+
+
+
+      00B650 C9               [10] 1156 	RET
+                                   1157 
+                                   1158 ; **	�ݼ�� ��� Ҳ�	**
+                                   1159 
+      00B651                       1160 OTOPST:
+      00B651 3A 7C C0         [13] 1161 	LD	A,(PCMFLG)
+      00B654 B7               [ 4] 1162 	OR	A
+      00B655 20 18            [12] 1163 	JR	NZ,OTOPCM
+      00B657 3A 80 BE         [13] 1164 	LD	A,(DRMF1)
+      00B65A B7               [ 4] 1165 	OR	A
+      00B65B 20 0C            [12] 1166 	JR	NZ,OTODRM
+      00B65D 7E               [ 7] 1167 	LD	A,(HL)
+      00B65E 23               [ 6] 1168 	INC	HL
+      00B65F DD 77 01         [19] 1169 	LD	1(IX),A
+      00B662 CD 72 B7         [17] 1170 	CALL	STENV
+      00B665 CD D7 B7         [17] 1171 	CALL	STVOL
+      00B668 C9               [10] 1172 	RET
+      00B669                       1173 OTODRM:
+      00B669 7E               [ 7] 1174 	LD	A,(HL)
+      00B66A 23               [ 6] 1175 	INC	HL
+      00B66B 32 4B C0         [13] 1176 	LD	(RHYTHM),A	; SET RETHM PARA
+      00B66E C9               [10] 1177 	RET
+      00B66F                       1178 OTOPCM:
+      00B66F 7E               [ 7] 1179 	LD	A,(HL)
+      00B670 32 7B C0         [13] 1180 	LD	(PCMNUM),A
+      00B673 3D               [ 4] 1181 	DEC	A
+      00B674 DD 77 01         [19] 1182 	LD	1(IX),A
+      00B677 23               [ 6] 1183 	INC	HL
+      00B678 87               [ 4] 1184 	ADD	A,A
+      00B679 87               [ 4] 1185 	ADD	A,A
+      00B67A 87               [ 4] 1186 	ADD	A,A
+      00B67B E5               [11] 1187 	PUSH	HL
+      00B67C 21 00 E3         [10] 1188 	LD	HL,#PCMADR
+      00B67F 5F               [ 4] 1189 	LD	E,A
+      00B680 16 00            [ 7] 1190 	LD	D,#0
+      00B682 19               [11] 1191 	ADD	HL,DE
+      00B683 5E               [ 7] 1192 	LD	E,(HL)
+      00B684 23               [ 6] 1193 	INC	HL
+      00B685 56               [ 7] 1194 	LD	D,(HL)
+      00B686 23               [ 6] 1195 	INC	HL
+      00B687 ED 53 75 C0      [20] 1196 	LD	(STTADR),DE
+      00B68B 5E               [ 7] 1197 	LD	E,(HL)
+      00B68C 23               [ 6] 1198 	INC	HL
+      00B68D 56               [ 7] 1199 	LD	D,(HL)
+      00B68E 23               [ 6] 1200 	INC	HL
+      00B68F ED 53 77 C0      [20] 1201 	LD	(ENDADR),DE
+      00B693 23               [ 6] 1202 	INC	HL
+      00B694 23               [ 6] 1203 	INC	HL
+      00B695 5E               [ 7] 1204 	LD	E,(HL)
+      00B696 E1               [10] 1205 	POP	HL
+      00B697 3A 77 BE         [13] 1206 	LD	A,(PVMODE)
+      00B69A B7               [ 4] 1207 	OR	A
+      00B69B C8               [11] 1208 	RET	Z
+      00B69C DD 73 06         [19] 1209 	LD	6(IX),E
+      00B69F C9               [10] 1210 	RET
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 23.
+Hexadecimal [24-Bits]
+
+
+
+                                   1211 
+                                   1212 ; **	��ح�� ���	**
+                                   1213 
+      00B6A0                       1214 VOLPST:
+      00B6A0 3A 7C C0         [13] 1215 	LD	A,(PCMFLG)
+      00B6A3 B7               [ 4] 1216 	OR	A
+      00B6A4 20 36            [12] 1217 	JR	NZ,PCMVOL
+      00B6A6 3A 80 BE         [13] 1218 	LD	A,(DRMF1)
+      00B6A9 B7               [ 4] 1219 	OR	A
+      00B6AA 20 09            [12] 1220 	JR	NZ,VOLDRM
+      00B6AC 7E               [ 7] 1221 	LD	A,(HL)
+      00B6AD 23               [ 6] 1222 	INC	HL
+      00B6AE DD 77 06         [19] 1223 	LD	6(IX),A
+      00B6B1 CD D7 B7         [17] 1224 	CALL	STVOL
+      00B6B4 C9               [10] 1225 	RET
+                                   1226 	
+      00B6B5                       1227 VOLDRM:
+      00B6B5 7E               [ 7] 1228 	LD	A,(HL)
+      00B6B6 23               [ 6] 1229 	INC	HL
+      00B6B7 DD 77 06         [19] 1230 	LD	6(IX),A
+      00B6BA CD EC B6         [17] 1231 	CALL	DVOLSET
+      00B6BD                       1232 VOLDR1:
+      00B6BD 06 06            [ 7] 1233 	LD	B,#6
+      00B6BF 11 62 C0         [10] 1234 	LD	DE,#DRMVOL
+      00B6C2                       1235 VOLDR2:
+      00B6C2 4E               [ 7] 1236 	LD	C,(HL)
+      00B6C3 1A               [ 7] 1237 	LD	A,(DE)
+      00B6C4 E6 C0            [ 7] 1238 	AND	#0b11000000
+      00B6C6 B1               [ 4] 1239 	OR	C
+      00B6C7 12               [ 7] 1240 	LD	(DE),A
+                                   1241 	
+      00B6C8 D5               [11] 1242 	PUSH	DE
+      00B6C9 5F               [ 4] 1243 	LD	E,A
+      00B6CA 78               [ 4] 1244 	LD	A,B
+      00B6CB D6 06            [ 7] 1245 	SUB	#6
+      00B6CD ED 44            [ 8] 1246 	NEG
+      00B6CF 16 18            [ 7] 1247 	LD	D,#0x18
+      00B6D1 82               [ 4] 1248 	ADD	A,D
+      00B6D2 57               [ 4] 1249 	LD	D,A
+      00B6D3 CD 42 B4         [17] 1250 	CALL	PSGOUT
+      00B6D6 D1               [10] 1251 	POP	DE
+                                   1252 	
+      00B6D7 13               [ 6] 1253 	INC	DE
+      00B6D8 23               [ 6] 1254 	INC	HL
+      00B6D9 10 E7            [13] 1255 	DJNZ	VOLDR2
+      00B6DB C9               [10] 1256 	RET
+      00B6DC                       1257 PCMVOL:
+      00B6DC 5E               [ 7] 1258 	LD	E,(HL)
+      00B6DD 23               [ 6] 1259 	INC	HL
+      00B6DE 3A 77 BE         [13] 1260 	LD	A,(PVMODE)
+      00B6E1 B7               [ 4] 1261 	OR	A
+      00B6E2 20 04            [12] 1262 	JR	NZ,PCMV2
+      00B6E4 DD 73 06         [19] 1263 	LD	6(IX),E
+      00B6E7 C9               [10] 1264 	RET
+      00B6E8                       1265 PCMV2:
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 24.
+Hexadecimal [24-Bits]
+
+
+
+      00B6E8 DD 73 07         [19] 1266 	LD	7(IX),E
+      00B6EB C9               [10] 1267 	RET
+                                   1268 	
+                                   1269 ; --   SET TOTAL RHYTHM VOL	--
+                                   1270 	
+      00B6EC                       1271 DVOLSET:
+      00B6EC 16 11            [ 7] 1272 	LD	D,#0x11
+      00B6EE DD 7E 06         [19] 1273 	LD	A,6(IX)
+      00B6F1 E6 3F            [ 7] 1274 	AND	#0b00111111
+      00B6F3 5F               [ 4] 1275 	LD	E,A
+      00B6F4 3A 7C BE         [13] 1276 	LD	A,(TOTALV)
+      00B6F7 87               [ 4] 1277 	ADD	A,A
+      00B6F8 87               [ 4] 1278 	ADD	A,A
+      00B6F9 83               [ 4] 1279 	ADD	A,E
+      00B6FA FE 40            [ 7] 1280 	CP	#64
+      00B6FC 38 01            [12] 1281 	JR	C,DV2
+      00B6FE AF               [ 4] 1282 	XOR	A
+      00B6FF                       1283 DV2:
+      00B6FF 5F               [ 4] 1284 	LD	E,A
+      00B700 CD 42 B4         [17] 1285 	CALL	PSGOUT
+      00B703 C9               [10] 1286 	RET
+                                   1287 	
+                                   1288 ; **	������ ���	**
+                                   1289 
+      00B704                       1290 FRQ_DF:
+      00B704 AF               [ 4] 1291 	XOR	A
+      00B705 DD 77 20         [19] 1292 	LD	32(IX),A	; DETUNE � �ޱ�� BEFORE CODE � CLEAR
+      00B708 5E               [ 7] 1293 	LD	E,(HL)
+      00B709 23               [ 6] 1294 	INC	HL
+      00B70A 56               [ 7] 1295 	LD	D,(HL)
+      00B70B 23               [ 6] 1296 	INC	HL
+      00B70C 7E               [ 7] 1297 	LD	A,(HL)
+      00B70D 23               [ 6] 1298 	INC	HL
+      00B70E B7               [ 4] 1299 	OR	A
+      00B70F 28 0A            [12] 1300 	JR	Z,FD2
+      00B711 E5               [11] 1301 	PUSH	HL
+      00B712 DD 6E 09         [19] 1302 	LD	L,9(IX)
+      00B715 DD 66 0A         [19] 1303 	LD	H,10(IX)
+      00B718 19               [11] 1304 	ADD	HL,DE
+      00B719 EB               [ 4] 1305 	EX	DE,HL
+      00B71A E1               [10] 1306 	POP	HL
+      00B71B                       1307 FD2:
+      00B71B DD 73 09         [19] 1308 	LD	9(IX),E
+      00B71E DD 72 0A         [19] 1309 	LD	10(IX),D
+      00B721 3A 7C C0         [13] 1310 	LD	A,(PCMFLG)
+      00B724 B7               [ 4] 1311 	OR	A
+      00B725 C8               [11] 1312 	RET	Z
+      00B726 E5               [11] 1313 	PUSH	HL
+      00B727 2A 79 C0         [16] 1314 	LD	HL,(DELT_N)
+      00B72A 19               [11] 1315 	ADD	HL,DE
+      00B72B EB               [ 4] 1316 	EX	DE,HL
+      00B72C 4A               [ 4] 1317 	LD	C,D
+      00B72D 16 09            [ 7] 1318 	LD	D,#0x09
+      00B72F CD 22 BE         [17] 1319 	CALL	PCMOUT
+      00B732 14               [ 4] 1320 	INC	D
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 25.
+Hexadecimal [24-Bits]
+
+
+
+      00B733 59               [ 4] 1321 	LD	E,C
+      00B734 CD 22 BE         [17] 1322 	CALL	PCMOUT
+      00B737 E1               [10] 1323 	POP	HL
+      00B738 C9               [10] 1324 	RET
+                                   1325 
+                                   1326 	
+                                   1327 ; **	��߰� �����	**
+                                   1328 	
+      00B739                       1329 RSKIP:
+      00B739 5E               [ 7] 1330 	LD	E,(HL)
+      00B73A 23               [ 6] 1331 	INC	HL
+      00B73B 56               [ 7] 1332 	LD	D,(HL)
+      00B73C 23               [ 6] 1333 	INC	HL
+                                   1334 	
+      00B73D E5               [11] 1335 	PUSH	HL
+      00B73E 2B               [ 6] 1336 	DEC	HL
+      00B73F 2B               [ 6] 1337 	DEC	HL
+      00B740 19               [11] 1338 	ADD	HL,DE
+      00B741 7E               [ 7] 1339 	LD	A,(HL)
+      00B742 3D               [ 4] 1340 	DEC	A	; LOOP ���� =1?
+      00B743 28 02            [12] 1341 	JR	Z,RSKIP2
+      00B745 E1               [10] 1342 	POP	HL
+      00B746 C9               [10] 1343 	RET
+      00B747                       1344 RSKIP2:
+      00B747 11 04 00         [10] 1345 	LD	DE,#4
+      00B74A 19               [11] 1346 	ADD	HL,DE	; HL = JUMP ADR
+      00B74B EB               [ 4] 1347 	EX	DE,HL
+      00B74C E1               [10] 1348 	POP	HL
+      00B74D EB               [ 4] 1349 	EX	DE,HL
+      00B74E C9               [10] 1350 	RET
+                                   1351 	
+                                   1352 ; **	��߰� ���� ���		**
+                                   1353 	
+      00B74F                       1354 REPSTF:
+      00B74F 5E               [ 7] 1355 	LD	E,(HL)
+      00B750 23               [ 6] 1356 	INC	HL
+      00B751 56               [ 7] 1357 	LD	D,(HL)		; DE as REWRITE ADR OFFSET +1
+      00B752 23               [ 6] 1358 	INC	HL
+                                   1359 	
+      00B753 E5               [11] 1360 	PUSH	HL
+      00B754 2B               [ 6] 1361 	DEC	HL
+      00B755 2B               [ 6] 1362 	DEC	HL
+      00B756 19               [11] 1363 	ADD	HL,DE
+      00B757 7E               [ 7] 1364 	LD	A,(HL)
+      00B758 2B               [ 6] 1365 	DEC	HL
+      00B759 77               [ 7] 1366 	LD	(HL),A
+      00B75A E1               [10] 1367 	POP	HL
+                                   1368 	
+      00B75B C9               [10] 1369 	RET
+                                   1370 	
+                                   1371 	
+                                   1372 ; **	��߰� ���� ��� (FM)	**
+                                   1373 
+      00B75C                       1374 REPENF:
+                                   1375 	
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 26.
+Hexadecimal [24-Bits]
+
+
+
+      00B75C 35               [11] 1376 	DEC	(HL)		; DEC REPEAT Co.
+      00B75D 28 0A            [12] 1377 	JR	Z,REPENF2
+                                   1378 	
+      00B75F 23               [ 6] 1379 	INC	HL
+      00B760 23               [ 6] 1380 	INC	HL
+                                   1381 	
+      00B761 5E               [ 7] 1382 	LD	E,(HL)
+      00B762 23               [ 6] 1383 	INC	HL
+      00B763 56               [ 7] 1384 	LD	D,(HL)
+      00B764 2B               [ 6] 1385 	DEC	HL
+      00B765 A7               [ 4] 1386 	AND	A
+      00B766 ED 52            [15] 1387 	SBC	HL,DE
+      00B768 C9               [10] 1388 	RET
+                                   1389 	
+      00B769                       1390 REPENF2:
+                                   1391 	
+      00B769 23               [ 6] 1392 	INC	HL
+      00B76A 7E               [ 7] 1393 	LD	A,(HL)
+      00B76B 2B               [ 6] 1394 	DEC	HL
+      00B76C 77               [ 7] 1395 	LD	(HL),A
+      00B76D 11 04 00         [10] 1396 	LD	DE,#4
+      00B770 19               [11] 1397 	ADD	HL,DE
+                                   1398 	
+      00B771 C9               [10] 1399 	RET
+                                   1400 	
+                                   1401 	
+                                   1402 ; **	�ݼ�� ��� ���ٰ�� (FM)	**
+                                   1403 
+      00B772                       1404 STENV:
+      00B772 E5               [11] 1405 	PUSH	HL
+                                   1406 
+      00B773 CD E0 B3         [17] 1407 	CALL	KEYOFF
+      00B776 3E 80            [ 7] 1408 	LD	A,#0x80
+      00B778 DD 86 08         [19] 1409 	ADD	A,8(IX)
+      00B77B 1E 0F            [ 7] 1410 	LD	E,#0x0F
+      00B77D 06 04            [ 7] 1411 	LD	B,#4
+      00B77F                       1412 ENVLP:
+      00B77F 57               [ 4] 1413 	LD	D,A
+      00B780 CD 42 B4         [17] 1414 	CALL	PSGOUT		; �ذ�(RR) ��� � ���
+      00B783 C6 04            [ 7] 1415 	ADD	A,#4
+      00B785 10 F8            [13] 1416 	DJNZ	ENVLP
+                                   1417 
+      00B787 DD 7E 01         [19] 1418 	LD	A,1(IX)	; ܰ� �� �ݼ�� ���ް � ��
+      00B78A                       1419 STENV0:
+      00B78A 4F               [ 4] 1420 	LD	C,A
+                                   1421 	
+      00B78B 0F               [ 4] 1422 	RRCA
+      00B78C 0F               [ 4] 1423 	RRCA
+      00B78D 0F               [ 4] 1424 	RRCA
+      00B78E 0F               [ 4] 1425 	RRCA			; *16
+      00B78F 67               [ 4] 1426 	LD	H,A
+      00B790 E6 F0            [ 7] 1427 	AND	#0b11110000
+      00B792 6F               [ 4] 1428 	LD	L,A
+      00B793 7C               [ 4] 1429 	LD	A,H
+      00B794 E6 0F            [ 7] 1430 	AND	#0b00001111
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 27.
+Hexadecimal [24-Bits]
+
+
+
+      00B796 67               [ 4] 1431 	LD	H,A		; HL=*16
+                                   1432 	
+      00B797 79               [ 4] 1433 	LD	A,C
+      00B798 87               [ 4] 1434 	ADD	A,A
+      00B799 87               [ 4] 1435 	ADD	A,A
+      00B79A 87               [ 4] 1436 	ADD	A,A
+      00B79B 81               [ 4] 1437 	ADD	A,C		; *9
+                                   1438 	
+      00B79C 85               [ 4] 1439 	ADD	A,L
+      00B79D 6F               [ 4] 1440 	LD	L,A
+      00B79E 8C               [ 4] 1441 	ADC	A,H
+      00B79F 95               [ 4] 1442 	SUB	L
+      00B7A0 67               [ 4] 1443 	LD	H,A		; HL=*25
+                                   1444 	
+      00B7A1 EB               [ 4] 1445 	EX	DE,HL
+      00B7A2 2A 01 C2         [16] 1446 	LD	HL,(OTODAT)
+      00B7A5 23               [ 6] 1447 	INC	HL
+      00B7A6 19               [11] 1448 	ADD	HL,DE		;  HL � �ݼ���ް� ��ɳ ���ڽ
+      00B7A7 11 00 C2         [10] 1449 	LD	DE,#MUSNUM
+      00B7AA 19               [11] 1450 	ADD	HL,DE
+                                   1451 
+      00B7AB                       1452 STENV1:
+      00B7AB 01 06 04         [10] 1453 	LD	BC,#0x0406	; 4 OPERATER
+                                   1454 				; 6 PARAMATER(Det/Mul,Total,KS/AR,DR,SR,SL/RR)
+      00B7AE 3E 30            [ 7] 1455 	LD	A,#0x30		; START=PORT 30H
+      00B7B0 DD 86 08         [19] 1456 	ADD	A,8(IX)	; PLUS CHANNEL No.
+      00B7B3 57               [ 4] 1457 	LD	D,A
+                                   1458 
+      00B7B4                       1459 STENV2:
+      00B7B4 C5               [11] 1460 	PUSH	BC
+      00B7B5                       1461 STENV3:
+      00B7B5 5E               [ 7] 1462 	LD	E,(HL)		; GET DATA
+      00B7B6 CD 42 B4         [17] 1463 	CALL	PSGOUT
+                                   1464 
+      00B7B9 14               [ 4] 1465 	INC 	D		;
+      00B7BA 14               [ 4] 1466 	INC 	D		;  SKIP BLANK PORT
+      00B7BB 14               [ 4] 1467 	INC 	D		;
+      00B7BC 14               [ 4] 1468 	INC 	D		;
+      00B7BD 23               [ 6] 1469 	INC 	HL
+                                   1470 
+      00B7BE 10 F5            [13] 1471 	DJNZ 	STENV3
+                                   1472 
+      00B7C0 C1               [10] 1473 	POP	BC
+      00B7C1 0D               [ 4] 1474 	DEC	C
+      00B7C2 C2 B4 B7         [10] 1475 	JP	NZ,STENV2
+                                   1476 
+      00B7C5 7E               [ 7] 1477 	LD	A,(HL)		; GET FEEDBACK/ALGORIZM
+      00B7C6 5F               [ 4] 1478 	LD	E,A
+      00B7C7 E6 07            [ 7] 1479 	AND	#0x07		; GET ALGORIZM
+      00B7C9 DD 77 07         [19] 1480 	LD	7(IX),A	; STORE ALGORIZM
+      00B7CC 3E B0            [ 7] 1481 	LD	A,#0xB0		; GET ALGO SET ADDRES
+      00B7CE DD 86 08         [19] 1482 	ADD	A,8(IX)	; CH PLUS
+      00B7D1 57               [ 4] 1483 	LD	D,A
+      00B7D2 CD 42 B4         [17] 1484 	CALL	PSGOUT
+                                   1485 
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 28.
+Hexadecimal [24-Bits]
+
+
+
+      00B7D5 E1               [10] 1486 	POP	HL
+      00B7D6 C9               [10] 1487 	RET
+                                   1488 
+                                   1489 	
+                                   1490 ; **	��ح��	**
+                                   1491 
+      00B7D7                       1492 STVOL:
+      00B7D7 E5               [11] 1493 	PUSH	HL
+      00B7D8 D5               [11] 1494 	PUSH	DE
+      00B7D9 C5               [11] 1495 	PUSH	BC
+                                   1496 
+      00B7DA CD E1 B7         [17] 1497 	CALL	STV1
+                                   1498 
+      00B7DD C1               [10] 1499 	POP	BC
+      00B7DE D1               [10] 1500 	POP	DE
+      00B7DF E1               [10] 1501 	POP	HL
+      00B7E0 C9               [10] 1502 	RET
+      00B7E1                       1503 STV1:
+      00B7E1 DD 4E 06         [19] 1504 	LD	C,6(IX)	; INPUT VOLUME
+      00B7E4 3A 7C BE         [13] 1505 	LD	A,(TOTALV)
+      00B7E7 81               [ 4] 1506 	ADD	A,C
+      00B7E8 FE 14            [ 7] 1507 	CP	#20
+      00B7EA 38 01            [12] 1508 	JR	C,STV12
+      00B7EC AF               [ 4] 1509 	XOR	A
+      00B7ED                       1510 STV12:
+      00B7ED 4F               [ 4] 1511 	LD	C,A
+      00B7EE 06 00            [ 7] 1512 STV2:	LD	B,#0
+      00B7F0 21 85 BE         [10] 1513 	LD	HL,#FMVDAT
+      00B7F3 09               [11] 1514 	ADD	HL,BC
+      00B7F4 5E               [ 7] 1515 	LD	E,(HL)		; GET VOLUME DATA
+                                   1516 	
+      00B7F5 3E 40            [ 7] 1517 	LD	A,#0x40
+      00B7F7 DD 86 08         [19] 1518 	ADD	A,8(IX)	; GET PORT No.
+                                   1519 
+      00B7FA 21 99 BE         [10] 1520 	LD	HL,#CRYDAT
+      00B7FD 06 00            [ 7] 1521 	LD	B,#0
+      00B7FF DD 4E 07         [19] 1522 	LD	C,7(IX)	; INPUT ALGOLIZM
+      00B802 09               [11] 1523 	ADD	HL,BC
+      00B803 4E               [ 7] 1524 	LD	C,(HL)		; C=��ر
+      00B804 06 04            [ 7] 1525 	LD	B,#4		; 4 OPERATER
+                                   1526 
+      00B806                       1527 STVOL2:
+      00B806 CB 19            [ 8] 1528 	RR	C
+      00B808 57               [ 4] 1529 	LD	D,A
+      00B809 DC 42 B4         [17] 1530 	CALL	C,PSGOUT	;  ��ر �� PSGOUT �
+      00B80C C6 04            [ 7] 1531 	ADD	A,#4
+      00B80E 10 F6            [13] 1532 	DJNZ	STVOL2
+      00B810 C9               [10] 1533 	RET
+                                   1534 
+                                   1535 	
+                                   1536 ; **	Timer-B �������� ٰ��   **
+                                   1537 
+                                   1538 ; 	IN: E<= TIMER_B COUNTER
+                                   1539 	
+      00B811                       1540 STTMB:
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 29.
+Hexadecimal [24-Bits]
+
+
+
+      00B811 F5               [11] 1541 	PUSH AF
+      00B812 D5               [11] 1542 	PUSH DE
+      00B813                       1543 STTMB2:
+                                   1544 	
+      00B813 16 26            [ 7] 1545 	LD D,#0x26
+      00B815 CD 42 B4         [17] 1546 	CALL PSGOUT
+                                   1547 
+      00B818 16 27            [ 7] 1548 	LD D,#0x27
+      00B81A 1E 78            [ 7] 1549 	LD E,#0x78
+      00B81C CD 42 B4         [17] 1550 	CALL PSGOUT     ;  Timer-B OFF
+      00B81F 1E 7A            [ 7] 1551 	LD E,#0x7A
+      00B821 CD 42 B4         [17] 1552 	CALL PSGOUT     ;  Timer-B ON
+                                   1553 
+      00B824 3E 05            [ 7] 1554 	LD A,#5
+      00B826 D3 E4            [11] 1555 	OUT (#0xE4),A
+                                   1556 
+      00B828 D1               [10] 1557 	POP DE
+      00B829 F1               [10] 1558 	POP AF
+      00B82A C9               [10] 1559 	RET
+                                   1560 
+                                   1561 	
+                                   1562 ; **	LFO ٰ��	**
+                                   1563 	
+      00B82B                       1564 PLLFO:
+                                   1565 	
+                                   1566 ; ---	FOR FM & SSG LFO	---
+                                   1567 	
+      00B82B DD CB 1F 7E      [20] 1568 	BIT	7,31(IX)	;  CHECK bit 7 ... LFO FLAG
+      00B82F C8               [11] 1569 	RET	Z
+                                   1570 
+      00B830 DD 6E 02         [19] 1571 	LD	L,2(IX)
+      00B833 DD 66 03         [19] 1572 	LD	H,3(IX)
+      00B836 2B               [ 6] 1573 	DEC	HL
+      00B837 7E               [ 7] 1574 	LD 	A,(HL)
+      00B838 FE F0            [ 7] 1575 	CP	#0xF0
+      00B83A C8               [11] 1576 	RET	Z	;  ���� � �ް� �� '&' �� RET
+                                   1577 
+      00B83B DD CB 1F 6E      [20] 1578 	BIT	5,31(IX)	; LFO CONTINE FLAG
+      00B83F 20 10            [12] 1579 	JR	NZ,CTLFO	; bit 5 = 1 �� LFO ���޸
+                                   1580 
+                                   1581 ; **	LFO INITIARIZE   **
+                                   1582 
+      00B841 CD 55 B9         [17] 1583     CALL	LFORST
+      00B844 CD 60 B9         [17] 1584 	CALL	LFORST2
+      00B847 DD 7E 15         [19] 1585 	LD	A,21(IX)
+      00B84A DD 77 16         [19] 1586 	LD	22(IX),A
+      00B84D DD CB 1F EE      [23] 1587 	SET	5,31(IX)	; SET CONTINUE FLAG
+                                   1588 	
+      00B851                       1589 CTLFO:
+      00B851 DD 7E 14         [19] 1590 	LD	A,20(IX)
+      00B854 B7               [ 4] 1591 	OR	A
+      00B855 28 05            [12] 1592 	JR	Z,CTLFO1
+      00B857 3D               [ 4] 1593 	DEC	A
+      00B858 DD 77 14         [19] 1594 	LD	20(IX),A
+      00B85B C9               [10] 1595 	RET
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 30.
+Hexadecimal [24-Bits]
+
+
+
+      00B85C                       1596 CTLFO1:
+      00B85C DD 35 16         [23] 1597 	DEC	22(IX)	;����
+      00B85F C0               [11] 1598 	RET	NZ
+                                   1599 	
+      00B860 DD 7E 15         [19] 1600 	LD	A,21(IX)
+      00B863 DD 77 16         [19] 1601 	LD	22(IX),A	;���� �� ��ò
+      00B866 DD 7E 1C         [19] 1602 	LD	A,28(IX)	;  GET PEAK LEVEL COUNTER (P.L.C)
+      00B869 B7               [ 4] 1603 	OR	A
+      00B86A 20 18            [12] 1604 	JR	NZ,PLLFO1	;  P.L.C > 0 �� PLLFO1
+                                   1605 
+      00B86C A7               [ 4] 1606 	AND	A
+      00B86D 21 00 00         [10] 1607 	LD	HL,#0
+      00B870 DD 56 1A         [19] 1608 	LD	D,26(IX)
+      00B873 DD 5E 19         [19] 1609 	LD	E,25(IX)
+      00B876 ED 52            [15] 1610 	SBC	HL,DE
+      00B878 DD 74 1A         [19] 1611 	LD	26(IX),H
+      00B87B DD 75 19         [19] 1612 	LD	25(IX),L	; WAVE ����
+      00B87E DD 7E 1B         [19] 1613 	LD	A,27(IX)
+      00B881 DD 77 1C         [19] 1614 	LD	28(IX),A	;  P.L.C �� ��ò
+                                   1615 
+      00B884                       1616 PLLFO1:
+      00B884 DD 35 1C         [23] 1617 	DEC	28(IX)		; P.L.C.-1
+      00B887 DD 6E 19         [19] 1618 	LD	L,25(IX)
+      00B88A DD 66 1A         [19] 1619 	LD	H,26(IX)
+      00B88D CD 91 B8         [17] 1620 	CALL	PLS2
+      00B890 C9               [10] 1621 	RET
+      00B891                       1622 PLS2:
+      00B891 3A 7C C0         [13] 1623 	LD	A,(PCMFLG)
+      00B894 B7               [ 4] 1624 	OR	A
+      00B895 28 14            [12] 1625 	JR	Z,PLSKI2
+      00B897 ED 5B 79 C0      [20] 1626 	LD	DE,(DELT_N)
+      00B89B 19               [11] 1627 	ADD	HL,DE
+      00B89C 22 79 C0         [16] 1628 	LD	(DELT_N),HL
+      00B89F 16 09            [ 7] 1629 	LD	D,#0x09
+      00B8A1 5D               [ 4] 1630 	LD	E,L
+      00B8A2 CD 22 BE         [17] 1631 	CALL	PCMOUT
+      00B8A5 14               [ 4] 1632 	INC	D
+      00B8A6 5C               [ 4] 1633 	LD	E,H
+      00B8A7 CD 22 BE         [17] 1634 	CALL	PCMOUT
+      00B8AA C9               [10] 1635 	RET
+      00B8AB                       1636 PLSKI2:
+      00B8AB DD 5E 1D         [19] 1637 	LD	E,29(IX)	;  GET FNUM1
+      00B8AE DD 56 1E         [19] 1638 	LD	D,30(IX)	;  GET B/FNUM2
+      00B8B1 19               [11] 1639 	ADD	HL,DE		;  HL= NEW F-NUMBER
+      00B8B2 DD 75 1D         [19] 1640 	LD	29(IX),L	; SET NEW F-NUM1
+      00B8B5 DD 74 1E         [19] 1641 	LD	30(IX),H	; SET NEW F-NUM2
+      00B8B8 3A 7F BE         [13] 1642 	LD	A,(SSGF1)
+      00B8BB B7               [ 4] 1643 	OR	A
+      00B8BC 28 22            [12] 1644 	JR	Z,LFOP5
+                                   1645 	
+                                   1646 ; ---	FOR SSG	LFO	---
+                                   1647 	
+      00B8BE DD 7E 20         [19] 1648 	LD	A,32(IX)	; GET KEY CODE&OCTAVE
+                                   1649 	
+      00B8C1 CB 3F            [ 8] 1650 	SRL	A
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 31.
+Hexadecimal [24-Bits]
+
+
+
+      00B8C3 CB 3F            [ 8] 1651 	SRL	A
+      00B8C5 CB 3F            [ 8] 1652 	SRL	A
+      00B8C7 CB 3F            [ 8] 1653 	SRL	A
+                                   1654 	
+      00B8C9 B7               [ 4] 1655 	OR	A		;  OCTAVE=1?
+      00B8CA 28 07            [12] 1656 	JR	Z,SSLFO2
+      00B8CC 47               [ 4] 1657 	LD	B,A
+                                   1658 	
+      00B8CD                       1659 SNUMGETL:
+                                   1660 	
+      00B8CD CB 3C            [ 8] 1661 	SRL	H
+      00B8CF CB 1D            [ 8] 1662 	RR	L
+      00B8D1 10 FA            [13] 1663 	DJNZ	SNUMGETL
+                                   1664 
+      00B8D3                       1665 SSLFO2:
+      00B8D3 5D               [ 4] 1666 	LD	E,L
+      00B8D4 DD 56 08         [19] 1667 	LD	D,8(IX)
+      00B8D7 CD 42 B4         [17] 1668 	CALL	PSGOUT
+                                   1669 
+      00B8DA 14               [ 4] 1670 	INC	D
+      00B8DB 5C               [ 4] 1671 	LD	E,H
+      00B8DC CD 42 B4         [17] 1672 	CALL	PSGOUT
+                                   1673 
+      00B8DF C9               [10] 1674 	RET
+                                   1675 	
+                                   1676 ; ---	FOR FM LFO	---
+                                   1677 	
+      00B8E0                       1678 LFOP5:
+      00B8E0 DD CB 21 76      [20] 1679 	BIT	6,33(IX)
+      00B8E4 20 4E            [12] 1680 	JR	NZ,LFOP6
+      00B8E6 DD CB 08 4E      [20] 1681 	BIT	1,8(IX)	;  CH=3?
+      00B8EA 28 36            [12] 1682 	JR	Z,PLLFO2	; NOT CH3 THEN PLLFO2
+      00B8EC 3A AA B1         [13] 1683 	LD	A,(PLSET1+1)
+      00B8EF FE 78            [ 7] 1684 	CP	#0x78
+      00B8F1 20 2F            [12] 1685 	JR	NZ,PLLFO2	; NOT SE MODE
+      00B8F3 22 68 C0         [16] 1686 	LD	(NEWFNM),HL
+      00B8F6                       1687 LFOP4:
+      00B8F6 21 5E C0         [10] 1688 	LD	HL,#DETDAT
+      00B8F9 FD 21 6A C0      [14] 1689 	LD	IY,#OP_SEL
+      00B8FD 06 04            [ 7] 1690 	LD	B,#4
+      00B8FF                       1691 LFOP3:
+      00B8FF C5               [11] 1692 	PUSH	BC
+      00B900 ED 5B 68 C0      [20] 1693 	LD	DE,(NEWFNM)
+      00B904 4E               [ 7] 1694 	LD	C,(HL)
+      00B905 06 00            [ 7] 1695 	LD	B,#0
+      00B907 23               [ 6] 1696 	INC	HL
+      00B908 EB               [ 4] 1697 	EX	DE,HL
+      00B909 09               [11] 1698 	ADD	HL,BC
+                                   1699 	
+      00B90A D5               [11] 1700 	PUSH	DE
+      00B90B 5C               [ 4] 1701 	LD	E,H
+      00B90C FD 56 00         [19] 1702 	LD	D,(IY)
+      00B90F FD 23            [10] 1703 	INC	IY
+      00B911 CD 42 B4         [17] 1704 	CALL	PSGOUT
+      00B914 15               [ 4] 1705 	DEC	D
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 32.
+Hexadecimal [24-Bits]
+
+
+
+      00B915 15               [ 4] 1706 	DEC	D
+      00B916 15               [ 4] 1707 	DEC	D
+      00B917 15               [ 4] 1708 	DEC	D
+      00B918 5D               [ 4] 1709 	LD	E,L
+      00B919 CD 42 B4         [17] 1710 	CALL	PSGOUT
+      00B91C D1               [10] 1711 	POP	DE
+      00B91D EB               [ 4] 1712 	EX	DE,HL
+      00B91E C1               [10] 1713 	POP	BC
+      00B91F 10 DE            [13] 1714 	DJNZ	LFOP3
+      00B921 C9               [10] 1715 	RET
+      00B922                       1716 PLLFO2:
+      00B922 5C               [ 4] 1717 	LD	E,H
+      00B923 3E A4            [ 7] 1718 	LD	A,#0xA4	;  PORT A4H
+      00B925 DD 86 08         [19] 1719 	ADD	A,8(IX)
+      00B928 57               [ 4] 1720 	LD	D,A
+      00B929 CD 42 B4         [17] 1721 	CALL	PSGOUT
+      00B92C D6 04            [ 7] 1722 	SUB	#4
+      00B92E 5D               [ 4] 1723 	LD	E,L	;  F-NUMBER1 DATA
+      00B92F 57               [ 4] 1724 	LD	D,A
+      00B930 CD 42 B4         [17] 1725 	CALL	PSGOUT
+      00B933 C9               [10] 1726 	RET
+                                   1727 	
+      00B934                       1728 LFOP6:
+      00B934 0E 01            [ 7] 1729 	LD	C,#1
+      00B936 3E 40            [ 7] 1730 	LD	A,#0x40
+      00B938 DD 86 08         [19] 1731 	ADD	A,8(IX)
+      00B93B 5D               [ 4] 1732 	LD	E,L
+      00B93C CB 41            [ 8] 1733 	BIT	0,C
+      00B93E C4 4E B9         [17] 1734 	CALL	NZ,LFP62
+      00B941 CB 51            [ 8] 1735 	BIT	2,C
+      00B943 C4 4E B9         [17] 1736 	CALL	NZ,LFP62
+      00B946 CB 49            [ 8] 1737 	BIT	1,C
+      00B948 C4 4E B9         [17] 1738 	CALL	NZ,LFP62
+      00B94B CB 59            [ 8] 1739 	BIT	3,C
+      00B94D C8               [11] 1740 	RET	Z
+      00B94E                       1741 LFP62:
+      00B94E 57               [ 4] 1742 	LD	D,A
+      00B94F CD 42 B4         [17] 1743 	CALL	PSGOUT
+      00B952 C6 04            [ 7] 1744 	ADD	A,#4
+      00B954 C9               [10] 1745 	RET
+                                   1746 	
+                                   1747 ; ---	RESET PEAK L.&DELAY	---
+                                   1748 	
+      00B955                       1749 LFORST:
+      00B955 DD 7E 13         [19] 1750 	LD	A,19(IX)
+      00B958 DD 77 14         [19] 1751 	LD	20(IX),A	; LFO DELAY � ����ò
+      00B95B DD CB 1F AE      [23] 1752 	RES	5,31(IX)	; RESET LFO CONTINE FLAG
+      00B95F C9               [10] 1753 	RET
+      00B960                       1754 LFORST2:
+      00B960 DD 7E 1B         [19] 1755 	LD	A,27(IX)
+      00B963 CB 3F            [ 8] 1756 	SRL	A
+      00B965 DD 77 1C         [19] 1757 	LD	28(IX),A	; LFO PEAK LEVEL �� ��ò
+      00B968 DD 7E 17         [19] 1758 	LD	A,23(IX)	;
+      00B96B DD 77 19         [19] 1759 	LD	25(IX),A	; �ݶخ� ����ò
+      00B96E DD 7E 18         [19] 1760 	LD	A,24(IX)	;
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 33.
+Hexadecimal [24-Bits]
+
+
+
+      00B971 DD 77 1A         [19] 1761 	LD	26(IX),A
+      00B974 DD CB 21 76      [20] 1762 	BIT	6,33(IX)
+      00B978 C8               [11] 1763 	RET	Z
+      00B979 DD 7E 0B         [19] 1764 	LD	A,11(IX)
+      00B97C DD 77 1D         [19] 1765 	LD	29(IX),A
+      00B97F DD 36 1E 00      [19] 1766 	LD	30(IX),#0
+      00B983 C9               [10] 1767 	RET
+                                   1768 	
+      00B984                       1769 SSG:
+                                   1770 ; **	SSG �ݹ�ݴݿ� ٰ��   **
+                                   1771 
+      00B984                       1772 SSGSUB:
+      00B984 DD 7E 00         [19] 1773 	LD	A,(IX)
+      00B987 3D               [ 4] 1774 	DEC	A
+      00B988 DD 77 00         [19] 1775 	LD	(IX),A
+      00B98B 28 29            [12] 1776 	JR	Z,SSSUB7
+                                   1777 
+      00B98D DD 46 12         [19] 1778 	LD	B,18(IX)	;  'q'
+      00B990 B8               [ 4] 1779 	CP	B
+      00B991 20 13            [12] 1780 	JR	NZ,SSSUB0
+                                   1781 	
+      00B993 DD 66 03         [19] 1782 	LD	H,3(IX)
+      00B996 DD 6E 02         [19] 1783 	LD	L,2(IX)	;  HL=SOUND DATA ADD
+      00B999 7E               [ 7] 1784 	LD	A,(HL)		;  A=DATA
+      00B99A FE FD            [ 7] 1785 	CP	#0xFD		; COUNT OVER?
+      00B99C 28 04            [12] 1786 	JR	Z,SSUB0
+      00B99E CD A5 BA         [17] 1787 	CALL	SSSUBA		; TO REREASE
+      00B9A1 C9               [10] 1788 	RET
+      00B9A2                       1789 SSUB0:
+      00B9A2 DD CB 1F B6      [23] 1790  	RES	6,31(IX)	;  SET TIE FLAG
+      00B9A6                       1791 SSSUB0:
+      00B9A6 DD CB 06 7E      [20] 1792 	BIT 	7,6(IX)	; ENVELOPE CHECK
+      00B9AA C8               [11] 1793 	RET 	Z
+      00B9AB CD EC BB         [17] 1794 	CALL	SOFENV
+      00B9AE 5F               [ 4] 1795 	LD	E,A
+      00B9AF DD 56 07         [19] 1796 	LD	D,7(IX)
+      00B9B2 CD 42 B4         [17] 1797 	CALL	PSGOUT
+      00B9B5 C9               [10] 1798 	RET
+                                   1799 	
+      00B9B6                       1800 SSSUB7:
+      00B9B6 DD 66 03         [19] 1801 	LD	H,3(IX)
+      00B9B9 DD 6E 02         [19] 1802 	LD	L,2(IX)	;  HL AS SOUND DATA ADD
+      00B9BC 7E               [ 7] 1803 	LD	A,(HL)		;  A=DATA
+      00B9BD FE FD            [ 7] 1804 	CP	#0xFD		; COUNT OVER?
+      00B9BF 20 08            [12] 1805 	JR	NZ,SSSUBE
+      00B9C1                       1806 SSUB1:
+      00B9C1 DD CB 1F B6      [23] 1807 	RES	6,31(IX)	;  SET TIE FLAG
+      00B9C5 23               [ 6] 1808 	INC	HL
+      00B9C6 C3 CD B9         [10] 1809 	JP	SSSUBB
+      00B9C9                       1810 SSSUBE:
+      00B9C9 DD CB 1F F6      [23] 1811 	SET	6,31(IX)
+      00B9CD                       1812 SSSUBB:
+      00B9CD 7E               [ 7] 1813 	LD	A,(HL)
+      00B9CE B7               [ 4] 1814 	OR	A	;  CHECK END MARK
+      00B9CF 20 11            [12] 1815 	JR	NZ,SSSUB2
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 34.
+Hexadecimal [24-Bits]
+
+
+
+      00B9D1 DD CB 1F C6      [23] 1816 	SET	0,31(IX)
+      00B9D5 DD 56 05         [19] 1817 	LD	D,5(IX)
+      00B9D8 DD 5E 04         [19] 1818 	LD	E,4(IX)	;  HL=DATA TOP ADD
+      00B9DB 7B               [ 4] 1819 	LD	A,E
+      00B9DC B2               [ 4] 1820 	OR	D
+      00B9DD CA A9 BC         [10] 1821 	JP	Z,SSGEND
+      00B9E0 EB               [ 4] 1822 	EX	DE,HL
+      00B9E1                       1823 SSSUB1:
+      00B9E1 7E               [ 7] 1824 	LD	A,(HL)	;  INPUT FLAG &LENGTH
+                                   1825 	
+      00B9E2                       1826 SSSUB2:
+      00B9E2 23               [ 6] 1827 	INC	HL
+      00B9E3 FE F0            [ 7] 1828 	CP	#0xF0	;  COMMAND OF PSG?
+      00B9E5 D2 D4 BA         [10] 1829  	JP	NC,SSSUB8
+                                   1830 	
+      00B9E8 07               [ 4] 1831 	RLCA
+      00B9E9 CB 3F            [ 8] 1832 	SRL	A		;  CY=REST FLAG
+      00B9EB DD 77 00         [19] 1833 	LD	0(IX),A	;  SET WAIT COUNTER
+      00B9EE 30 06            [12] 1834 	JR	NC,SSSUB6	;  ���� �� SSSUBA
+      00B9F0 CD A5 BA         [17] 1835 	CALL	SSSUBA
+      00B9F3 C3 9E BA         [10] 1836 	JP	SETPT
+                                   1837 	
+                                   1838 ; **	SET FINE TUNE & COARSE TUNE	**
+                                   1839 	
+      00B9F6                       1840 SSSUB6:
+      00B9F6 7E               [ 7] 1841 	LD	A,(HL)		;  LOAD OCT & KEY CODE
+      00B9F7 23               [ 6] 1842 	INC	HL
+                                   1843 	
+      00B9F8 DD CB 1F 76      [20] 1844 	BIT	6,31(IX)
+      00B9FC 20 09            [12] 1845 	JR	NZ,SSSKIP0	;  NON TIE
+                                   1846 	
+      00B9FE 4F               [ 4] 1847 	LD	C,A
+      00B9FF DD 46 20         [19] 1848 	LD	B,32(IX)
+      00BA02 90               [ 4] 1849 	SUB	B
+      00BA03 CA 9E BA         [10] 1850 	JP	Z,SETPT		; IF NOW CODE=BEFORE CODE THEN SETPT
+                                   1851 	
+      00BA06 79               [ 4] 1852 	LD	A,C
+                                   1853 	
+      00BA07                       1854 SSSKIP0:
+      00BA07 DD 77 20         [19] 1855 	LD	32(IX),A	; STORE KEY CODE & OCTAVE
+                                   1856 	
+      00BA0A E5               [11] 1857 	PUSH	HL
+      00BA0B 47               [ 4] 1858 	LD	B,A
+      00BA0C E6 0F            [ 7] 1859 	AND	#0b00001111	;  GET KEY CODE
+      00BA0E 87               [ 4] 1860 	ADD	A,A
+      00BA0F 5F               [ 4] 1861 	LD	E,A
+      00BA10 16 00            [ 7] 1862 	LD	D,#0
+      00BA12 21 9C C0         [10] 1863 	LD	HL,#SNUMB
+      00BA15 19               [11] 1864 	ADD	HL,DE
+                                   1865 	
+      00BA16 7E               [ 7] 1866 	LD	A,(HL)		;  GET FNUM2
+      00BA17 23               [ 6] 1867 	INC	HL
+      00BA18 66               [ 7] 1868 	LD	H,(HL)		;  GET FNUM1
+      00BA19 6F               [ 4] 1869 	LD	L,A
+                                   1870 	
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 35.
+Hexadecimal [24-Bits]
+
+
+
+      00BA1A DD 56 0A         [19] 1871 	LD	D,10(IX)	;
+      00BA1D DD 5E 09         [19] 1872 	LD	E,9(IX)	;  GET DETUNE DATA
+      00BA20 19               [11] 1873 	ADD	HL,DE		;  DETUNE PLUS
+      00BA21 DD 74 1E         [19] 1874   	LD	30(IX),H	; SAVE FOR LFO
+      00BA24 DD 75 1D         [19] 1875 	LD	29(IX),L
+                                   1876 	
+      00BA27 CB 38            [ 8] 1877 	SRL	B
+      00BA29 CB 38            [ 8] 1878 	SRL	B
+      00BA2B CB 38            [ 8] 1879 	SRL	B
+      00BA2D CB 38            [ 8] 1880 	SRL	B
+                                   1881 	
+      00BA2F 05               [ 4] 1882 	DEC	B
+      00BA30 04               [ 4] 1883 	INC	B		;  OCTAVE=1?
+      00BA31 28 06            [12] 1884 	JR	Z,SSSUB4	;  1 �� SSSUB4 �
+                                   1885 	
+      00BA33                       1886 SSSUB5:
+      00BA33 CB 3C            [ 8] 1887 	SRL	H
+      00BA35 CB 1D            [ 8] 1888 	RR	L
+      00BA37 10 FA            [13] 1889 	DJNZ	SSSUB5		;  OCTAVE DATA � ��ò
+                                   1890 	
+      00BA39                       1891 SSSUB4:
+                                   1892 	
+      00BA39 5D               [ 4] 1893 	LD	E,L
+      00BA3A DD 56 08         [19] 1894 	LD	D,8(IX)
+      00BA3D CD 42 B4         [17] 1895 	CALL	PSGOUT
+                                   1896 	
+      00BA40 5C               [ 4] 1897 	LD	E,H
+      00BA41 14               [ 4] 1898 	INC	D
+      00BA42 CD 42 B4         [17] 1899 	CALL	PSGOUT
+                                   1900 	
+      00BA45 DD CB 1F 76      [20] 1901 	BIT	6,31(IX)
+      00BA49 20 05            [12] 1902 	JR	NZ,SSSUBF
+      00BA4B CD EC BB         [17] 1903 	CALL	SOFENV
+      00BA4E 18 40            [12] 1904 	JR	SSSUB9
+                                   1905 	
+      00BA50                       1906 SSSUBF:			; KEYON ���ķ � ���
+      00BA50 DD CB 21 7E      [20] 1907 	BIT	7,33(IX)
+      00BA54 28 15            [12] 1908 	JR	Z,SSSUBG	; NOT HARD ENV.
+                                   1909 	
+                                   1910 ; ---	HARD ENV. KEY ON	---
+                                   1911 	
+      00BA56 1E 10            [ 7] 1912 	LD	E,#16
+      00BA58 DD 56 07         [19] 1913 	LD	D,7(IX)
+      00BA5B CD 42 B4         [17] 1914 	CALL	PSGOUT		; HARD ENV.KEYON
+                                   1915 	
+      00BA5E DD 7E 21         [19] 1916 	LD	A,33(IX)
+      00BA61 E6 0F            [ 7] 1917 	AND	#0b00001111
+      00BA63 5F               [ 4] 1918 	LD	E,A
+      00BA64 16 0D            [ 7] 1919 	LD	D,#0x0D
+      00BA66 CD 42 B4         [17] 1920 	CALL	PSGOUT
+      00BA69 18 17            [12] 1921 	JR	SSSUBH
+                                   1922 	
+                                   1923 ; ---	SOFT ENV. KEYON		---
+                                   1924 	
+      00BA6B                       1925 SSSUBG:
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 36.
+Hexadecimal [24-Bits]
+
+
+
+      00BA6B DD 7E 06         [19] 1926 	LD	A,6(IX)
+      00BA6E E6 0F            [ 7] 1927 	AND	#0b00001111
+      00BA70 F6 90            [ 7] 1928 	OR	#0b10010000	;  TO STATE 1 (ATTACK)
+      00BA72 DD 77 06         [19] 1929 	LD	6(IX),A
+                                   1930 	
+      00BA75 DD 7E 0C         [19] 1931 	LD	A,12(IX)	;  ENVE INIT
+      00BA78 DD 77 0B         [19] 1932 	LD	11(IX),A
+      00BA7B DD CB 1F AE      [23] 1933 	RES	5,31(IX)	; RESET LFO CONTINE FLAG
+      00BA7F CD 61 BC         [17] 1934 	CALL	SOFEV7
+      00BA82                       1935 SSSUBH:
+      00BA82 DD 4E 1B         [19] 1936 	LD	C,27(IX)
+      00BA85 CB 39            [ 8] 1937 	SRL	C
+      00BA87 DD 71 1C         [19] 1938 	LD	28(IX),C	;  LFO PEAK LEVEL �� ��ò
+      00BA8A DD 4E 13         [19] 1939 	LD	C,19(IX)
+      00BA8D DD 71 14         [19] 1940 	LD	20(IX),C	;  LFO DELAY � ����ò
+      00BA90                       1941 SSSUB9:
+      00BA90 E1               [10] 1942 	POP	HL
+                                   1943 	
+                                   1944 ; **   VOLUME OUT PROCESS   **
+                                   1945 	
+                                   1946 ;
+                                   1947 ;  ENTRY A: VOLUME DATA
+                                   1948 ;
+                                   1949 	
+      00BA91                       1950 SSSUB3:
+      00BA91 DD CB 21 7E      [20] 1951 	BIT	7,33(IX)
+      00BA95 20 07            [12] 1952 	JR	NZ,SETPT	; IF HARD ENVE THEN SETPT
+                                   1953 	
+      00BA97 5F               [ 4] 1954 	LD	E,A
+      00BA98 DD 56 07         [19] 1955 	LD	D,7(IX)
+      00BA9B CD 42 B4         [17] 1956 	CALL	PSGOUT
+                                   1957 	
+                                   1958 ; **   SET POINTER   **
+                                   1959 	
+      00BA9E                       1960 SETPT:
+      00BA9E DD 74 03         [19] 1961     LD	3(IX),H
+      00BAA1 DD 75 02         [19] 1962 	LD	2(IX),L	;  SET NEXT SOUND DATA ADDRES
+      00BAA4 C9               [10] 1963 	RET
+                                   1964 	
+                                   1965 ; **	KEY OFF �� � RR ���	**
+                                   1966 	
+      00BAA5                       1967 SSSUBA:
+                                   1968 	
+                                   1969 ; --	HARD ENV. KEY OFF	--
+                                   1970 	
+      00BAA5 DD CB 21 7E      [20] 1971 	BIT	7,33(IX)
+      00BAA9 28 08            [12] 1972 	JR	Z,SSUBAB	; NOT HARD ENV.
+      00BAAB 1E 00            [ 7] 1973 	LD	E,#0
+      00BAAD DD 56 07         [19] 1974 	LD	D,7(IX)
+      00BAB0 CD 42 B4         [17] 1975 	CALL	PSGOUT		; HARD ENV.KEYOFF
+                                   1976 	
+                                   1977 ; --	SOFT ENV. KEY OFF	--
+                                   1978 	
+      00BAB3                       1979 SSUBAB:
+      00BAB3 DD CB 21 6E      [20] 1980 	BIT	5,33(IX)
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 37.
+Hexadecimal [24-Bits]
+
+
+
+      00BAB7 28 07            [12] 1981 	JR	Z,SSUBAC
+      00BAB9 DD CB 1F B6      [23] 1982 	RES	6,31(IX)
+      00BABD C3 A6 B9         [10] 1983 	JP	SSSUB0
+      00BAC0                       1984 SSUBAC:
+      00BAC0 AF               [ 4] 1985 	XOR	A
+      00BAC1 DD CB 06 7E      [20] 1986 	BIT	7,6(IX)
+      00BAC5 28 CA            [12] 1987 	JR	Z,SSSUB3	;  �ذ� �ެŹ��� SSSUB3
+      00BAC7 DD 7E 06         [19] 1988 	LD	A,6(IX)
+      00BACA E6 8F            [ 7] 1989 	AND	#0b10001111	; STATE 4 (�ذ�)
+      00BACC DD 77 06         [19] 1990 	LD	6(IX),A
+      00BACF CD 54 BC         [17] 1991 	CALL	SOFEV9
+      00BAD2 18 BD            [12] 1992 	JR	SSSUB3
+                                   1993 	
+                                   1994 ; **   ��� ����� � ��ò   **
+                                   1995 	
+      00BAD4                       1996 SSSUB8:
+      00BAD4 E6 0F            [ 7] 1997 	AND	#0x0F		; A=COMMAND No.(0-F)
+      00BAD6 11 CD B9         [10] 1998 	LD	DE,#SSSUBB
+      00BAD9 D5               [11] 1999 	PUSH	DE		; STORE RETURN ADDRES
+      00BADA 11 E7 BA         [10] 2000 	LD	DE,#PSGCOM
+      00BADD 47               [ 4] 2001 	LD	B,A
+      00BADE 87               [ 4] 2002 	ADD	A,A
+      00BADF 80               [ 4] 2003 	ADD	A,B		; A*3
+      00BAE0 83               [ 4] 2004 	ADD	A,E
+      00BAE1 5F               [ 4] 2005 	LD	E,A
+      00BAE2 8A               [ 4] 2006 	ADC	A,D
+      00BAE3 93               [ 4] 2007 	SUB	E
+      00BAE4 57               [ 4] 2008 	LD	D,A		; DE+A*3
+      00BAE5 D5               [11] 2009 	PUSH	DE
+      00BAE6 C9               [10] 2010 	RET
+                                   2011 	
+                                   2012 ; **   PSG COMMAND TABLE   **
+                                   2013 	
+      00BAE7                       2014 PSGCOM:
+      00BAE7 C3 88 BB         [10] 2015 	JP	OTOSSG		;F0-�ݼ�� ���         '@'
+      00BAEA C3 B9 BB         [10] 2016 	JP	PSGVOL		;F1-VOLUME SET
+      00BAED C3 04 B7         [10] 2017 	JP	FRQ_DF		;F2-DETUNE
+      00BAF0 C3 4B B6         [10] 2018 	JP	SETQ		;F3-COMMAND OF        'q'
+      00BAF3 C3 B5 B5         [10] 2019 	JP	LFOON		;F4-LFO
+      00BAF6 C3 4F B7         [10] 2020 	JP	REPSTF		;F5-REPEAT START SET  '['
+      00BAF9 C3 5C B7         [10] 2021 	JP	REPENF		;F6-REPEAT END SET    ']'
+      00BAFC C3 3F BB         [10] 2022 	JP	NOISE		;F7-MIX PORT          'P'
+      00BAFF C3 65 BB         [10] 2023 	JP	NOISEW		;F8-NOIZE PARAMATER   'w'
+      00BB02 C3 D4 B4         [10] 2024 	JP	FLGSET		;F9-FLAG SET
+      00BB05 C3 71 BB         [10] 2025 	JP	ENVPST		;FA-SOFT ENVELOPE     'E'
+      00BB08 C3 9F BB         [10] 2026 	JP	VOLUPS		;FB-VOLUME UP    ')'
+      00BB0B C3 CE B4         [10] 2027     JP	NTMEAN		;FC-
+      00BB0E C3 CF B4         [10] 2028 	JP	TIE
+      00BB11 C3 39 B7         [10] 2029 	JP	RSKIP
+      00BB14 C3 BE B4         [10] 2030 	JP	SECPRC		;FF- to sec com
+                                   2031 	
+                                   2032 ; **	HARD ENVE SET	**
+                                   2033 	
+      00BB17                       2034 HRDENV:
+      00BB17 5E               [ 7] 2035 	LD	E,(HL)
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 38.
+Hexadecimal [24-Bits]
+
+
+
+      00BB18 23               [ 6] 2036 	INC	HL
+      00BB19 16 0D            [ 7] 2037 	LD	D,#0x0D
+      00BB1B CD 42 B4         [17] 2038 	CALL	PSGOUT
+      00BB1E 7B               [ 4] 2039 	LD	A,E
+      00BB1F F6 80            [ 7] 2040 	OR	#0b10000000	; SET H.E FLAG
+      00BB21 DD 77 21         [19] 2041 	LD	33(IX),A	; H.E MODE
+      00BB24 DD 36 06 10      [19] 2042 	LD	6(IX),#16
+      00BB28 C9               [10] 2043 	RET
+                                   2044 	
+                                   2045 ; **	HARD ENVE PERIOD	**
+                                   2046 	
+      00BB29                       2047 ENVPOD:
+      00BB29 5E               [ 7] 2048 	LD	E,(HL)
+      00BB2A 23               [ 6] 2049 	INC	HL
+      00BB2B 16 0B            [ 7] 2050 	LD	D,#0x0B
+      00BB2D CD 42 B4         [17] 2051 	CALL	PSGOUT
+      00BB30 5E               [ 7] 2052 	LD	E,(HL)
+      00BB31 23               [ 6] 2053 	INC	HL
+      00BB32 14               [ 4] 2054 	INC	D
+      00BB33 CD 42 B4         [17] 2055 	CALL	PSGOUT
+      00BB36 C9               [10] 2056 	RET
+                                   2057 	
+                                   2058 ; **   WRITE REG   **
+                                   2059 	
+      00BB37                       2060 W_REG:
+      00BB37 56               [ 7] 2061 	LD	D,(HL)
+      00BB38 23               [ 6] 2062 	INC	HL
+      00BB39 5E               [ 7] 2063 	LD	E,(HL)
+      00BB3A 23               [ 6] 2064 	INC	HL
+      00BB3B CD 42 B4         [17] 2065 	CALL	PSGOUT
+      00BB3E C9               [10] 2066 	RET
+                                   2067 	
+                                   2068 ; **   MIX PORT CONTROL   **
+                                   2069 	
+      00BB3F                       2070 NOISE:
+      00BB3F 4E               [ 7] 2071 	LD	C,(HL)
+      00BB40 23               [ 6] 2072 	INC	HL
+                                   2073 	
+      00BB41 DD 46 08         [19] 2074 	LD	B,8(IX)	; CH NO.
+                                   2075 	
+      00BB44 3A 51 C0         [13] 2076 	LD	A,(PREGBF+5)
+      00BB47 5F               [ 4] 2077 	LD	E,A
+      00BB48 CB 38            [ 8] 2078 	SRL	B
+      00BB4A 04               [ 4] 2079 	INC	B
+      00BB4B 50               [ 4] 2080 	LD	D,B
+      00BB4C 3E 7B            [ 7] 2081 	LD	A,#0b01111011
+      00BB4E                       2082 NOISE1:
+      00BB4E 07               [ 4] 2083 	RLCA
+      00BB4F 10 FD            [13] 2084 	DJNZ	NOISE1
+      00BB51 A3               [ 4] 2085 	AND	E
+      00BB52 5F               [ 4] 2086 	LD	E,A
+      00BB53 79               [ 4] 2087 	LD	A,C
+      00BB54 42               [ 4] 2088 	LD	B,D
+      00BB55 0F               [ 4] 2089 	RRCA
+      00BB56                       2090 NOISE2:
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 39.
+Hexadecimal [24-Bits]
+
+
+
+      00BB56 07               [ 4] 2091 	RLCA
+      00BB57 10 FD            [13] 2092 	DJNZ	NOISE2
+      00BB59 B3               [ 4] 2093 	OR	E
+      00BB5A 16 07            [ 7] 2094 	LD	D,#7
+      00BB5C 5F               [ 4] 2095 	LD	E,A
+      00BB5D CD 42 B4         [17] 2096 	CALL	PSGOUT
+                                   2097 	
+      00BB60 7B               [ 4] 2098 	LD	A,E
+      00BB61 32 51 C0         [13] 2099 	LD	(PREGBF+5),A
+      00BB64 C9               [10] 2100 	RET
+                                   2101 	
+                                   2102 ; **   ɲ�� ���ʽ�   **
+                                   2103 	
+      00BB65                       2104 NOISEW:
+      00BB65 5E               [ 7] 2105 	LD	E,(HL)
+      00BB66 23               [ 6] 2106 	INC	HL
+      00BB67 16 06            [ 7] 2107 	LD	D,#6
+      00BB69 CD 42 B4         [17] 2108 	CALL	PSGOUT
+      00BB6C 7B               [ 4] 2109 	LD	A,E
+      00BB6D 32 50 C0         [13] 2110 	LD	(PREGBF+4),A
+      00BB70 C9               [10] 2111 	RET
+                                   2112 	
+                                   2113 ; **   ����۰�� ���Ұ� ���   **
+                                   2114 	
+      00BB71                       2115 ENVPST:
+      00BB71 EB               [ 4] 2116 	EX	DE,HL
+      00BB72 DD E5            [15] 2117 	PUSH	IX
+      00BB74 E1               [10] 2118 	POP	HL
+      00BB75 01 0C 00         [10] 2119 	LD	BC,#12
+      00BB78 09               [11] 2120 	ADD	HL,BC
+      00BB79 EB               [ 4] 2121 	EX	DE,HL
+      00BB7A 01 06 00         [10] 2122 	LD	BC,#6
+      00BB7D ED B0            [21] 2123 	LDIR
+      00BB7F DD 7E 06         [19] 2124 	LD	A,6(IX)
+      00BB82 F6 90            [ 7] 2125 	OR	#0b10010000	; �����׸� �����׸� ���
+      00BB84 DD 77 06         [19] 2126 	LD	6(IX),A
+      00BB87 C9               [10] 2127 	RET
+                                   2128 	
+                                   2129 ; **   PSG �ݼ�����   **
+                                   2130 	
+      00BB88                       2131 OTOSSG:
+      00BB88 7E               [ 7] 2132 	LD	A,(HL)
+      00BB89 23               [ 6] 2133 	INC	HL
+      00BB8A E5               [11] 2134 	PUSH	HL
+      00BB8B CD 93 BB         [17] 2135 	CALL	OTOCAL
+      00BB8E CD 71 BB         [17] 2136 	CALL	ENVPST
+      00BB91 E1               [10] 2137 	POP	HL
+      00BB92 C9               [10] 2138 	RET
+      00BB93                       2139 OTOCAL:
+      00BB93 21 CC C0         [10] 2140 	LD	HL,#SSGDAT
+      00BB96 87               [ 4] 2141 	ADD	A,A
+      00BB97 4F               [ 4] 2142 	LD	C,A
+      00BB98 87               [ 4] 2143 	ADD	A,A
+      00BB99 81               [ 4] 2144 	ADD	A,C	;*6
+      00BB9A 5F               [ 4] 2145 	LD	E,A
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 40.
+Hexadecimal [24-Bits]
+
+
+
+      00BB9B 16 00            [ 7] 2146 	LD	D,#0
+      00BB9D 19               [11] 2147 	ADD	HL,DE
+      00BB9E C9               [10] 2148 	RET
+                                   2149 	
+                                   2150 ; **	SSG VOLUME UP & DOWN	**
+                                   2151 	
+      00BB9F                       2152 VOLUPS:
+      00BB9F 56               [ 7] 2153 	LD	D,(HL)
+      00BBA0 23               [ 6] 2154 	INC	HL
+                                   2155 	
+      00BBA1 DD CB 21 7E      [20] 2156 	BIT	7,33(IX)
+      00BBA5 C0               [11] 2157 	RET	NZ
+                                   2158 	
+      00BBA6 DD 7E 06         [19] 2159 	LD	A,6(IX)
+      00BBA9 5F               [ 4] 2160 	LD	E,A
+      00BBAA E6 0F            [ 7] 2161 	AND	#0b00001111
+      00BBAC 82               [ 4] 2162 	ADD	A,D
+      00BBAD FE 10            [ 7] 2163 	CP	#16
+      00BBAF D0               [11] 2164 	RET	NC
+      00BBB0 57               [ 4] 2165 	LD	D,A
+      00BBB1 7B               [ 4] 2166 	LD	A,E
+      00BBB2 E6 F0            [ 7] 2167 	AND	#0b11110000
+      00BBB4 B2               [ 4] 2168 	OR	D
+      00BBB5 DD 77 06         [19] 2169 	LD	6(IX),A
+      00BBB8 C9               [10] 2170 	RET
+                                   2171 	
+                                   2172 	
+                                   2173 ; **	PSG VOLUME	**
+                                   2174 	
+      00BBB9                       2175 PSGVOL:
+      00BBB9 DD CB 21 BE      [23] 2176 	RES	7,33(IX)	; RES HARD ENV FLAG
+                                   2177 	
+      00BBBD DD 7E 06         [19] 2178 	LD	A,6(IX)
+      00BBC0 E6 F0            [ 7] 2179 	AND	#0b11110000
+      00BBC2 5F               [ 4] 2180 	LD	E,A
+      00BBC3 4E               [ 7] 2181 	LD	C,(HL)
+      00BBC4                       2182 PV1:
+      00BBC4 3A 7C BE         [13] 2183 	LD	A,(TOTALV)
+      00BBC7 81               [ 4] 2184 	ADD	A,C
+      00BBC8 FE 10            [ 7] 2185 	CP	#16
+      00BBCA 38 01            [12] 2186 	JR	C,PV2
+      00BBCC AF               [ 4] 2187 	XOR	A
+      00BBCD                       2188 PV2:
+      00BBCD B3               [ 4] 2189 	OR	E
+      00BBCE 23               [ 6] 2190 	INC	HL
+      00BBCF DD 77 06         [19] 2191 	LD	6(IX),A
+      00BBD2 C9               [10] 2192 	RET
+                                   2193 	
+                                   2194 ; **	SSG ALL SOUND OFF	**
+                                   2195 	
+      00BBD3                       2196 SSGOFF:
+      00BBD3 06 03            [ 7] 2197 	LD	B,#3
+      00BBD5 16 08            [ 7] 2198 	LD	D,#8
+      00BBD7 1E 00            [ 7] 2199 	LD	E,#0
+      00BBD9                       2200 SSGOF1:
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 41.
+Hexadecimal [24-Bits]
+
+
+
+      00BBD9 CD 42 B4         [17] 2201 	CALL	PSGOUT
+      00BBDC 14               [ 4] 2202 	INC	D
+      00BBDD 10 FA            [13] 2203 	DJNZ	SSGOF1
+      00BBDF C9               [10] 2204 	RET
+                                   2205 	
+                                   2206 ; **   SSG KEY OFF   **
+                                   2207 	
+      00BBE0                       2208 SKYOFF:
+      00BBE0 AF               [ 4] 2209 	XOR	A
+      00BBE1 DD 77 06         [19] 2210 	LD	6(IX),A	; ENVE FLAG RESET
+                                   2211 	
+      00BBE4 5F               [ 4] 2212 	LD	E,A
+      00BBE5 DD 56 07         [19] 2213 	LD	D,7(IX)
+      00BBE8 CD 42 B4         [17] 2214 	CALL	PSGOUT
+      00BBEB C9               [10] 2215 	RET
+                                   2216 	
+                                   2217 	
+                                   2218 ; **	SOFT ENVEROPE PROCESS	**
+                                   2219 	
+      00BBEC                       2220 SOFENV:
+      00BBEC DD CB 06 66      [20] 2221 	BIT	4,6(IX)	; CHECK ATTACK FLAG
+      00BBF0 28 1C            [12] 2222 	JR	Z,SOFEV2
+                                   2223 	
+      00BBF2 DD 7E 0B         [19] 2224 	LD	A,11(IX)
+      00BBF5 DD 56 0D         [19] 2225 	LD	D,13(IX)
+      00BBF8 82               [ 4] 2226 	ADD	A,D
+      00BBF9 30 02            [12] 2227 	JR	NC,SOFEV1
+      00BBFB 3E FF            [ 7] 2228 	LD	A,#0xFF
+      00BBFD                       2229 SOFEV1:
+      00BBFD FE FF            [ 7] 2230 	CP	#0xFF
+      00BBFF DD 77 0B         [19] 2231 	LD	11(IX),A
+      00BC02 20 5D            [12] 2232 	JR	NZ,SOFEV7
+                                   2233 	
+      00BC04 DD 7E 06         [19] 2234 	LD	A,6(IX)
+      00BC07 EE 30            [ 7] 2235 	XOR	#0b00110000
+      00BC09 DD 77 06         [19] 2236 	LD	6(IX),A	; TO STATE 2 (DECAY)
+      00BC0C 18 53            [12] 2237 	JR	SOFEV7
+                                   2238 	
+      00BC0E                       2239 SOFEV2:
+      00BC0E DD CB 06 6E      [20] 2240 	BIT	5,6(IX)
+      00BC12 28 20            [12] 2241 	JR	Z,SOFEV4
+                                   2242 	
+      00BC14 DD 7E 0B         [19] 2243 	LD	A,11(IX)
+      00BC17 DD 56 0E         [19] 2244 	LD	D,14(IX)	; GET DECAY
+      00BC1A DD 5E 0F         [19] 2245 	LD	E,15(IX)	; GET SUSTAIN
+                                   2246 	
+      00BC1D 92               [ 4] 2247 	SUB	D
+      00BC1E 38 03            [12] 2248 	JR	C,SOFEV8
+      00BC20 BB               [ 4] 2249 	CP	E
+      00BC21 30 01            [12] 2250 	JR	NC,SOFEV3
+      00BC23                       2251 SOFEV8:
+      00BC23 7B               [ 4] 2252 	LD	A,E
+      00BC24                       2253 SOFEV3:
+      00BC24 BB               [ 4] 2254 	CP	E
+      00BC25 DD 77 0B         [19] 2255 	LD	11(IX),A
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 42.
+Hexadecimal [24-Bits]
+
+
+
+      00BC28 20 37            [12] 2256 	JR	NZ,SOFEV7
+      00BC2A DD 7E 06         [19] 2257 	LD	A,6(IX)
+      00BC2D EE 60            [ 7] 2258 	XOR	#0b01100000
+      00BC2F DD 77 06         [19] 2259 	LD	6(IX),A	; TO STATE 3 (SUSTAIN)
+      00BC32 18 2D            [12] 2260 	JR	SOFEV7
+                                   2261 	
+      00BC34                       2262 SOFEV4:
+      00BC34 DD CB 06 76      [20] 2263 	BIT	6,6(IX)
+      00BC38 28 1A            [12] 2264 	JR	Z,SOFEV9
+                                   2265 	
+      00BC3A DD 7E 0B         [19] 2266 	LD	A,11(IX)
+      00BC3D DD 56 10         [19] 2267 	LD	D,16(IX)	;  GET SUSTAIN LEVEL
+      00BC40 92               [ 4] 2268 	SUB	D
+      00BC41 30 01            [12] 2269 	JR	NC,SOFEV5
+      00BC43 AF               [ 4] 2270 	XOR	A
+                                   2271 	
+      00BC44                       2272 SOFEV5:
+      00BC44 B7               [ 4] 2273 	OR	A
+      00BC45 DD 77 0B         [19] 2274 	LD	11(IX),A
+      00BC48 20 17            [12] 2275 	JR	NZ,SOFEV7
+      00BC4A DD 7E 06         [19] 2276 	LD	A,6(IX)
+      00BC4D E6 8F            [ 7] 2277 	AND	#0b10001111
+      00BC4F DD 77 06         [19] 2278 	LD	6(IX),A	; END OF ENVE
+      00BC52 18 0D            [12] 2279 	JR	SOFEV7
+                                   2280 	
+      00BC54                       2281 SOFEV9:
+      00BC54 DD 7E 0B         [19] 2282 	LD	A,11(IX)
+      00BC57 DD 56 11         [19] 2283 	LD	D,17(IX)    ; GET REREASE
+      00BC5A 92               [ 4] 2284 	SUB	D
+      00BC5B 30 01            [12] 2285 	JR	NC,SOFEVA
+      00BC5D AF               [ 4] 2286 	XOR	A
+      00BC5E                       2287 SOFEVA:
+      00BC5E DD 77 0B         [19] 2288 	LD	11(IX),A
+                                   2289 	
+                                   2290 ; **	VOLUME CALCURATE	**
+                                   2291 	
+      00BC61                       2292 SOFEV7:
+      00BC61 E5               [11] 2293 	PUSH	HL
+      00BC62 DD 5E 0B         [19] 2294 	LD	E,11(IX)
+      00BC65 16 00            [ 7] 2295 	LD	D,#0
+      00BC67 21 00 00         [10] 2296 	LD	HL,#0
+      00BC6A DD 7E 06         [19] 2297 	LD	A,6(IX)	; GET VOLUME
+      00BC6D E6 0F            [ 7] 2298 	AND	#0b00001111
+      00BC6F 3C               [ 4] 2299 	INC	A
+      00BC70 47               [ 4] 2300 	LD	B,A
+      00BC71                       2301 SOFEV6:
+      00BC71 19               [11] 2302 	ADD	HL,DE
+      00BC72 10 FD            [13] 2303 	DJNZ	SOFEV6
+      00BC74 7C               [ 4] 2304 	LD	A,H
+      00BC75 E1               [10] 2305 	POP	HL
+      00BC76 DD CB 1F 76      [20] 2306 	BIT	6,31(IX)
+      00BC7A C0               [11] 2307 	RET	NZ
+      00BC7B DD CB 21 6E      [20] 2308 	BIT	5,33(IX)
+      00BC7F C8               [11] 2309 	RET	Z
+      00BC80 DD 86 11         [19] 2310 	ADD	A,17(IX)
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 43.
+Hexadecimal [24-Bits]
+
+
+
+      00BC83 CB 3F            [ 8] 2311 	SRL	A
+      00BC85 C9               [10] 2312 	RET
+                                   2313 	
+                                   2314 ; **	�ݿ� ���	**
+                                   2315 	
+      00BC86                       2316 FMEND:
+      00BC86 DD 75 02         [19] 2317 	LD	2(IX),L
+      00BC89 DD 74 03         [19] 2318 	LD	3(IX),H
+      00BC8C 3A 7C C0         [13] 2319 	LD	A,(PCMFLG)
+      00BC8F B7               [ 4] 2320 	OR	A
+      00BC90 20 04            [12] 2321 	JR	NZ,PCMEND
+      00BC92 CD E0 B3         [17] 2322 	CALL	KEYOFF
+      00BC95 C9               [10] 2323 	RET
+      00BC96                       2324 PCMEND:
+      00BC96 11 00 0B         [10] 2325 	LD	DE,#0x0B00
+      00BC99 CD 22 BE         [17] 2326 	CALL	PCMOUT
+      00BC9C 11 00 01         [10] 2327 	LD	DE,#0x0100
+      00BC9F CD 22 BE         [17] 2328 	CALL	PCMOUT
+      00BCA2 11 21 00         [10] 2329 	LD	DE,#0x0021
+      00BCA5 CD 22 BE         [17] 2330 	CALL	PCMOUT
+      00BCA8 C9               [10] 2331 	RET
+      00BCA9                       2332 SSGEND:
+      00BCA9 DD 75 02         [19] 2333 	LD	2(IX),L
+      00BCAC DD 74 03         [19] 2334 	LD	3(IX),H
+      00BCAF CD E0 BB         [17] 2335 	CALL	SKYOFF
+      00BCB2 DD CB 1F BE      [23] 2336 	RES	7,31(IX)	; RESET LFO FLAG
+      00BCB6 C9               [10] 2337 	RET
+                                   2338 	
+                                   2339 	
+                                   2340 ; **   VOLUME OR FADEOUT etc RESET   **
+                                   2341 	
+      00BCB7                       2342 WORKINIT:
+      00BCB7 AF               [ 4] 2343 	XOR	A
+      00BCB8 32 6F C0         [13] 2344 	LD	(C2NUM),A
+      00BCBB 32 6E C0         [13] 2345 	LD	(CHNUM),A
+      00BCBE 32 77 BE         [13] 2346 	LD	(PVMODE),A
+                                   2347 	
+      00BCC1 3A 00 C2         [13] 2348 	LD	A,(MUSNUM)
+      00BCC4 21 05 C2         [10] 2349 	LD	HL,#MU_TOP
+      00BCC7                       2350 WI1:
+      00BCC7 11 2C 00         [10] 2351 	LD	DE,#MAXCH*4
+      00BCCA B7               [ 4] 2352 	OR	A
+      00BCCB 28 0C            [12] 2353 	JR	Z,WI2
+      00BCCD 23               [ 6] 2354 	INC	HL
+      00BCCE 19               [11] 2355 	ADD	HL,DE
+      00BCCF 5E               [ 7] 2356 	LD	E,(HL)
+      00BCD0 23               [ 6] 2357 	INC	HL
+      00BCD1 56               [ 7] 2358 	LD	D,(HL)
+      00BCD2 21 05 C2         [10] 2359 	LD	HL,#MU_TOP
+      00BCD5 19               [11] 2360 	ADD	HL,DE
+      00BCD6 3D               [ 4] 2361 	DEC	A
+      00BCD7 18 EE            [12] 2362 	JR	WI1
+      00BCD9                       2363 WI2:
+      00BCD9 7E               [ 7] 2364 	LD	A,(HL)
+      00BCDA 32 72 C0         [13] 2365 	LD	(TIMER_B),A
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 44.
+Hexadecimal [24-Bits]
+
+
+
+      00BCDD 23               [ 6] 2366 	INC	HL
+      00BCDE 22 70 C0         [16] 2367 	LD	(TB_TOP),HL
+                                   2368 	
+      00BCE1 06 06            [ 7] 2369 	LD	B,#6
+      00BCE3 DD 21 A9 BE      [14] 2370 	LD	IX,#CH1DAT
+      00BCE7                       2371 WI4:
+      00BCE7 C5               [11] 2372 	PUSH	BC
+      00BCE8 CD 15 BD         [17] 2373 	CALL	FMINIT
+      00BCEB 11 26 00         [10] 2374 	LD	DE,#WKLENG
+      00BCEE DD 19            [15] 2375 	ADD	IX,DE
+      00BCF0 C1               [10] 2376 	POP	BC
+      00BCF1 10 F4            [13] 2377 	DJNZ	WI4
+                                   2378 	
+      00BCF3 AF               [ 4] 2379 	XOR	A
+      00BCF4 32 6E C0         [13] 2380 	LD	(CHNUM),A
+      00BCF7 DD 21 8D BF      [14] 2381 	LD	IX,#DRAMDAT
+      00BCFB CD 15 BD         [17] 2382 	CALL	FMINIT
+                                   2383 	
+      00BCFE AF               [ 4] 2384 	XOR	A
+      00BCFF 32 6E C0         [13] 2385 	LD	(CHNUM),A
+      00BD02 06 04            [ 7] 2386 	LD	B,#4
+      00BD04 DD 21 B3 BF      [14] 2387 	LD	IX,#CHADAT
+      00BD08                       2388 WI6:
+      00BD08 C5               [11] 2389 	PUSH	BC
+      00BD09 CD 15 BD         [17] 2390 	CALL	FMINIT
+      00BD0C 11 26 00         [10] 2391 	LD	DE,#WKLENG
+      00BD0F DD 19            [15] 2392 	ADD	IX,DE
+      00BD11 C1               [10] 2393 	POP	BC
+      00BD12 10 F4            [13] 2394 	DJNZ	WI6
+      00BD14 C9               [10] 2395 	RET
+                                   2396 	
+                                   2397 	
+      00BD15                       2398 FMINIT:
+      00BD15 DD E5            [15] 2399 	PUSH	IX
+      00BD17 E1               [10] 2400 	POP	HL
+      00BD18 5D               [ 4] 2401 	LD	E,L
+      00BD19 54               [ 4] 2402 	LD	D,H
+      00BD1A 13               [ 6] 2403 	INC	DE
+      00BD1B 36 00            [10] 2404 	LD	(HL),#0
+      00BD1D 01 25 00         [10] 2405 	LD	BC,#WKLENG-1
+      00BD20 ED B0            [21] 2406 	LDIR
+                                   2407 	
+      00BD22 DD 36 00 01      [19] 2408 	LD	(IX),#1
+      00BD26 DD 36 06 00      [19] 2409 	LD	6(IX),#0
+                                   2410 	
+                                   2411 ; ---	POINTER � ����ò	---
+                                   2412 	
+      00BD2A 2A 70 C0         [16] 2413 	LD	HL,(TB_TOP)	; HL=TABLE TOP ADR (Ch)
+                                   2414 	
+      00BD2D 5E               [ 7] 2415 	LD	E,(HL)
+      00BD2E 23               [ 6] 2416 	INC	HL
+      00BD2F 56               [ 7] 2417 	LD	D,(HL)
+      00BD30 23               [ 6] 2418 	INC	HL
+      00BD31 E5               [11] 2419 	PUSH	HL
+      00BD32 21 05 C2         [10] 2420 	LD	HL,#MU_TOP
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 45.
+Hexadecimal [24-Bits]
+
+
+
+      00BD35 19               [11] 2421 	ADD	HL,DE
+      00BD36 DD 75 02         [19] 2422 	LD	2(IX),L
+      00BD39 DD 74 03         [19] 2423 	LD	3(IX),H
+      00BD3C E1               [10] 2424 	POP	HL
+      00BD3D 5E               [ 7] 2425 	LD	E,(HL)
+      00BD3E 23               [ 6] 2426 	INC	HL
+      00BD3F 56               [ 7] 2427 	LD	D,(HL)
+      00BD40 7B               [ 4] 2428 	LD	A,E
+      00BD41 B2               [ 4] 2429 	OR	D
+      00BD42 28 0A            [12] 2430 	JR	Z,FMI2
+      00BD44 21 05 C2         [10] 2431 	LD	HL,#MU_TOP
+      00BD47 19               [11] 2432 	ADD	HL,DE
+      00BD48 DD 75 04         [19] 2433 	LD	4(IX),L
+      00BD4B DD 74 05         [19] 2434 	LD	5(IX),H
+      00BD4E                       2435 FMI2:
+      00BD4E 21 6F C0         [10] 2436 	LD	HL,#C2NUM
+      00BD51 34               [11] 2437 	INC	(HL)
+      00BD52 2A 70 C0         [16] 2438 	LD	HL,(TB_TOP)
+      00BD55 11 04 00         [10] 2439 	LD	DE,#4
+      00BD58 19               [11] 2440 	ADD	HL,DE
+      00BD59 22 70 C0         [16] 2441 	LD	(TB_TOP),HL
+                                   2442 	
+      00BD5C 3A 6E C0         [13] 2443 	LD	A,(CHNUM)
+      00BD5F FE 03            [ 7] 2444 	CP	#3
+      00BD61 30 08            [12] 2445 	JR	NC,SSINIT
+                                   2446 	
+      00BD63 DD 77 08         [19] 2447 	LD	8(IX),A
+      00BD66 3C               [ 4] 2448 	INC	A
+      00BD67 32 6E C0         [13] 2449 	LD	(CHNUM),A
+      00BD6A C9               [10] 2450 	RET
+                                   2451 	
+                                   2452 ; ---   FOR SSG   ---
+                                   2453 	
+      00BD6B                       2454 SSINIT:
+      00BD6B C6 05            [ 7] 2455 	ADD	A,#5
+      00BD6D DD 77 07         [19] 2456 	LD	7(IX),A
+      00BD70 3A 6E C0         [13] 2457 	LD	A,(CHNUM)
+      00BD73 D6 03            [ 7] 2458 	SUB	A,#3
+      00BD75 87               [ 4] 2459 	ADD	A,A
+      00BD76 DD 77 08         [19] 2460 	LD	8(IX),A
+                                   2461 	
+      00BD79 3A 6E C0         [13] 2462 	LD	A,(CHNUM)
+      00BD7C 3C               [ 4] 2463 	INC	A
+      00BD7D 32 6E C0         [13] 2464 	LD	(CHNUM),A
+      00BD80 C9               [10] 2465 	RET
+                                   2466 	
+                                   2467 	
+                                   2468 ; **	CHANGE SE MODE	**
+                                   2469 	
+      00BD81                       2470 TO_NML:
+      00BD81 3E 38            [ 7] 2471 	LD	A,#0x38
+      00BD83 32 AA B1         [13] 2472 	LD	(PLSET1+1),A
+      00BD86 3E 3A            [ 7] 2473 	LD	A,#0x3A
+      00BD88                       2474 TNML2:
+      00BD88 32 B1 B1         [13] 2475 	LD	(PLSET2+1),A
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 46.
+Hexadecimal [24-Bits]
+
+
+
+      00BD8B 16 27            [ 7] 2476 	LD	D,#0x27
+      00BD8D 5F               [ 4] 2477 	LD	E,A
+      00BD8E CD 42 B4         [17] 2478 	CALL	PSGOUT
+      00BD91 C9               [10] 2479 	RET
+      00BD92                       2480 TO_EFC:
+      00BD92 3E 78            [ 7] 2481 	LD	A,#0x78
+      00BD94 32 AA B1         [13] 2482 	LD	(PLSET1+1),A
+      00BD97 3E 7A            [ 7] 2483 	LD	A,#0x7A
+      00BD99 18 ED            [12] 2484 	JR	TNML2
+                                   2485 	
+                                   2486 	
+                                   2487 ; ***	ADPCM	PLAY	***
+                                   2488 	
+                                   2489 	;	IN:(STTADR)<=���� ���� ���ڽ
+                                   2490 	;	   (ENDADR)  <=���� ���� ���ڽ
+                                   2491 	;	   (DELT_N)<=���� ڰ�
+                                   2492 	
+      00BD9B                       2493 PLAY:
+      00BD9B E5               [11] 2494 	PUSH	HL
+                                   2495 	
+      00BD9C 11 00 0B         [10] 2496 	LD	DE,#0x0B00
+      00BD9F CD 22 BE         [17] 2497 	CALL	PCMOUT
+      00BDA2 11 00 01         [10] 2498 	LD	DE,#0x0100
+      00BDA5 CD 22 BE         [17] 2499 	CALL	PCMOUT
+                                   2500 	
+      00BDA8 11 21 00         [10] 2501 	LD	DE,#0x0021
+      00BDAB CD 22 BE         [17] 2502 	CALL	PCMOUT
+      00BDAE 11 08 10         [10] 2503 	LD	DE,#0x1008	;
+      00BDB1 CD 22 BE         [17] 2504 	CALL	PCMOUT		;
+      00BDB4 11 80 10         [10] 2505 	LD	DE,#0x1080	;
+      00BDB7 CD 22 BE         [17] 2506 	CALL	PCMOUT		; INIT
+                                   2507 	
+      00BDBA 2A 75 C0         [16] 2508 	LD	HL,(STTADR)
+      00BDBD 16 02            [ 7] 2509 	LD	D,#2
+      00BDBF 5D               [ 4] 2510 	LD	E,L
+      00BDC0 CD 22 BE         [17] 2511 	CALL	PCMOUT		; START ADR
+      00BDC3 14               [ 4] 2512 	INC	D
+      00BDC4 5C               [ 4] 2513 	LD	E,H
+      00BDC5 CD 22 BE         [17] 2514 	CALL	PCMOUT
+                                   2515 	
+      00BDC8 2A 77 C0         [16] 2516 	LD	HL,(ENDADR)
+      00BDCB 16 04            [ 7] 2517 	LD	D,#4
+      00BDCD 5D               [ 4] 2518 	LD	E,L
+      00BDCE CD 22 BE         [17] 2519 	CALL	PCMOUT		; END ADR
+      00BDD1 14               [ 4] 2520 	INC	D
+      00BDD2 5C               [ 4] 2521 	LD	E,H
+      00BDD3 CD 22 BE         [17] 2522 	CALL	PCMOUT
+                                   2523 	
+      00BDD6 16 09            [ 7] 2524 	LD	D,#0x09
+      00BDD8 3A 79 C0         [13] 2525 	LD	A,(DELT_N)	; ���� ڰ� ��
+      00BDDB 5F               [ 4] 2526 	LD	E,A
+      00BDDC CD 22 BE         [17] 2527 	CALL	PCMOUT
+      00BDDF 16 0A            [ 7] 2528 	LD	D,#0x0A
+      00BDE1 3A 7A C0         [13] 2529 	LD	A,(DELT_N+1)	; ���� ڰ� �ޮ��
+      00BDE4 5F               [ 4] 2530 	LD	E,A
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 47.
+Hexadecimal [24-Bits]
+
+
+
+      00BDE5 CD 22 BE         [17] 2531 	CALL	PCMOUT
+                                   2532 	
+      00BDE8 11 A0 00         [10] 2533 	LD	DE,#0x00A0
+      00BDEB CD 22 BE         [17] 2534 	CALL	PCMOUT
+                                   2535 	
+      00BDEE 16 0B            [ 7] 2536 	LD	D,#0x0B
+      00BDF0 DD 5E 06         [19] 2537 	LD	E,6(IX)
+      00BDF3 3A 7C BE         [13] 2538 	LD	A,(TOTALV)
+                                   2539 ;.ds 2048
+      00BDF6 87               [ 4] 2540 	ADD	A,A
+      00BDF7 87               [ 4] 2541 	ADD	A,A
+      00BDF8 83               [ 4] 2542 	ADD	A,E
+      00BDF9 FE FA            [ 7] 2543 	CP	#250
+      00BDFB 38 01            [12] 2544 	JR	C,PL1
+      00BDFD AF               [ 4] 2545 	XOR	A
+      00BDFE                       2546 PL1:
+      00BDFE 5F               [ 4] 2547 	LD	E,A
+      00BDFF 3A 77 BE         [13] 2548 	LD	A,(PVMODE)
+      00BE02 B7               [ 4] 2549 	OR	A
+      00BE03 28 05            [12] 2550 	JR	Z,PL2
+      00BE05 DD 7E 07         [19] 2551 	LD	A,7(IX); (IX+7)
+      00BE08 83               [ 4] 2552 	ADD	A,E
+      00BE09 5F               [ 4] 2553 	LD	E,A
+      00BE0A                       2554 PL2:
+      00BE0A CD 22 BE         [17] 2555 	CALL	PCMOUT		; VOLUME
+                                   2556 	
+      00BE0D 16 01            [ 7] 2557 	LD	D,#1
+      00BE0F 3A A8 BE         [13] 2558 	LD	A,(PCMLR)
+      00BE12 0F               [ 4] 2559 	RRCA
+      00BE13 0F               [ 4] 2560 	RRCA
+      00BE14 E6 C0            [ 7] 2561 	AND	#0b11000000
+      00BE16 5F               [ 4] 2562 	LD	E,A
+      00BE17 CD 22 BE         [17] 2563 	CALL	PCMOUT		; 1 bit TYPE,L&R OUT
+                                   2564 	
+      00BE1A 3A 7B C0         [13] 2565 	LD	A,(PCMNUM)
+      00BE1D 32 78 BE         [13] 2566 	LD	(P_OUT),A	; �ݺ޳�޽
+                                   2567 	
+      00BE20 E1               [10] 2568 	POP	HL
+      00BE21 C9               [10] 2569 	RET
+                                   2570 	
+                                   2571 	
+                                   2572 ; ***	ADPCM	OUT	***
+                                   2573 	
+      00BE22                       2574 PCMOUT:
+      00BE22 C5               [11] 2575 	PUSH	BC
+                                   2576 	
+      00BE23 3A 7B BE         [13] 2577 	LD	A,(PORT13+1)
+      00BE26 4F               [ 4] 2578 	LD	C,A
+      00BE27                       2579 PCMO2:
+      00BE27 ED 78            [12] 2580 	IN	A,(C)
+      00BE29 FA 27 BE         [10] 2581 	JP	M,PCMO2
+                                   2582 	
+      00BE2C ED 51            [12] 2583 	OUT	(C),D
+      00BE2E                       2584 PCMO3:
+      00BE2E ED 78            [12] 2585 	IN	A,(C)
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 48.
+Hexadecimal [24-Bits]
+
+
+
+      00BE30 FA 2E BE         [10] 2586 	JP	M,PCMO3
+      00BE33 0C               [ 4] 2587 	INC	C
+                                   2588 	
+      00BE34 ED 59            [12] 2589 	OUT	(C),E
+                                   2590 	
+      00BE36 C1               [10] 2591 	POP	BC
+      00BE37 C9               [10] 2592 	RET
+                                   2593 	
+                                   2594 	
+                                   2595 ; **	�غ� ��ò/�ް�� ���� ���	**
+                                   2596 	
+      00BE38                       2597 CHK:
+      00BE38 AF               [ 4] 2598 	XOR	A
+      00BE39 32 76 BE         [13] 2599 	LD	(NOTSB2),A
+                                   2600 	
+      00BE3C 21 7E C0         [10] 2601 	LD	HL,#TYPE1
+      00BE3F 11 79 BE         [10] 2602 	LD	DE,#M_VECTR
+      00BE42 ED A0            [16] 2603 	LDI
+      00BE44 ED A0            [16] 2604 	LDI
+      00BE46 ED A0            [16] 2605 	LDI
+                                   2606 	
+      00BE48 0E 44            [ 7] 2607 	LD	C,#0x44
+      00BE4A CD 6B BE         [17] 2608 	CALL	STT1
+      00BE4D 3D               [ 4] 2609 	DEC	A
+      00BE4E 28 25            [12] 2610 	JR	Z,STTE
+      00BE50 0E A8            [ 7] 2611 	LD	C,#0xA8
+      00BE52 CD 6B BE         [17] 2612 	CALL	STT1
+      00BE55 3D               [ 4] 2613 	DEC	A
+      00BE56 28 05            [12] 2614 	JR	Z,STT2
+      00BE58 32 76 BE         [13] 2615 	LD	(NOTSB2),A
+      00BE5B 18 18            [12] 2616 	JR	STTE
+      00BE5D                       2617 STT2:
+      00BE5D 21 81 C0         [10] 2618 	LD	HL,#TYPE2
+      00BE60 11 79 BE         [10] 2619 	LD	DE,#M_VECTR
+      00BE63 ED A0            [16] 2620 	LDI
+      00BE65 ED A0            [16] 2621 	LDI
+      00BE67 ED A0            [16] 2622 	LDI
+      00BE69 18 0A            [12] 2623 	JR	STTE
+                                   2624 	
+                                   2625 ; --	CHECK BORD TYPE	--
+                                   2626 	
+      00BE6B                       2627 STT1:
+      00BE6B 3E FF            [ 7] 2628 	LD	A,#0xFF
+      00BE6D ED 79            [12] 2629 	OUT	(C),A
+      00BE6F C5               [11] 2630 	PUSH	BC
+      00BE70 C1               [10] 2631 	POP	BC
+      00BE71 03               [ 6] 2632 	INC	BC
+      00BE72 ED 78            [12] 2633 	IN	A,(C)
+      00BE74 C9               [10] 2634 	RET
+                                   2635 	
+      00BE75                       2636 STTE:
+      00BE75 C9               [10] 2637 	RET
+                                   2638 	
+                                   2639 	
+                                   2640 ; **	MUSIC WORK	**
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 49.
+Hexadecimal [24-Bits]
+
+
+
+                                   2641 	
+      00BE76 00                    2642 NOTSB2:	.db	0	;(INFADR)
+      00BE77 00                    2643 PVMODE:	.db	0	;PCMvolMODE
+      00BE78 00                    2644 P_OUT:	.db	0
+      00BE79 00                    2645 M_VECTR:.db	0	;32H OR AAH
+      00BE7A 00 00                 2646 PORT13:	.dw	0	;44H OR A8H
+      00BE7C 00                    2647 TOTALV:	.db	0
+      00BE7D 00 00                 2648 FDCO:	.db	0,0
+                                   2649 	
+      00BE7F                       2650 SSGF1:			;  SSG 4-6CH  PLAY FLAG
+      00BE7F 00                    2651 	.db	0
+      00BE80 00                    2652 DRMF1:	.db	0
+      00BE81 00                    2653 KEYBUF:	.db	0
+      00BE82 00                    2654 FMPORT:	.db	0
+      00BE83 00 00                 2655 FNUM:	.dw	0
+                                   2656 	
+                                   2657 	
+                                   2658 ; **	��ح�� �ް�   **
+                                   2659 
+      00BE85                       2660 FMVDAT:					; ��ح�� �ް� (FM)
+      00BE85 36 33 30 2D           2661 	.db	0x36,0x33,0x30,0x2D
+      00BE89 2A 28 25 22           2662 	.db	0x2A,0x28,0x25,0x22		;  0,  1,  2,  3
+      00BE8D 20 1D 1A 18           2663 	.db	0x20,0x1D,0x1A,0x18		;  4,  5,  6,  7
+      00BE91 15 12 10 0D           2664 	.db	0x15,0x12,0x10,0x0D		;  8,  9, 10, 11
+      00BE95 0A 08 05 02           2665 	.db	0x0A,#0x8,0x05,0x02	; 12, 13, 14, 15
+                                   2666 
+      00BE99                       2667 CRYDAT:			; ��ر / Ӽޭڰ� � �ް�
+      00BE99 08                    2668 	.db	#0x8	;
+      00BE9A 08                    2669 	.db	#0x8	; �� �ޯ� �� ��ر/Ӽޭڰ� � ��ܽ
+      00BE9B 08                    2670 	.db	#0x8	;
+      00BE9C 08                    2671 	.db	#0x8	; Bit=1 �� ��ر
+      00BE9D 0C                    2672 	.db	0x0C	;      0 �� Ӽޭڰ�
+      00BE9E 0E                    2673 	.db	0x0E	;
+      00BE9F 0E                    2674 	.db	0x0E	; Bit0=OP 1 , Bit1=OP 2 ... etc
+      00BEA0 0F                    2675 	.db	0x0F	;
+                                   2676 	
+                                   2677 ; **	PMS/AMS/LR DATA	**
+                                   2678 	
+      00BEA1                       2679 PALDAT:
+      00BEA1 C0                    2680 	.db	#0xC0
+      00BEA2 C0                    2681 	.db	#0xC0
+      00BEA3 C0                    2682 	.db	#0xC0
+      00BEA4 00                    2683 	.db	0	; DUMMY
+      00BEA5 C0                    2684 	.db	#0xC0
+      00BEA6 C0                    2685 	.db	#0xC0
+      00BEA7 C0                    2686 	.db	#0xC0
+      00BEA8                       2687 PCMLR:
+      00BEA8 00                    2688 	.db	0
+                                   2689 	
+                                   2690 ; **	SOUND WORK (FM)	**
+      00BEA9                       2691 CH1DAT:
+      00BEA9 01                    2692 	.db	1	; LENGTH ctr		IX+ 0
+      00BEAA 18                    2693 	.db	24	; �ݼ�� ���ް		1
+      00BEAB 00 00                 2694 	.dw	0	; DATA ADDRES WORK	2,3
+      00BEAD 00 00                 2695 	.dw	0	; DATA TOP ADDRES	4,5
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 50.
+Hexadecimal [24-Bits]
+
+
+
+      00BEAF 0A                    2696 	.db	10	; VOLUME DATA		6
+      00BEB0 00                    2697 	.db	0	; �ٺ�ؽ�� No.		7
+      00BEB1 00                    2698 	.db	0	; channel num          	8
+      00BEB2 00 00                 2699 	.dw	0	; detune DATA		9,10
+      00BEB4 00                    2700 	.db	0	; for TLLFO		11
+      00BEB5 00                    2701 	.db	0	; for reverb		12
+      00BEB6                       2702 	.ds	5	; SOFT ENVE DUMMY	13-17
+      00BEBB 00                    2703 	.db	0	; q������		18
+                                   2704 
+      00BEBC 00                    2705 	.db	0	; LFO DELAY		19
+      00BEBD 00                    2706 	.db	0	; WORK			20
+      00BEBE 00                    2707 	.db	0	; LFO COUNTER		21
+      00BEBF 00                    2708 	.db	0	; WORK			22
+      00BEC0 00 00                 2709 	.dw	0	; LFO �ݶخ� 2BYTE	23,24
+      00BEC2 00 00                 2710 	.dw	0	; WORK			25,26
+                                   2711 
+      00BEC4 00                    2712 	.db	0	; LFO PEAK LEVEL	27
+      00BEC5 00                    2713 	.db	0	; WORK			28
+      00BEC6 00                    2714 	.db	0	; FNUM1 DATA		29
+      00BEC7 00                    2715 	.db	0	; B/FNUM2 DATA		30
+      00BEC8 01                    2716 	.db	0b00000001	;bit 7=LFO FLAG	31
+                                   2717 	
+                                   2718 			; bit	6=KEYOFF FLAG
+                                   2719 			;	5=LFO CONTINUE FLAG
+                                   2720 			;	4=TIE FLAG
+                                   2721 			;	3=MUTE FLAG
+                                   2722 			;	2=LFO 1SHOT FLAG
+                                   2723 			;
+                                   2724 			;	0=1LOOPEND FLAG
+      00BEC9 00                    2725 	.db 	0	; BEFORE CODE		32
+      00BECA 00                    2726 	.db	0	; bit	6=TL LFO FLAG     33
+                                   2727 			;	5=REVERVE FLAG
+                                   2728 			;	4=REVERVE MODE
+      00BECB 00 00                 2729 	.dw	0	;	return address	34,35
+      00BECD 00 00                 2730 	.db	0,0     ; 36,37 (empty)
+      00BECF                       2731 CH2DAT:
+      00BECF 01                    2732 	.db	1
+      00BED0 18                    2733 	.db	24
+      00BED1 00 00                 2734 	.dw	0x0000
+      00BED3 00 00                 2735 	.dw	0x0000
+      00BED5 0A                    2736 	.db	10
+      00BED6 00                    2737 	.db	0
+      00BED7 01                    2738 	.db	1
+      00BED8 00 00                 2739 	.dw	0x0000
+      00BEDA                       2740 	.ds	7
+      00BEE1 00                    2741 	.db	0	;18
+                                   2742 
+      00BEE2 00                    2743 	.db	0
+      00BEE3 00                    2744 	.db	0
+      00BEE4 00                    2745 	.db	0
+      00BEE5 00                    2746 	.db	0
+      00BEE6 00 00                 2747 	.dw	0
+      00BEE8 00 00                 2748 	.dw	0
+                                   2749 
+      00BEEA 00                    2750 	.db	0
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 51.
+Hexadecimal [24-Bits]
+
+
+
+      00BEEB 00                    2751 	.db	0
+      00BEEC 00                    2752 	.db	0
+      00BEED 00                    2753 	.db	0
+      00BEEE 02                    2754 	.db	0b00000010
+      00BEEF 00 00 00 00 00 00     2755 	.dw	0,0,0
+      00BEF5                       2756 CH3DAT:
+      00BEF5 01                    2757 	.db	1
+      00BEF6 18                    2758 	.db	24
+      00BEF7 00 00                 2759 	.dw	0x0000
+      00BEF9 00 00                 2760 	.dw	0x0000
+      00BEFB 0A                    2761 	.db	10
+      00BEFC 00                    2762 	.db	0
+      00BEFD 02                    2763 	.db	2
+      00BEFE 00 00                 2764 	.dw	0x0000
+      00BF00                       2765 	.ds	7
+      00BF07 00                    2766 	.db	0	;18
+                                   2767 
+      00BF08 00                    2768 	.db	0
+      00BF09 00                    2769 	.db	0
+      00BF0A 00                    2770 	.db	0
+      00BF0B 00                    2771 	.db	0
+      00BF0C 00 00                 2772 	.dw	0
+      00BF0E 00 00                 2773 	.dw	0
+                                   2774 
+      00BF10 00                    2775 	.db	0
+      00BF11 00                    2776 	.db	0
+      00BF12 00                    2777 	.db	0
+      00BF13 00                    2778 	.db	0
+      00BF14 03                    2779 	.db	0b00000011
+      00BF15 00 00 00 00 00 00     2780 	.dw	0,0,0
+                                   2781 	
+                                   2782 ; **	WORK (SSG)	**
+                                   2783 
+      00BF1B                       2784 CH4DAT:
+      00BF1B 01                    2785 	.db	1	; COUNTER WORK		0
+      00BF1C 00                    2786 	.db	0	; �ݼ�� No.		1
+      00BF1D 00 00                 2787 	.dw	0x0000	; DATA ADRS WORK	2,3
+      00BF1F 00 00                 2788 	.dw	0x0000	; DATA TOP ADRS		4,5
+      00BF21 08                    2789 	.db	8	; CURENT VOLUME(bit0-3)	6
+                                   2790 			; bit 4 = attack flag
+                                   2791 			; bit 5 = decay flag
+                                   2792 			; bit 6 = sustain flag
+                                   2793 			; bit 7 = soft envelope flag
+                                   2794 	
+      00BF22 08                    2795 	.db	8	; VOL.REG.No.		7
+      00BF23 00                    2796 	.db	0       ; CHANNEL No.          	8
+      00BF24 00 00                 2797 	.dw	0	; FOR DETUNE		9,10
+      00BF26 00                    2798 	.db	0	; SOFT ENVE COUNTER	11
+      00BF27                       2799 	.ds	6	; SOFT ENVE		12-17
+                                   2800 	
+      00BF2D 00                    2801 	.db	0	; COUNTER OF 'q'	18
+                                   2802 	
+      00BF2E 00                    2803 	.db	0	; LFO DELAY		19
+      00BF2F 00                    2804 	.db	0	; WORK			20
+      00BF30 00                    2805 	.db	0	; LFO COUNTER		21
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 52.
+Hexadecimal [24-Bits]
+
+
+
+      00BF31 00                    2806 	.db	0	; WORK			22
+      00BF32 00 00                 2807 	.dw	0	; LFO �ݶخ� 2BYTE	23,24
+      00BF34 00 00                 2808 	.dw	0	; WORK			25,26
+                                   2809 
+      00BF36 00                    2810 	.db	0	; LFO PEAK LEVEL	27
+      00BF37 00                    2811 	.db	0	; WORK			28
+      00BF38 00                    2812 	.db	0	; FNUM1 DATA		29
+      00BF39 00                    2813 	.db	0	; B/FNUM2 DATA		30
+      00BF3A 04                    2814 	.db	0b00000100	; bit 7=LFO FLAG	31
+                                   2815 			; bit	6=KEYOFF FLAG
+                                   2816 			; bit	5=LFO CONTINUE FLAG
+                                   2817 			; bit	4=TIE FLAG
+                                   2818 			;	3=MUTE FLAG
+                                   2819 	
+                                   2820 			;	0=1LOOPEND FG
+      00BF3B 00                    2821 	.db	0	; BEFORE CODE		32
+      00BF3C 00                    2822 	.db      0       ; bit 7 = HARD ENVE FLAG 33
+                                   2823 			; bit 0-3 = HARD ENVE TYPE
+      00BF3D 00 00                 2824 	.dw	0
+      00BF3F 00 00                 2825 	.db	0,0
+                                   2826 
+      00BF41                       2827 CH5DAT:
+      00BF41 01                    2828 	.db	1
+      00BF42 00                    2829 	.db	0
+      00BF43 00 00                 2830 	.dw	0x0000
+      00BF45 00 00                 2831 	.dw	0x0000
+      00BF47 08                    2832 	.db	8
+                                   2833 	
+      00BF48 09                    2834 	.db	9
+      00BF49 02                    2835 	.db	2
+      00BF4A 00 00                 2836 	.dw	0
+      00BF4C 00                    2837 	.db	0
+      00BF4D                       2838 	.ds	6
+                                   2839 	
+      00BF53 00                    2840 	.db	0
+                                   2841 	
+      00BF54 00                    2842 	.db	0
+      00BF55 00                    2843 	.db	0
+      00BF56 00                    2844 	.db	0
+      00BF57 00                    2845 	.db	0
+      00BF58 00 00                 2846 	.dw	0
+      00BF5A 00 00                 2847 	.dw	0
+                                   2848 	
+      00BF5C 00                    2849 	.db	0
+      00BF5D 00                    2850 	.db	0
+      00BF5E 00                    2851 	.db	0
+      00BF5F 00                    2852 	.db	0
+      00BF60 05                    2853 	.db	0b00000101
+      00BF61 00 00 00 00 00 00     2854 	.dw	0,0,0
+                                   2855 	
+      00BF67                       2856 CH6DAT:
+      00BF67 01                    2857 	.db	1
+      00BF68 00                    2858 	.db	0
+      00BF69 00 00                 2859 	.dw	0x0000
+      00BF6B 00 00                 2860 	.dw	0x0000
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 53.
+Hexadecimal [24-Bits]
+
+
+
+      00BF6D 08                    2861 	.db	8
+                                   2862 	
+      00BF6E 0A                    2863 	.db	10
+      00BF6F 04                    2864 	.db	4
+      00BF70 00 00                 2865 	.dw	0
+      00BF72 00                    2866 	.db	0
+      00BF73                       2867 	.ds	6
+                                   2868 	
+      00BF79 00                    2869 	.db	0
+                                   2870 	
+      00BF7A 00                    2871 	.db	0
+      00BF7B 00                    2872 	.db	0
+      00BF7C 00                    2873 	.db	0
+      00BF7D 00                    2874 	.db	0
+      00BF7E 00 00                 2875 	.dw	0
+      00BF80 00 00                 2876 	.dw	0
+                                   2877 	
+      00BF82 00                    2878 	.db	0
+      00BF83 00                    2879 	.db	0
+      00BF84 00                    2880 	.db	0
+      00BF85 00                    2881 	.db	0
+      00BF86 06                    2882 	.db	0b00000110
+      00BF87 00 00 00 00 00 00     2883 	.dw	0,0,0
+                                   2884 	
+      00BF8D                       2885 DRAMDAT:
+      00BF8D 01 00                 2886 	.db	1,0
+      00BF8F 00 00 00 00           2887 	.dw	0,0
+      00BF93 0A 00 02              2888 	.db	10,0,2
+      00BF96 00 00                 2889 	.dw	0
+      00BF98                       2890 	.ds	7
+      00BF9F 00                    2891 	.db	0	;18
+      00BFA0                       2892 	.ds	19
+      00BFB3                       2893 CHADAT:
+      00BFB3 01 00                 2894 	.db	1,0
+      00BFB5 00 00 00 00           2895 	.dw	0,0
+      00BFB9 0A 00 02              2896 	.db	10,0,2
+      00BFBC 00 00                 2897 	.dw	0
+      00BFBE                       2898 	.ds	7
+      00BFC5 00                    2899 	.db	0	;18
+      00BFC6                       2900 	.ds	19
+      00BFD9                       2901 CHBDAT:
+      00BFD9 01 00                 2902 	.db	1,0
+      00BFDB 00 00 00 00           2903 	.dw	0,0
+      00BFDF 0A 00 02              2904 	.db	10,0,2
+      00BFE2 00 00                 2905 	.dw	0
+      00BFE4                       2906 	.ds	7
+      00BFEB 00                    2907 	.db	0	;18
+      00BFEC                       2908 	.ds	19
+      00BFFF                       2909 CHCDAT:
+      00BFFF 01 00                 2910 	.db	1,0
+      00C001 00 00 00 00           2911 	.dw	0,0
+      00C005 0A 00 02              2912 	.db	10,0,2
+      00C008 00 00                 2913 	.dw	0
+      00C00A                       2914 	.ds	7
+      00C011 00                    2915 	.db	0	;18
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 54.
+Hexadecimal [24-Bits]
+
+
+
+      00C012                       2916 	.ds	19
+      00C025                       2917 PCMDAT:
+      00C025 01 00                 2918 	.db	1,0
+      00C027 00 00 00 00           2919 	.dw	0,0
+      00C02B 0A 00 02              2920 	.db	10,0,2
+      00C02E 00 00                 2921 	.dw	0
+      00C030                       2922 	.ds	7
+      00C037 00                    2923 	.db	0	;18
+      00C038                       2924 	.ds	19
+                                   2925 	
+      00C04B 00                    2926 RHYTHM:	.db	0
+                                   2927 	
+                           000026  2928 WKLENG .equ	CH2DAT-CH1DAT
+                                   2929 	
+                                   2930 ; **	PSG REGISTOR WORK	**
+                                   2931 	
+      00C04C                       2932 PREGBF:
+      00C04C 00 00 00 00 00 00 00  2933 	.db	0,0,0,0,0,0,0,0,0
+             00 00
+      00C055                       2934 INITPM:
+      00C055 00 00 00 00 00 38 00  2935 	.db	0,0,0,0,0,56,0,0,0
+             00 00
+                                   2936 	
+                                   2937 ; **	SE MODE(MODE2) detune workram	**
+                                   2938 
+      00C05E                       2939 DETDAT:
+      00C05E 00                    2940 	.db	0	;		OP1
+      00C05F 00                    2941 	.db	0	;		OP2
+      00C060 00                    2942 	.db	0	;		  3
+      00C061 00                    2943 	.db	0	;		  4
+                                   2944 	
+                                   2945 ; **	DRAM VOLUME DATA	**
+                                   2946 	
+      00C062                       2947 DRMVOL:
+      00C062 C0                    2948 	.db	#0xC0	; BASS
+      00C063 C0                    2949 	.db	#0xC0	; SNEA
+      00C064 C0                    2950 	.db	#0xC0	; SYMB
+      00C065 C0                    2951 	.db	#0xC0	; HI-HAT
+      00C066 C0                    2952 	.db	#0xC0	; TAM
+      00C067 C0                    2953 	.db	#0xC0	; RIM
+                                   2954 	
+      00C068                       2955 NEWFNM:
+      00C068 00 00                 2956 	.dw	0
+      00C06A                       2957 OP_SEL:
+      00C06A A6 AC AD AE           2958 	.db	0x0A6,0x0AC,0x0AD,0x0AE	; OP 4,3,1,2
+                                   2959 	
+      00C06E 00                    2960 CHNUM:	.db	0
+      00C06F 00                    2961 C2NUM:	.db	0
+      00C070 00 00                 2962 TB_TOP:	.dw	0
+      00C072 00                    2963 TIMER_B:.db	0
+      00C073 00                    2964 PRISSG:	.db	0
+                                   2965 	
+                                   2966 ; ***	ADPCM WORK	***
+                                   2967 	
+                                   2968 	
+ASxxxx Assembler V02.00 + NoICE + SDCC mods  (Zilog Z80 / Hitachi HD64180 / ZX-Next / eZ80), page 55.
+Hexadecimal [24-Bits]
+
+
+
+      00C074 08                    2969 DMY:	.db	8
+      00C075 00 00                 2970 STTADR: .dw      0
+      00C077 00 00                 2971 ENDADR: .dw      0
+      00C079 00 00                 2972 DELT_N:	.dw	0	; play rate
+      00C07B 00                    2973 PCMNUM:	.db	0
+      00C07C 00                    2974 PCMFLG:	.db	0
+      00C07D 00                    2975 PRI:	.db	0
+      00C07E 32 44 46              2976 TYPE1:	.db	0x032,0x044,0x046
+      00C081 AA A8 AC              2977 TYPE2:	.db	0x0AA,0x0A8,0x0AC
+                                   2978 	
+                                   2979 	
+      00C084 6A 02 8F 02 B6 02 DF  2980 FNUMB:	.dw	0x026A,0x028F,0x02B6,0x02DF,0x030B,0x0339
+             02 0B 03 39 03
+      00C090 6A 03 9E 03 D5 03 10  2981 	.dw      0x036A,0x039E,0x03D5,0x0410,0x044E,0x048F
+             04 4E 04 8F 04
+      00C09C E8 0E 12 0E 48 0D 89  2982 SNUMB:	.dw	0x0EE8,0x0E12,0x0D48,0x0C89,0x0BD5,0x0B2B
+             0C D5 0B 2B 0B
+      00C0A8 8A 0A F3 09 64 09 DD  2983 	.dw	0x0A8A,0x09F3,0x0964,0x08DD,0x085E,0x07E6
+             08 5E 08 E6 07
+      00C0B4                       2984 PCMNMB:		; play sampling rate until C-B 
+      00C0B4 82 4A E4 4E 89 53 75  2985 	.dw	0x49BA+200,0x4E1C+200,0x52C1+200,0x57AD+200
+             58
+      00C0BC AC 5D 32 63 0C 69 3F  2986 	.dw	0x5CE4+200,0x626A+200,0x6844+200,0x6E77+200
+             6F
+      00C0C4 D1 75 C6 7C 26 84 F5  2987 	.dw	0x7509+200,0x7BFE+200,0x835E+200,0x8B2D+200
+             8B
+                                   2988 	
+                                   2989 	
+      00C0CC                       2990 SSGDAT:
+      00C0CC FF FF FF FF 00 FF     2991 	.db	255,255,255,255,0,255 ; E
+      00C0D2 FF FF FF C8 00 0A     2992 	.db	255,255,255,200,0,10
+      00C0D8 FF FF FF C8 01 0A     2993 	.db	255,255,255,200,1,10
+      00C0DE FF FF FF BE 00 0A     2994 	.db	255,255,255,190,0,10
+      00C0E4 FF FF FF BE 01 0A     2995 	.db	255,255,255,190,1,10
+      00C0EA FF FF FF AA 00 0A     2996 	.db	255,255,255,170,0,10
+      00C0F0 28 46 0E BE 00 0F     2997 	.db	40,70,14,190,0,15
+      00C0F6 78 1E FF FF 00 0A     2998 	.db	120,030,255,255,0,10
+      00C0FC FF FF FF E1 08 0F     2999 	.db	255,255,255,225,8,15
+      00C102 FF FF FF 01 FF FF     3000 	.db	255,255,255,1,255,255
+      00C108 FF FF FF C8 08 FF     3001 	.db	255,255,255,200,8,255
+      00C10E FF FF FF DC 14 08     3002 	.db	255,255,255,220,20,8
+      00C114 FF FF FF FF 00 0A     3003 	.db	255,255,255,255,0,10
+      00C11A FF FF FF FF 00 0A     3004 	.db	255,255,255,255,0,10
+      00C120 78 50 FF FF 00 FF     3005 	.db	120,80,255,255,0,255
+      00C126 FF FF FF DC 00 FF     3006 	.db	255,255,255,220,0,255
