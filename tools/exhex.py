@@ -83,7 +83,7 @@ def GetSizes(db, hdr, inby):
 			st |= inby[db[i].start_addr+1+16] << 8
 			en = inby[db[i].start_addr+2+16]
 			en |= inby[db[i].start_addr+3+16] << 8
-			db[i].fsz = (en - st) + 3
+			db[i].fsz = (en - st) + 5
 		elif(db[i].type == 0xff):
 			db[i].fsz = -1
 		i += 1

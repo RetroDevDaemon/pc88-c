@@ -101,7 +101,7 @@ struct Song {
     u8 ssg_instr[3];
     u8 ssg_mix;
     u8 ssg_vol[3];
-    u8 ssg_tone_len[3]; // Counts down!
+    u16 ssg_tone_len[3]; // Counts down!
     u8 ssg_oct[3];
     u8 ssg_tone[3];
     u16 ssg_loc[3];
@@ -121,7 +121,7 @@ void LoadSong(const u8* song)
     sh->binSize += (*sctr++*256);
     // Load song data 
     struct m88data* sd = (struct m88data*)&curSong.songdata;
-    sd->tempo = *sctr++;
+    sd->tempo = (u8)(((*sctr++)*6)/600); // how many measures per minute in timer-B format
     for(i = 0; i < 11; i++)
     {
         sd->partOffsets[i] = *sctr++;
@@ -141,10 +141,6 @@ void LoadSong(const u8* song)
     curSong.ssg_tone_len[2] = 0;
 }
 
-//mucom 3e30 - 01 01 09 01 10
-// license.txt
-// file no. 38
-// 
 
 void SetSSGInstrument(u8 chn, u8 instr)
 {
@@ -169,7 +165,8 @@ void SetSSGInstrument(u8 chn, u8 instr)
 void PlaySong()
 {
     struct m88data* songdata = (struct m88data*)&curSong.songdata;
-        
+    
+
     for(u8 j = 0; j < 3; j++)
     {
         if(curSong.ssg_tone_len[j] == 0)
@@ -188,8 +185,8 @@ void PlaySong()
                 curSong.ssg_loc[j]++; // set ssg vol
                 songby = *(songdata->partOffsets[3+j] + curSong.ssg_loc[j]);
                 curSong.ssg_vol[j] = songby;
-                SetIOReg(OPN_REG, CHA_AMP + j);
-                SetIOReg(OPN_DAT, songby);
+                //SetIOReg(OPN_REG, CHA_AMP + j);
+                //SetIOReg(OPN_DAT, songby);
             }
             else if (songby == 0xf7)
             {
@@ -204,10 +201,12 @@ void PlaySong()
             else if ((songby > 0) && (songby <= 0x7f))
             {
                 curSong.ssg_loc[j]++; // play sound
-                curSong.ssg_tone_len[j] = songby;
+                curSong.ssg_tone_len[j] = songby; // first byte is length. 16 = 1/8 beat at 120T.
                 songby = *(songdata->partOffsets[3+j] + curSong.ssg_loc[j]);
-                curSong.ssg_oct[j] = (songby & 0xf0) >> 4;
+                curSong.ssg_oct[j] = (songby & 0xf0) >> 4; // second is tone
                 curSong.ssg_tone[j] = (songby & 0x0f);
+                SetIOReg(OPN_REG, CHA_AMP + j);
+                SetIOReg(OPN_DAT, curSong.ssg_vol[j]);
                 switch(curSong.ssg_oct[j]+1){ 
                     case(2):
                         SetIOReg(OPN_REG, CHA_TONEL + (j*2));
@@ -242,8 +241,12 @@ void PlaySong()
                 }
             }
             else if ((songby > 0x80) && (songby < 0xf0))
-            {   // rest 
-                curSong.ssg_tone_len[j] = songby / 2;
+            {   // rest by setting volume to 0
+                SetIOReg(OPN_REG, CHA_AMP + j);
+                SetIOReg(OPN_DAT, 0);
+                curSong.ssg_tone_len[j] = (songby & 0b00111111); // 16 = 1/8
+                // a len of 16 we want to erase in 7.5 ticks (or 8).
+                // that is 8 frames, at 120 tempo is, 2 per frame.
             }
             else if (songby == 0)
             {
@@ -256,16 +259,16 @@ void PlaySong()
         } 
         else 
         { 
-            curSong.ssg_tone_len[j]--;
+            curSong.ssg_tone_len[j] -= 1;
         }
     }
-    bool stopq = true;
+    /*bool stopq = true;
     for(u8 s = 0; s < 3; s++){
         if(curSong.ssg_vol[s] != 0){
             stopq = false;
         }
     }
-    if(stopq) playingSong = false;
+    if(stopq) playingSong = false;*/
 }
 
 u32 idleCount;
@@ -304,6 +307,7 @@ void main()
     idleCount = 0;
     u8 i = 0;
     u16 h = GetSysMode();
+    playingSong = false;
     
     if(h & V1S_MODE_FLAG) print("V1S ");
     else if(h & V2_MODE_FLAG) print("V2 ");

@@ -1,0 +1,49 @@
+; f3 d9 db 08 4f 3a 02 00 fe a0 28 32 cb 79 20 01
+di 
+exx 
+in a,(0x08)
+ld c, a
+ld a,(0x0002)
+cp #0xa0
+jr z,<0x32>
+bit 7,c
+jr nz,<0x01>
+
+; c7 31 a0 e1 cb 61 20 13 26 00 6c 22 c5 ed 01 08 00
+rst 00
+ld sp, #0xe1a0
+bit 4,c
+jr nz,<#0x13>
+ld h, #0
+ld l, h
+ld (0xedc5), hl
+ld bc,#0x0008
+
+; 26 90 eb 3e 01 b7 d5 c3 99 00 3e 39 d3 31 3a
+ld h,#0x90
+ex de,hl
+ld a,#1
+or a
+push de 
+jp $0099
+ld a, #0x39
+out (0x31), a
+ld a,(0x0006)
+
+; fe 77 c4 3d 04 db 30 f6 01 c3 fd 77 79 e6
+cp #0x77
+call nz,0x043d
+in a,(0x30)
+or #1
+jp 0x77fd
+ld a, c
+and #0x80
+
+; [80] ca a8 77 db 0a e6 08 20 0b 3e c3 32 cd ec 21
+jp z,#0x77a8
+in a,(0x0a)
+and #8
+jr nz,<#0x0b>
+ld a, #0x32
+call 0x21ec
+

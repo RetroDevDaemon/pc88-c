@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # bin2c.py
 #  convert any binary file to C header
 import sys,os 

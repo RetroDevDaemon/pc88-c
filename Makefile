@@ -61,11 +61,10 @@ PC88CFILES=out/crt0.rel \
 
 out/%.rel: src/lib/%.c
 	@if [ ! -d "out" ]; then mkdir out; fi
-	@if [ ! -d "build" ]; then mkdir build; fi
 	sdcc -c -mz80 $(CFLAGS) -o $@ $<
 
 
-default: $(PROJECT) $(PC88CFILES) m88bin
+default: $(PROJECT) $(PC88CFILES)
 	$(PY) tools/maked88.py $(APPNAME)
 	$(PY) tools/hexer.py src/ipl.bin 0x2f $(USEDSEC)
 	$(CC) $(88FLAGS) $(CFLAGS) $(CMDFLAGS) $(PROJECT)/main.c out/*.rel -o out/main.ihx
@@ -73,13 +72,14 @@ default: $(PROJECT) $(PC88CFILES) m88bin
 	$(PY) tools/hex2bin.py out/main.ihx main.bin
 	$(PY) tools/maked88.py $(APPNAME) src/ipl.bin 0 0 1
 	$(PY) tools/maked88.py $(APPNAME) main.bin 0 0 2	
-	$(PY) tools/maked88.py $(APPNAME) music2.bin 10 0 1
-	#$(EMUEXE)
+	#$(PY) tools/maked88.py $(APPNAME) mus.drv 10 0 1
+	#$(PY) tools/maked88.py $(APPNAME) mtes 6 0 1
+	$(EMUEXE)
 
-m88bin: 
-	$(AS) -los build/music2.rel src/music2.z80
-	$(LD) -i build/music2.ihx build/music2.rel
-	$(PY) tools/hex2bin.py build/music2.ihx music2.bin
+#m88bin: 
+#	$(AS) -los out/music2.rel src/music2.z80
+#	$(LD) -i out/music2.ihx out/music2.rel
+#	$(PY) tools/hex2bin.py out/music2.ihx music2.bin
 
 
 binary: $(PROJECT) $(PC88FILES)
