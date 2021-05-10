@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # bin2c.py
 #  convert any binary file to C header
 import sys,os 
@@ -6,7 +7,7 @@ inby = f.read()
 f.close()
 bn = os.path.basename(sys.argv[1]).split('.')[0]
 ostr = 'const unsigned char ' + bn + '[] = {\n\t'
-i = 0 
+i = 0
 while i < len(inby):
 
     ostr += hex(inby[i])#hex(a|b|c|d)

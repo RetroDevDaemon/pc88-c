@@ -1,6 +1,6 @@
 #include <pc88-c.h>
 
-void Vblank() __critical __interrupt(0);
+void Vblank() __critical __interrupt;
 inline void SetVBLIRQ();
 
 inline void SetVBLIRQ()
@@ -9,7 +9,7 @@ inline void SetVBLIRQ()
     SetIOReg(IRQ_MASK, 0b10);        // Reset mask for VBL
 }
 
-void Vblank() __critical __interrupt(0)
+void Vblank() __critical __interrupt
 {
     IRQ_OFF         // Disable interrupts during VBL
     SetVBLIRQ();    // Reset interrupt level and mask

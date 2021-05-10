@@ -1,0 +1,48 @@
+* MUCOM88 - MML Listing
+
+10 `D @1v15abcdefgabc
+
+* MUCOM88 - Compiled binary
+
+Header
++0 - 00 : 1 song.
++1 - 59 00 : No FM, so EOF = C258
++3 - 5A 00 : binary full size 
+
+Song Data (offsets +5 to allot for header)
+C5 - Tempo
+2f 00, 00 00 A : +47, no loop
+30 00, 00 00 B : +48, no loop
+31 00, 00 00 C : +49, no loop
+32 00, 00 00 D : +50, no loop (27 bytes)
+4D 00, 00 00 E : +77, no loop
+4E 00, 00 00 F : +78..
+4F 00, 00 00 G : +79..
+50 00, 00 00 H : +80..
+51 00, 00 00 I : +81..
+52 00, 00 00 J : +82..
+53 00, 00 00 K : +83..
+54 00 : +84 = song data end offset
+
+
+Song Part Data:
+ 
+00 : A
+00 : B
+00 : C
+
+D:
+f0 01 : ssg instrument 1
+f7 08 : ssg mixer 8
+f1 0f : ssg volume 15
+
+18 59, 18 5b, 18 50, 18 52, 18 54, 18 55, 18 57, 18 59, 18 5b, 18 50
+a b c d e f g a b c
+(end)
+00
+
+E, F, G, H, I, J, K:
+00 00 00 00 00 00 00
+
+EOF?:
+00 00
