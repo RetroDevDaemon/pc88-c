@@ -11,6 +11,10 @@ from PIL import Image, ImageDraw
 
 img, b2, b3 = None, None, None 
 
+###
+raw = True
+###
+
 def FilterPlane(p):
     a = []
     wid = img.size[0]
@@ -81,13 +85,18 @@ def OutBytes(a,fn, rle):
     if rle == 1:
         iarr = RLEEncode(iarr)
         obstr += "// RLE encoded. 0xFE 0xNN - copy the next NN bytes through\n//     0xFD 0xNN 0xJJ - copy NN JJ times\n"
-    obstr = obstr + "// rgb image header\nconst unsigned char " + fn.split('.')[0] + '[' + str(len(iarr)) + '] = { '
-    for s in range(0,len(iarr)):
-        if s % 16 == 0:
-            obstr += '\n'
-        obstr += str(iarr[s])
-        obstr += ','
-    obstr += ' \n};\n'
+    if(raw==False):
+        obstr = obstr + "// rgb image header\nconst unsigned char " + fn.split('.')[0] + '[' + str(len(iarr)) + '] = { '
+        for s in range(0,len(iarr)):
+            if s % 16 == 0:
+                obstr += '\n'
+            obstr += str(iarr[s])
+            obstr += ','
+        obstr += ' \n};\n'
+    else:
+        for s in range(0, len(iarr)):
+            obstr.append(iarr[s])
+
     #print(len(iarr), "rle = " + str(rle))
     
 obstr = ''                
@@ -110,15 +119,29 @@ while i < len(sys.argv):
     if a.find("rle") != -1:
         rle = 1
     i += 1
-
+obstr = []
 OutBytes(b, fn2 + '_b.h', rle)
 OutBytes(r, fn2 + '_r.h', rle)
 OutBytes(g, fn2 + '_g.h', rle)
 
-f = open(fn + '.h', 'w')
-f.write(obstr)
-f.close()
-
+if(raw == False):
+    f = open(fn + '.h', 'w')
+    f.write(obstr)
+    f.close()
+else:
+    f = open(fn + '_b.b', 'wb')
+    i = 0
+    while i < len(obstr)/3:
+        f.write(bytes([obstr[i]]))
+        i += 1
+    f = open(fn + '_r.b', 'wb')
+    while i < (len(obstr)/3) * 2:
+        f.write(bytes([obstr[i]]))
+        i += 1
+    f = open(fn + '_g.b', 'wb')
+    while i < len(obstr):
+        f.write(bytes([obstr[i]]))
+        i += 1
 print(totalbytes, rlebytes)
 
 def OutColorPlane(c,fn):

@@ -51,6 +51,7 @@ typedef struct xypos {
 
 #define SCREEN_TXT_BASE 0xf3c8
 #define SCREEN_ATTR_BASE SCREEN_TXT_BASE + 80
+#define GetVRAMPos(x,y) (vu8*)(((y)*80)+0xc000 + (x))
 
 //////////////////////////
 // KEYBOARD MATRIX  
@@ -131,6 +132,8 @@ inline void DisableALU();
 inline void ExpandedGVRAM_On();
 inline void ExpandedGVRAM_Off();
 // DISKLOAD
+#define DRIVE_1 0
+#define DRIVE_2 1
 void DiskLoad(u8* dst, u8 track, u8 sector, u8 numSecs, u8 drive); 
 // BEEP
 void beep(u16 tone, u8 length);

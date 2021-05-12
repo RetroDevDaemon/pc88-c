@@ -54,7 +54,7 @@ void main()
 	    	}	
 	    } 
     }
-#define GetVRAMPos(x,y) (vu8*)(((y)*80)+0xc000 + (x))
+
     // ROWS:
     
     for(i = 0; i < 8; i++)

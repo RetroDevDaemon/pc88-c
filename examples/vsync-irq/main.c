@@ -16,7 +16,7 @@ void Vblank() __critical __interrupt
     // Do our Vblank code:
     print("Hi!");
     
-    //IRQ_ON   <- This is handled by our compiler
+    IRQ_ON
 }
 
 void main()
