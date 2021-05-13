@@ -54,11 +54,12 @@ void main()
 #define GAMEVIEW_H 9
     // Game Init
     // Disable graphic display        
-    SetIOReg(SYS_CTL_REGB, CTLB_STATUS_DEFAULT ^ GRAPH);
     // trial: draw a tile : 01b is 32x16px : 20 x 12.5 tiles max
     // draw ALL tiles - draw all on one plane first 
     u16* scr = (u16*)0xc000;
     u16* til = (u16*)&tile_01b_b[0];
+    SetIOReg(SYS_CTL_REGB, CTLB_STATUS_DEFAULT ^ GRAPH);
+
     SETBANK_BLUE()
     u8 yrow;
     u8 i;
@@ -78,6 +79,7 @@ void main()
             }
         }
     }
+    
     SETBANK_RED()
     for(yrow = 1; yrow < GAMEVIEW_H; yrow++)
     {
@@ -94,6 +96,7 @@ void main()
             }
         }
     }
+    
     SETBANK_GREEN()
     for(yrow = 1; yrow < GAMEVIEW_H; yrow++)
     {
@@ -111,26 +114,7 @@ void main()
         }
     }
     SetIOReg(SYS_CTL_REGB, CTLB_STATUS_DEFAULT);
-    /*
-    scr = (u16*)0xc000;
-    til = (u16*)&tile_01b_r[0];
-    SETBANK_RED()
-    for(i = 0; i < 16; i++)
-    {
-        *scr++ = *til++;
-        *scr++ = *til++;
-        scr += 38;
-    }
-    scr = (u16*)0xc000;
-    til = (u16*)&tile_01b_g[0];
-    SETBANK_GREEN()
-    for(i = 0; i < 16; i++)
-    {
-        *scr++ = *til++;
-        *scr++ = *til++;
-        scr += 38;
-    }
-    */
+    
     SETBANK_MAINRAM()
 
     IRQ_ON 
