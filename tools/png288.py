@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 # png288.py
 # use: $ python3 png288.py <imagefile>
 

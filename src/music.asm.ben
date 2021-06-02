@@ -1,0 +1,3155 @@
+;=====================================================================
+; MUSICLALF Ver.1.2 プログラムソース
+; ファイル名 : music.asm
+; 機能 : 演奏ルーチン
+; PROGRAMED BY YUZO KOSHIRO
+;==========================================================================
+; ヘッダ編集/ソース修正 : @mucom88
+; ※本ソースはMUSICLALF Ver.1.1のmusic.asmから差分修正にて作成した物です。
+;==========================================================================
+	
+	
+MDATA		.equ	#0xf320
+DATTBL		.equ	MDATA+4
+OCTAVE		.equ	DATTBL+2
+SIFTDAT	.equ	OCTAVE+1
+CLOCK		.equ	SIFTDAT+1
+SECCOM		.equ	CLOCK+1
+KOTAE		.equ	SECCOM+1
+LINE		.equ	KOTAE+2
+ERRORLINE	.equ	LINE+2
+COMNOW		.equ	ERRORLINE+2
+COUNT		.equ	COMNOW+1
+MOJIBUF	.equ	COUNT+1
+SEC		.equ	MOJIBUF+4
+MIN		.equ	SEC+1
+HOUR		.equ	MIN+1
+ALLSEC		.equ	HOUR+1
+T_FLAG		.equ	ALLSEC+2
+SE_SET		.equ	T_FLAG+1
+VOLINT		.equ	SE_SET+2
+FLGADR		.equ	VOLINT+1
+ESCAPE		.equ	FLGADR+1
+	
+MWRITE		.equ	#0x9000
+MWRIT2 .EQU	MWRITE+3
+ERRT		.equ	MWRIT2+3
+ERRORSN	.equ	ERRT+3
+ERRORIF	.equ	ERRORSN+3
+ERRORNF	.equ	ERRORIF+3
+ERRORFN	.equ	ERRORNF+3
+ERRORVF	.equ	ERRORFN+3
+ERROROO	.equ	ERRORVF+3
+ERRORND	.equ	ERROROO+3
+ERRORRJ	.equ	ERRORND+3
+STTONE		.equ	ERRORRJ+3
+STLIZM		.equ	STTONE+3
+REDATA		.equ	STLIZM+3
+MULT		.equ	REDATA+3
+DIV		.equ	MULT+3
+HEXDEC		.equ	DIV+3
+HEXPRT		.equ	HEXDEC+3
+ROM		.equ	HEXPRT+3
+RAM		.equ	ROM+3
+FMCOMC		.equ	RAM+3
+T_RST		.equ	FMCOMC+3
+CULSEC		.equ	T_RST+3*8
+CULTIM		.equ	CULSEC+3
+GETTIME	.equ	CULTIM+3
+	
+VRTC	.equ	#0xf302
+R_TIME	.equ	#0xf304
+INT3 .EQU	#0xf308
+S.ILVL	.equ	#0xe6c3
+	
+MUSICNUM	.equ	#0xc200
+OTODAT		.equ	MUSICNUM+1
+MU_TOP		.equ	MUSICNUM+5
+MAXCH		.equ	11
+PCMADR	.equ	#0xe300
+	
+MUC88 .EQU	#0x9600
+	.area MUSICDRV (ABS)
+	.ORG #0xb000
+	
+	JP	MSTART
+	JP	MSTOP
+	.db 0xc3, 0x00, 0x00	;EFECT ENTRY
+	JP	PUTWK
+	JP	ESC_PRC
+	JP	TSC
+	
+	JP	START
+	JP	WORKINIT
+	JP	AKYOFF
+	JP	SSGOFF
+	JP	MONO
+	JP	DRIVE
+	JP	TO_NML
+	JP	PSGOUT
+	JP	WKGET
+	JP	STVOL
+	JP	ENBL
+	JP	TIME
+	JP	INFADR
+	
+; **	FADEOUT		**
+	
+FDOUT:
+	LD	HL,#FDCO+1
+	DEC	(HL)
+	RET	NZ
+	LD	(HL),#16
+	LD	A,(FDCO)
+	OR	A
+	RET	Z
+	DEC	A
+	LD	(FDCO),A
+FDO2:
+	ADD	A,#0xf0
+	LD	(TOTALV),A
+	XOR	A
+	LD	(FMPORT),A
+	LD	IX,#CH1DAT
+	CALL	FDOFM
+	LD	B,#3
+FDOSSG:
+	PUSH	BC
+	LD	A,6(IX)
+	LD	C,A
+	AND	#0b11110000
+	LD	E,A
+	LD	A,C
+	AND	#0b00001111
+	LD	C,A
+	CALL	PV1
+	LD	DE,#WKLENG
+	ADD	IX,DE
+	POP	BC
+	DJNZ	FDOSSG
+	
+	CALL	DVOLSET
+	
+	LD	A,#4
+	LD	(FMPORT),A
+	LD	DE,#WKLENG
+	ADD	IX,DE
+	CALL	FDOFM
+	
+	LD	A,(FDCO)
+	OR	A
+	JR	Z,FDO3
+	RET
+FDOFM:
+	LD	B,#3
+FDL2:
+	PUSH	BC
+	CALL	STVOL
+	LD	DE,#WKLENG
+	ADD	IX,DE
+	POP	BC
+	DJNZ	FDL2
+	LD	B,#3
+	RET
+FDO3:
+	CALL	MSTOP
+	XOR	A
+	LD	(TOTALV),A
+	RET
+	
+; **	MUSIC START/STOP	**
+	
+;	IN: A<= MUSIC NUMBER (0->)
+	
+MSTART:
+	DI
+	LD	(MUSICNUM),A
+	CALL	AKYOFF
+	CALL	SSGOFF
+	CALL	WORKINIT
+START:
+	DI
+	PUSH	HL
+	CALL	CHK
+	CALL	INT57
+	CALL	ENBL
+	CALL	TO_NML
+	POP	HL
+	EI
+	RET
+MSTOP:
+	DI
+	CALL	AKYOFF
+	CALL	SSGOFF
+	LD	A,(M_VECTR)
+	LD	C,A
+	IN	A,(C)
+	OR	#0b10000000
+	OUT	(C),A
+	EI
+	RET
+	
+
+; **	ﾜﾘｺﾐ ﾉ ﾚﾍﾞﾙ ｿﾉﾀ ｼｮｷｾｯﾃｲ ｦ ｵｺﾅｳ	**
+
+INT57:
+	PUSH	AF
+	PUSH	HL
+	LD	A,#5
+	LD	(S.ILVL),A
+	OUT	(#0xe4),A	;  CUT INT 5-7
+	LD	A,#3
+	OUT	(#0xe6),A	;  VRTC=ON;RTCLOCK=ON;USART=OFF
+	LD	A,I
+	LD	H,A
+	LD	L,#8
+	LD	DE,#PL_SND
+	LD	(HL),E
+	INC	HL
+	LD	(HL),D
+	
+	CALL	TO_NML
+INT573:
+	CALL	MONO
+	
+	CALL	AKYOFF		;  ALL KEY OFF
+	CALL	SSGOFF
+	
+	LD	DE,#0x2983	; C	
+	CALL	PSGOUT
+	
+        LD	DE,#0
+	LD	B,#6
+INITF2:
+	CALL	PSGOUT
+	INC	D
+	DJNZ	INITF2
+	
+	LD	D,#7
+	LD	E,#0b00111000
+	CALL	PSGOUT
+	LD	HL,#INITPM
+	LD	DE,#PREGBF
+	LD	BC,#9
+	LDIR			; PSGﾊﾞｯﾌｧ ｲﾆｼｬﾗｲｽﾞ
+	
+	POP	HL
+	POP	AF
+	RET
+
+; **	ﾐｭｰｼﾞｯｸ ﾜﾘｺﾐ ENABLE	**
+
+ENBL:
+	LD	A,(TIMER_B)
+	LD	E,A
+	CALL	STTMB		;  SET Timer-B
+
+	LD	A,(M_VECTR)
+	LD	C,A
+	IN	A,(C)
+	AND	#0x7F
+	OUT	(C),A
+	RET
+	
+; **	ALL MONORAL / H.LFO OFF	***
+	
+MONO:
+	LD	D,#0xb4
+	LD	E,#0xc0
+	XOR	A
+	LD	(FMPORT),A
+	LD	B,#3
+MONO2:
+	CALL	PSGOUT
+	INC	D
+	DJNZ	MONO2
+	
+	LD	D,#0x18
+        LD	B,#6
+MONO3:
+	CALL	PSGOUT
+	INC	D
+	DJNZ	MONO3
+	
+	LD	B,#3
+	LD	D,#0xb4
+	LD	A,#4
+	LD	(FMPORT),A
+MONO4:
+	CALL	PSGOUT
+	INC	D
+	DJNZ	MONO4
+	
+	XOR	A
+	LD	(FMPORT),A
+	
+	LD	DE,#0x2200
+	CALL	PSGOUT
+	LD	DE,#0x1200
+	CALL	PSGOUT
+	
+	LD	HL,#PALDAT
+	LD	B,#7
+MONO5:
+	LD	(HL),#0xc0
+	INC	HL
+	DJNZ	MONO5
+	
+	LD	A,#3
+	LD	(PCMLR),A
+	RET
+	
+; **	MUSIC MAIN	**
+
+PL_SND:
+	DI
+	PUSH	AF
+	PUSH	HL
+	PUSH	DE
+	PUSH	BC
+	PUSH	IX
+	PUSH	IY
+	
+PLSET1:
+ 	LD	E,#0x38		;  TIMER-OFF DATA
+ 	LD	D,#0x27
+  	CALL	PSGOUT		;  TIMER-OFF
+PLSET2:
+	LD	E,#0x3A
+	CALL	PSGOUT		;  TIMER-ON
+	
+	IN	A,(8)
+	BIT	7,A
+	CALL	Z,CUE
+	
+	IN	A,(9)
+	CALL	ESC_PRC
+PLSND1:
+	LD	A,(ESCAPE)
+	OR	A
+	JR	NZ,PLSND3
+
+	CALL	DRIVE
+	CALL	FDOUT
+	CALL	TSC
+PLSND3:
+	EI
+	
+	LD	A,(S.ILVL)
+	OUT	(#0xe4),A	;CUT INT 5-7
+	
+	POP	IY
+	POP	IX
+	POP	BC
+	POP	DE
+	POP	HL
+	POP	AF
+	RET
+	
+	
+; **	CUE	**
+	
+CUE:
+	IN	A,(9)
+	BIT	1,A
+	RET	NZ
+	CALL	DRIVE
+	CALL	DRIVE
+	CALL	DRIVE
+	CALL	DRIVE
+	POP	DE
+	JR	PLSND3
+	
+; **	CALL FM		**
+	
+DRIVE:
+	XOR	A
+	LD	(FMPORT),A
+	
+	LD	IX,#CH1DAT
+	CALL	FMENT
+	LD	IX,#CH2DAT
+	CALL	FMENT
+	LD	IX,#CH3DAT
+	CALL	FMENT
+	
+; **	CALL SSG	**
+	
+	LD	A,#0xff
+	LD	(SSGF1),A
+	
+ 	LD	IX,#CH4DAT
+  	CALL	SSGENT
+ 	LD	IX,#CH5DAT
+ 	CALL	SSGENT
+ 	LD	IX,#CH6DAT
+ 	CALL	SSGENT
+	XOR	A
+	LD	(SSGF1),A
+	
+	LD	A,(NOTSB2)
+	OR	A
+	RET	NZ
+	
+	INC	A
+	LD	(DRMF1),A
+	LD	IX,#DRAMDAT
+	CALL	FMENT
+	XOR	A
+	LD	(DRMF1),A
+	
+	LD	A,#4
+	LD	(FMPORT),A
+	LD	IX,#CHADAT
+	CALL	FMENT
+	LD	IX,#CHBDAT
+	CALL	FMENT
+	LD	IX,#CHCDAT
+	CALL	FMENT
+	LD	A,#0xff
+	LD	(PCMFLG),A
+	LD	IX,#PCMDAT
+	CALL	FMENT
+	XOR	A
+	LD	(PCMFLG),A
+	RET
+	
+SSGENT:
+	BIT	3,31(IX)
+	CALL	NZ,REOFF
+	CALL	SSGSUB
+	CALL	PLLFO
+	BIT	3,31(IX)
+	CALL	NZ,REON
+	RET
+FMENT:
+	BIT	3,31(IX)
+	CALL	NZ,REOFF
+	CALL	FMSUB
+	CALL	PLLFO
+	BIT	3,31(IX)
+	CALL	NZ,REON
+	RET
+	
+REON:
+	LD	A,#0xff
+	LD	(READY),A
+	RET
+REOFF:
+	XOR	A
+	LD	(READY),A
+	RET
+	
+	
+;**	FM ｵﾝｹﾞﾝ ﾆ ﾀｲｽﾙ ｴﾝｿｳ ﾙｰﾁﾝ	**
+
+FMSUB:
+	LD	A,(IX)
+	DEC	A
+	LD	(IX),A
+	JR	Z,FMSUB1
+	
+	LD	B,18(IX)	;  'q'
+	CP	B
+	JR	Z,FMSUB0
+	RET	NC
+
+FMSUB0:
+	LD	H,3(IX)
+	LD	L,2(IX)	;  HL=SOUND DATA ADD
+	LD	A,(HL)		;  A=DATA
+	CP	#0xfd		; COUNT OVER ?
+	RET	Z
+	BIT	5,33(IX)
+	JR	NZ,FS2
+	CALL	KEYOFF
+	RET
+FS2:
+	LD	A,6(IX)
+	ADD	A,17(IX)
+	LD	C,A
+	SRL	C
+	CALL	STV2
+	SET	6,31(IX)	;  SET KEYOFF FLAG
+	RET
+
+; **	SET NEW SOUND	**
+	
+FMSUB1:
+	SET	6,31(IX)
+	LD	H,3(IX)
+	LD	L,2(IX)	; HL=SOUND DATA ADD
+	LD	A,(HL)		; A=DATA
+	CP	#0xfd		; COUNT OVER?
+	JR	NZ,FMSUBC
+FMSUBE:
+	RES	6,31(IX)	; RES KEYOFF FLAG
+	INC	HL
+FMSUBC:
+	LD	A,(HL)		;
+	OR	A		; ﾃﾞｰﾀ ｼｭｳﾘｮｳ ｦ ｼﾗﾍﾞﾙ
+	JR	NZ,FMSUB2	;* 00H as end
+
+	SET	0,31(IX)
+	LD	D,5(IX)
+	LD	E,4(IX)	; HL=DATA TOP ADDRES
+	LD	A,E
+	OR	D
+	JP	Z,FMEND		;* DATA TOP ADRESS ｶﾞ #0x0 ﾃﾞ BGM
+				; ﾉ ｼｭｳﾘｮｳ ｦ ｹｯﾃｲ ｿﾚ ｲｶﾞｲﾊ ｸﾘｶｴｼ
+	EX	DE,HL
+FMSUBB:
+	LD	A,(HL)		; GET FLAG & LENGTH
+
+; **	SET LENGTH	**
+
+FMSUB2:
+	INC	HL
+	CP	#0xf0		;
+	JP	NC,FMSUBA	; DATA ｶﾞ ｺﾏﾝﾄﾞ ﾅﾗ FMSUBA ﾍ
+
+	RLCA
+	SRL	A		; GET CY=7TH BIT (ｷｭｳﾌ ﾌﾗｸﾞ) : A=LENGTH
+	LD	(IX),A		; SET WAIT COUNTER
+	JP	NC,FMSUB5	; ｵﾝﾌﾟ ﾅﾗ FMSUB5 ﾍ
+
+; **	SET F-NUMBER	**
+
+FMSUB3:
+	LD	3(IX),H
+	LD 	2(IX),L	; SET NEXT SOUND DATA ADD
+	BIT	4,33(IX)
+	JR	NZ,FS3
+	BIT	5,33(IX)
+	JR	NZ,FS2
+FS3:
+	CALL	KEYOFF
+	RET
+
+FMSUB5:
+	BIT	6,31(IX)
+	CALL	NZ,KEYOFF
+	
+	LD	A,(PLSET1+1)
+	CP	#0x78
+	JR	NZ,FMSUB4
+	
+	LD	A,(FMPORT)
+	OR	A
+	JR	NZ,FMSUB4
+	LD	A,8(IX)
+	CP	#2		; CH=3?
+	JP	Z,EXMODE
+FMSUB4:
+	LD	A,(HL)		; A=BLOCK( OCTAVE-1 ) & KEY CODE DATA
+	INC	HL
+	LD	3(IX),H
+	LD	2(IX),L	; SET NEXT SOUND DATA ADD
+
+	LD	B,A		; STORE
+	BIT	6,31(IX)	; CHECK KEYOFF FLAG
+	JR	NZ,FMSUB9
+
+	LD	A,32(IX)	; GET BEFORE CODE DATA
+	SUB	B
+	JR	NZ,FMSUB9
+	SCF
+	RET
+FMSUB9:
+	LD	A,B
+	LD	32(IX),A
+	LD	A,(PCMFLG)
+	OR	A
+	JR	NZ,PCMGFQ
+	LD	A,(DRMF1)
+	OR	A
+	JR	Z,FMGFQ
+DRMFQ:
+	BIT	6,31(IX)
+	RET	Z
+	CALL	DKEYON
+	RET
+PCMGFQ:
+	LD	A,B
+	AND	#0b00001111
+	LD	HL,#PCMNMB
+	ADD	A,A
+	LD	E,A
+	LD	D,#0
+	ADD	HL,DE
+	LD	A,(HL)
+	INC	HL
+	LD	H,(HL)
+	LD	L,A
+	LD	E,9(IX)
+	LD	D,10(IX)
+	ADD	HL,DE
+	
+	LD	A,B
+	AND	#0b11110000
+	RRCA
+	RRCA
+	RRCA
+	RRCA
+	LD	B,A
+	DEC	B
+	INC	B
+	JR	Z,ASUB72
+ASUB7:
+	SRL	H
+	RR	L
+	DJNZ	ASUB7
+ASUB72:
+	LD	(DELT_N),HL
+	BIT	6,31(IX)
+	JR	NZ,AS72
+	CALL	LFORST
+AS72:
+	CALL	LFORST2
+	CALL	PLAY
+	RET
+FMGFQ:
+	LD	A,B
+	LD 	C,A		; STORE
+	AND 	#0x70		; GET BLOCK DATA
+	SRL	A		; A4-A6 ﾎﾟｰﾄ ｼｭﾂﾘｮｸﾖｳ ﾆ ｱﾜｾﾙ
+	LD 	B,A
+
+	LD	A,C		; RESTORE A
+	AND	#0x0F		; GET KEY CODE (C,C+,D ... B)
+
+	ADD	A,A
+	LD	E,A
+	LD	D,#0
+	LD	HL,#FNUMB
+	ADD	HL,DE
+
+	LD	C,(HL)
+	INC	HL
+	LD	A,(HL)		; GET FNUM2
+	OR	B		; A= KEY CODE & FNUM HI
+
+	LD	L,C
+	LD	H,A
+	LD	D,10(IX)	;
+	LD	E,9(IX)	; GET DETUNE DATA
+	ADD	HL,DE		; DETUNE PLUS
+	BIT	6,33(IX)
+	JR	NZ,FMS92
+	LD	29(IX),L	; FOR LFO
+	LD	30(IX),H	; FOR LFO
+	
+	LD	(FNUM),HL
+FMS92:
+	BIT	6,31(IX)
+	CALL	NZ,LFORST
+	CALL	LFORST2
+FMSUB8:
+	LD	BC,#0
+FMSUB6:
+	ADD	HL,BC		; BLOCK/FNUM1&2 DETUNE PLUS (for SE MODE)
+	LD	E,H		; BLOCK/F-NUMBER2 DATA
+FPORT:
+	LD	A,#0xa4		; PORT A4H
+	ADD	A,8(IX)
+	LD	D,A
+	CALL	PSGOUT
+
+	SUB	#4
+	LD	D,A
+	LD	E,L		; F-NUMBER1 DATA
+FMSUB7:
+	CALL	PSGOUT
+	CALL	KEYON
+        AND	A
+	RET
+
+; **	SE MODE ﾉ DETUNE ｾｯﾃｲ	**
+
+EXMODE:
+	LD	BC,(DETDAT)
+	LD	B,#0
+	LD	(FMSUB8+1),BC
+	CALL	FMSUB4		; SET OP1
+	RET	C
+
+	LD	HL,#DETDAT+1
+	LD	A,#0xaa		;  A = CH3 F-NUM2 OP1 PORT - 2
+EXMLP:
+	LD	(FPORT+1),A
+	INC	A
+	PUSH	AF
+	LD	C,(HL)
+	LD	B,#0
+	INC	HL
+	PUSH	HL
+HLSTC0:
+	LD	HL,(FNUM)
+	CALL	FMSUB6		; SET OP2-OP4
+
+	POP	HL
+	POP	AF
+	CP	#0xad		; END PORT+1
+	JP 	NZ,EXMLP
+
+	LD	A,#0xa4
+	LD	(FPORT+1),A
+BRESET:
+	LD	BC,#0
+	LD	(FMSUB8+1),BC
+	RET			;  RET TO MAIN
+
+; **	KEY-OFF ROUTINE		**
+
+KEYOFF:
+	LD	A,(PCMFLG)
+	OR	A
+	JP	NZ,PCMEND
+	LD	A,(DRMF1)
+	OR	A
+	JR	NZ,DKEYOF
+	LD	A,(FMPORT)
+	ADD	A,8(IX)
+	LD	E,A
+	LD	D,#0x28		;  PORT 28H
+	CALL	PSGOUT		;  KEY-OFF
+	RET
+	
+; --	ﾘｽﾞﾑ ｵﾝｹﾞﾝ ﾉ ｷｰｵﾌ	--
+	
+DKEYOF:
+	LD	D,#0x10
+	LD	A,(RHYTHM)	; GET RETHM PARAMETER
+	AND	#0b00111111
+	OR	#0x80
+	LD	E,A
+	CALL	PSGOUT
+	RET
+
+; **	KEY-ON  ROUTINE   **
+
+KEYON:
+	LD	A,(READY)
+	OR	A
+	RET	Z
+	LD	A,(FMPORT)
+	OR	A
+	LD	A,#0xf0
+	JR	Z,KEYON2
+	LD	A,#0xf4
+KEYON2:
+	ADD	A,8(IX)
+	LD	E,A
+	LD	D,#0x28
+	CALL	PSGOUT		;  KEY-ON
+	BIT	5,33(IX)
+	CALL	NZ,STVOL
+	RET
+	
+; **   ﾘｽﾞﾑ ｵﾝｹﾞﾝ ﾉ ｷｰｵﾝ   **
+	
+DKEYON:
+	LD	A,(READY)
+	OR	A
+	RET	Z
+	LD	D,#0x10
+	LD	A,(RHYTHM)	; GET RETHM PARAMETER
+	AND	#0b00111111
+	LD	E,A		; KEY ON
+	CALL	PSGOUT
+	RET
+
+; **	ALL KEY-OFF ROUTINE   **
+
+AKYOFF:
+	PUSH	AF
+	PUSH	BC
+	PUSH	DE
+	
+	LD	E,#0
+	LD	D,#0x28
+	LD	B,#7
+AKYOF2:
+	CALL	PSGOUT
+	INC	E
+	DJNZ	AKYOF2
+	
+	POP	DE
+	POP	BC
+	POP	AF
+	RET
+
+; **	FM DATA OUT ROUTINE	**
+;
+; ENTRY: D<= REGISTER No.
+;	 E<= DATA
+
+PSGOUT:
+	PUSH	AF
+	PUSH	BC
+	PUSH	HL
+	
+	
+	LD	A,(PORT13)
+	LD	C,A
+	
+	LD	A,D
+	CP	#0x30
+	JR	C,PSGO4
+	LD	A,(FMPORT)
+	AND	A
+	JR	Z,PSGO4
+	
+	LD	A,(PORT13+1)
+	LD	C,A
+PSGO4:
+	OUT	(C),D
+	PUSH	BC
+	POP	BC
+	INC	BC
+	OUT	(C),E
+	
+	PUSH	DE
+	
+	CALL	PUTWK
+PSGOE:
+	POP	DE
+	POP	HL
+	POP	BC
+	POP	AF
+	RET
+
+
+; **	ｻﾌﾞ･ｺﾏﾝﾄﾞ ﾉ ｹｯﾃｲ	**
+
+FMSUBA:
+	AND	#0x0F		; A=COMMAND No.(0-F)
+	LD	DE,#FMSUBC
+	PUSH	DE		; STORE RETURN ADDRES
+	LD	DE,#FMCOM
+	LD	B,A
+	ADD	A,A
+	ADD	A,B		; A*3
+	ADD	A,E
+	LD	E,A
+	ADC	A,D
+	SUB	E
+	LD	D,A		; DE+A*3
+	PUSH	DE
+	RET
+
+; **	FM CONTROL COMMAND(s)   **
+
+FMCOM:
+	JP	OTOPST		; F0-ｵﾝｼｮｸ ｾｯﾄ    '@'
+	JP	VOLPST		; F1-VOLUME SET   'v'
+	JP	FRQ_DF		; F2-DETUNE(ｼｭｳﾊｽｳ ｽﾞﾗｼ) 'D'
+	JP	SETQ		; F3-SET COMMAND 'q'
+	JP	LFOON		; F4-LFO SET
+	JP	REPSTF		; F5-REPEAT START SET  '['
+	JP	REPENF		; F6-REPEAT END SET    ']'
+	JP	M.dsET		; F7-FMｵﾝｹﾞﾝ ﾓｰﾄﾞｾｯﾄ
+	JP	STEREO		; F8-STEREO MODE
+	JP	FLGSET		; F9-FLAGSET
+	JP	W_REG		; FA-COMMAND OF   'y'
+	JP	VOLUPF		; FB-VOLUME UP    ')'
+        JP	HLFOON		; FC-HARD LFO
+	JP	TIE		; (CANT USE)
+	JP	RSKIP		; FE-REPEAT JUMP'/'
+	JP	SECPRC		; FF-to second com
+	
+FMCOM2:
+	JP	PVMCHG		;FFF0-PCM VOLUME MODE
+;	JP	HRDENV		;FFF1-HARD ENVE SET 's'		;■修正前
+	JP	NTMEAN						;■修正後
+;	JP	ENVPOD		;FFF2-HARD ENVE PERIOD		;■修正前
+	JP	NTMEAN						;■修正後
+	JP	REVERVE		;FFF3-ﾘﾊﾞｰﾌﾞ
+	JP	REVMOD		;FFF4-ﾘﾊﾞｰﾌﾞﾓｰﾄﾞ
+	JP	REVSW		;FFF5-ﾘﾊﾞｰﾌﾞ ｽｲｯﾁ
+	
+SECPRC:
+	LD	A,(HL)
+	INC	HL
+	AND	#0x0F		; A=COMMAND No.(0-F)
+	LD	DE,#FMCOM2
+	LD	B,A
+	ADD	A,A
+	ADD	A,B
+	ADD	A,E
+	LD	E,A
+	ADC	A,D
+	SUB	E
+	LD	D,A
+	PUSH	DE
+	
+NTMEAN:
+	RET
+	
+TIE:
+	RES	6,31(IX)
+	RET
+	
+; **	FLAGSET	**
+	
+FLGSET:
+	LD	A,(HL)
+	INC	HL
+	LD	(FLGADR),A
+	RET
+	
+; **	ﾘﾊﾞｰﾌﾞ	**
+	
+REVERVE:
+	LD	A,(HL)
+	INC	HL
+	LD	17(IX),A
+RV1:
+	SET	5,33(IX)
+        RET
+REVSW:
+	LD	A,(HL)
+	INC	HL
+	OR	A
+	JR	NZ,RV1
+	RES	5,33(IX)
+	CALL	STVOL
+	RET
+REVMOD:
+	LD	A,(HL)
+	INC	HL
+	OR	A
+	JR	Z,RM2
+	SET	4,33(IX)
+	RET
+RM2:
+	RES	4,33(IX)
+	RET
+	
+; **	PCM VMODE CHANGE	**
+	
+PVMCHG:
+	LD	A,(HL)
+	INC	HL
+	LD	(PVMODE),A
+	RET
+	
+; **	STEREO	**
+	
+STEREO:
+	LD	A,(DRMF1)
+	OR	A
+	JR	NZ,STE2
+	LD	A,(PCMFLG)
+	OR	A
+	JR	Z,STER2
+	LD	A,(HL)
+	INC	HL
+	LD	(PCMLR),A
+	RET
+STER2:
+	LD	A,(HL)
+	INC	HL
+	RRCA
+	RRCA
+	LD	C,A
+	LD	DE,#PALDAT
+	LD	A,(FMPORT)
+	ADD	A,8(IX)
+	ADD	A,E
+	LD	E,A
+	ADC	A,D
+	SUB	E
+	LD	D,A
+	LD	A,(DE)
+	AND	#0b00111111
+	OR	C
+	LD	(DE),A
+	
+	LD	E,A
+	LD	A,#0xb4
+	ADD	A,8(IX)
+	LD	D,A
+	CALL	PSGOUT
+	RET
+STE2:
+	LD	A,(HL)
+	INC	HL
+	LD	C,A
+	AND	#0b00001111
+	LD	B,A
+	LD	DE,#DRMVOL
+	ADD	A,E
+	LD	E,A
+	ADC	A,D
+	SUB	E
+	LD	D,A
+	LD	A,(DE)
+	PUSH	DE
+	AND	#0b00011111
+	LD	E,A
+	LD	A,C
+	RLCA
+	RLCA
+	AND	#0b11000000
+	OR	E
+	POP	DE
+	LD	(DE),A
+	LD	E,A
+	LD	A,B
+	ADD	A,#0x18
+	LD	D,A
+	CALL	PSGOUT
+	RET
+	
+	
+; **	VOLUME UP & DOWN	**
+	
+VOLUPF:
+	LD	A,(HL)
+	INC	HL
+	ADD	A,6(IX)
+	LD	6(IX),A
+	LD	A,(PCMFLG)
+	OR	A
+	RET	NZ
+	LD	A,(DRMF1)
+	OR	A
+	JP	NZ,DVOLSET
+	CALL	STVOL
+	RET
+	
+; **	SE DETUNE SET SUB ROUTINE	**
+
+M.dsET:
+	CALL	TO_EFC
+	LD	DE,#DETDAT
+	LD	BC,#4
+	LDIR
+	RET
+
+; **	HARD LFO SET	**
+	
+HLFOON:
+	LD	A,(HL)	; FREQ CONT
+	INC	HL
+	OR	#0b00001000
+	LD	E,A
+	LD	D,#0x22
+	CALL	PSGOUT
+	
+	LD	C,(HL)	; PMS
+	INC	HL
+	LD	A,(HL)	; AMS
+	INC	HL
+	RLCA
+	RLCA
+	RLCA
+	RLCA
+	OR	C
+	LD	C,A	; AMS+PMS
+	
+	LD	A,(FMPORT)
+	ADD	A,8(IX)
+	LD	DE,#PALDAT
+	ADD	A,E
+	LD	E,A
+	ADC	A,D
+	SUB	E
+	LD	D,A
+	LD	A,(DE)
+	AND	#0b11000000
+	OR	C
+	LD	(DE),A
+	
+	LD	E,A
+	LD	A,#0xb4
+	ADD	A,8(IX)
+	LD	D,A
+	CALL	PSGOUT
+	RET
+	
+; **	SOFT LFO SET(RESET)	**
+
+LFOON:
+	LD	A,(HL)		; GET SUB COMMAND
+	INC	HL
+	
+	OR	A
+	JP	NZ,LFOON3
+	
+	CALL	SETDEL
+	CALL	SETCO
+	CALL	SETVCT
+	CALL	SETPEK
+	
+	SET	7,31(IX)	;  SET LFO FLAG
+	RET
+	
+LFOON3:
+	DEC	A
+	LD	C,A
+	ADD	A,A
+	ADD	A,C
+	LD	DE,#LFOTBL
+	
+	ADD	A,E
+	LD	E,A
+	ADC	A,D
+	SUB	E
+	LD	D,A
+	
+	PUSH	DE
+	RET
+	
+LFOTBL:
+	JP	LFOOFF
+	JP	LFOON2
+	JP	SETDEL
+	JP	SETCO
+	JP	SETVC2
+	JP	SETPEK
+SETDEL:
+	LD	A,(HL)
+	INC	HL
+	LD 	19(IX),A	; SET DELAY
+	LD	20(IX),A
+	RET
+SETCO:
+	LD	A,(HL)
+	INC	HL
+	LD	21(IX),A	; SET COUNTER
+	LD	22(IX),A
+	RET
+SETVCT:
+	LD	E,(HL)
+	INC	HL
+	LD	D,(HL)
+	INC	HL
+	LD	23(IX),E	; SET ﾍﾝｶﾘｮｳ
+	LD	25(IX),E
+	LD	24(IX),D
+	LD	26(IX),D
+	RET
+SETVC2:
+	CALL	SETVCT
+	JP	LFORST
+SETPEK:
+	LD	A,(HL)
+	INC	HL
+	LD	27(IX),A	; SET PEAK LEVEL
+	SRL	A
+	LD	28(IX),A
+	RET
+	
+LFOON2:
+	SET	7,31(IX)	; LFOON
+        RET
+LFOOFF:
+	RES	7,31(IX)	; RESET LFO
+	RET
+	
+; **	SET Q COMMAND	**
+
+SETQ:
+	LD	A,(HL)
+	INC	HL
+	LD	18(IX),A
+	RET
+
+; **	ｵﾝｼｮｸ ｾｯﾄ ﾒｲﾝ	**
+
+OTOPST:
+	LD	A,(PCMFLG)
+	OR	A
+	JR	NZ,OTOPCM
+	LD	A,(DRMF1)
+	OR	A
+	JR	NZ,OTODRM
+	LD	A,(HL)
+	INC	HL
+	LD	1(IX),A
+	CALL	STENV
+	CALL	STVOL
+	RET
+OTODRM:
+	LD	A,(HL)
+	INC	HL
+	LD	(RHYTHM),A	; SET RETHM PARA
+	RET
+OTOPCM:
+	LD	A,(HL)
+	LD	(PCMNUM),A
+	DEC	A
+	LD	1(IX),A
+	INC	HL
+	ADD	A,A
+	ADD	A,A
+	ADD	A,A
+	PUSH	HL
+	LD	HL,#PCMADR
+	LD	E,A
+	LD	D,#0
+	ADD	HL,DE
+	LD	E,(HL)
+	INC	HL
+	LD	D,(HL)
+	INC	HL
+	LD	(STTADR),DE
+	LD	E,(HL)
+	INC	HL
+	LD	D,(HL)
+	INC	HL
+	LD	(ENDADR),DE
+	INC	HL
+	INC	HL
+	LD	E,(HL)
+	POP	HL
+	LD	A,(PVMODE)
+	OR	A
+	RET	Z
+	LD	6(IX),E
+	RET
+
+; **	ﾎﾞﾘｭｰﾑ ｾｯﾄ	**
+
+VOLPST:
+	LD	A,(PCMFLG)
+	OR	A
+	JR	NZ,PCMVOL
+	LD	A,(DRMF1)
+	OR	A
+	JR	NZ,VOLDRM
+	LD	A,(HL)
+	INC	HL
+	LD	6(IX),A
+	CALL	STVOL
+	RET
+	
+VOLDRM:
+	LD	A,(HL)
+	INC	HL
+	LD	6(IX),A
+	CALL	DVOLSET
+VOLDR1:
+	LD	B,#6
+	LD	DE,#DRMVOL
+VOLDR2:
+	LD	C,(HL)
+	LD	A,(DE)
+	AND	#0b11000000
+	OR	C
+	LD	(DE),A
+	
+	PUSH	DE
+	LD	E,A
+	LD	A,B
+	SUB	#6
+	NEG
+	LD	D,#0x18
+	ADD	A,D
+	LD	D,A
+	CALL	PSGOUT
+	POP	DE
+	
+	INC	DE
+	INC	HL
+	DJNZ	VOLDR2
+	RET
+PCMVOL:
+	LD	E,(HL)
+	INC	HL
+	LD	A,(PVMODE)
+	OR	A
+	JR	NZ,PCMV2
+	LD	6(IX),E
+	RET
+PCMV2:
+	LD	7(IX),E
+	RET
+	
+; --   SET TOTAL RHYTHM VOL	--
+	
+DVOLSET:
+	LD	D,#0x11
+	LD	A,6(IX)
+	AND	#0b00111111
+	LD	E,A
+	LD	A,(TOTALV)
+	ADD	A,A
+	ADD	A,A
+	ADD	A,E
+	CP	#64
+	JR	C,DV2
+	XOR	A
+DV2:
+	LD	E,A
+	CALL	PSGOUT
+	RET
+	
+; **	ﾃﾞﾁｭｰﾝ ｾｯﾄ	**
+
+FRQ_DF:
+	XOR	A
+	LD	32(IX),A	; DETUNE ﾉ ﾊﾞｱｲﾊ BEFORE CODE ｦ CLEAR
+	LD	E,(HL)
+	INC	HL
+	LD	D,(HL)
+	INC	HL
+	LD	A,(HL)
+	INC	HL
+	OR	A
+	JR	Z,FD2
+	PUSH	HL
+	LD	L,9(IX)
+	LD	H,10(IX)
+	ADD	HL,DE
+	EX	DE,HL
+	POP	HL
+FD2:
+	LD	9(IX),E
+	LD	10(IX),D
+	LD	A,(PCMFLG)
+	OR	A
+	RET	Z
+	PUSH	HL
+	LD	HL,(DELT_N)
+	ADD	HL,DE
+	EX	DE,HL
+	LD	C,D
+	LD	D,#0x9
+	CALL	PCMOUT
+	INC	D
+	LD	E,C
+	CALL	PCMOUT
+	POP	HL
+	RET
+
+	
+; **	ﾘﾋﾟｰﾄ ｽｷｯﾌﾟ	**
+	
+RSKIP:
+	LD	E,(HL)
+	INC	HL
+	LD	D,(HL)
+	INC	HL
+	
+	PUSH	HL
+	DEC	HL
+	DEC	HL
+	ADD	HL,DE
+	LD	A,(HL)
+	DEC	A	; LOOP ｶｳﾝﾀ =1?
+	JR	Z,RSKIP2
+	POP	HL
+	RET
+RSKIP2:
+	LD	DE,#4
+	ADD	HL,DE	; HL = JUMP ADR
+	EX	DE,HL
+	POP	HL
+	EX	DE,HL
+	RET
+	
+; **	ﾘﾋﾟｰﾄ ｽﾀｰﾄ ｾｯﾄ		**
+	
+REPSTF:
+	LD	E,(HL)
+	INC	HL
+	LD	D,(HL)		; DE as REWRITE ADR OFFSET +1
+	INC	HL
+	
+	PUSH	HL
+	DEC	HL
+	DEC	HL
+	ADD	HL,DE
+	LD	A,(HL)
+	DEC	HL
+	LD	(HL),A
+	POP	HL
+	
+	RET
+	
+	
+; **	ﾘﾋﾟｰﾄ ｴﾝﾄﾞ ｾｯﾄ (FM)	**
+
+REPENF:
+	
+	DEC	(HL)		; DEC REPEAT Co.
+	JR	Z,REPENF2
+	
+	INC	HL
+	INC	HL
+	
+	LD	E,(HL)
+	INC	HL
+	LD	D,(HL)
+	DEC	HL
+	AND	A
+	SBC	HL,DE
+	RET
+	
+REPENF2:
+	
+	INC	HL
+	LD	A,(HL)
+	DEC	HL
+	LD	(HL),A
+	LD	DE,#4
+	ADD	HL,DE
+	
+	RET
+	
+	
+; **	ｵﾝｼｮｸ ｾｯﾄ ｻﾌﾞﾙｰﾁﾝ (FM)	**
+
+STENV:
+	PUSH	HL
+
+	CALL	KEYOFF
+	LD	A,#0x80
+	ADD	A,8(IX)
+	LD	E,#0xf
+	LD	B,#4
+ENVLP:
+	LD	D,A
+	CALL	PSGOUT		; ﾘﾘｰｽ(RR) ｶｯﾄ ﾉ ｼｮﾘ
+	ADD	A,#4
+	DJNZ	ENVLP
+
+	LD	A,1(IX)	; ﾜｰｸ ｶﾗ ｵﾝｼｮｸ ﾅﾝﾊﾞｰ ｦ ｴﾙ
+STENV0:
+	LD	C,A
+	
+	RRCA
+	RRCA
+	RRCA
+	RRCA			; *16
+	LD	H,A
+	AND	#0b11110000
+	LD	L,A
+	LD	A,H
+	AND	#0b00001111
+	LD	H,A		; HL=*16
+	
+	LD	A,C
+	ADD	A,A
+	ADD	A,A
+	ADD	A,A
+	ADD	A,C		; *9
+	
+	ADD	A,L
+	LD	L,A
+	ADC	A,H
+	SUB	L
+	LD	H,A		; HL=*25
+	
+	EX	DE,HL
+	LD	HL,(OTODAT)
+	INC	HL
+	ADD	HL,DE		;  HL ﾊ ｵﾝｼｮｸﾃﾞｰﾀ ｶｸﾉｳ ｱﾄﾞﾚｽ
+	LD	DE,#MUSICNUM
+	ADD	HL,DE
+
+STENV1:
+	LD	BC,#0x406	; 4 OPERATER
+				; 6 PARAMATER(Det/Mul,Total,KS/AR,DR,SR,SL/RR)
+	LD	A,#0x30		; START=PORT 30H
+	ADD	A,8(IX)	; PLUS CHANNEL No.
+	LD	D,A
+
+STENV2:
+	PUSH	BC
+STENV3:
+	LD	E,(HL)		; GET DATA
+	CALL	PSGOUT
+
+	INC 	D		;
+	INC 	D		;  SKIP BLANK PORT
+	INC 	D		;
+	INC 	D		;
+	INC 	HL
+
+	DJNZ 	STENV3
+
+	POP	BC
+	DEC	C
+	JP	NZ,STENV2
+
+	LD	A,(HL)		; GET FEE.dbACK/ALGORIZM
+	LD	E,A
+	AND	#0x07		; GET ALGORIZM
+	LD	7(IX),A	; STORE ALGORIZM
+	LD	A,#0xb0		; GET ALGO SET ADDRES
+	ADD	A,8(IX)	; CH PLUS
+	LD	D,A
+	CALL	PSGOUT
+
+	POP	HL
+	RET
+
+	
+; **	ﾎﾞﾘｭｰﾑ	**
+
+STVOL:
+	PUSH	HL
+	PUSH	DE
+	PUSH	BC
+
+	CALL	STV1
+
+	POP	BC
+	POP	DE
+	POP	HL
+	RET
+STV1:
+	LD	C,6(IX)	; INPUT VOLUME
+	LD	A,(TOTALV)
+	ADD	A,C
+	CP	#20
+	JR	C,STV12
+	XOR	A
+STV12:
+	LD	C,A
+STV2:	LD	B,#0
+	LD	HL,#FMVDAT
+	ADD	HL,BC
+	LD	E,(HL)		; GET VOLUME DATA
+	
+	LD	A,#0x40
+	ADD	A,8(IX)	; GET PORT No.
+
+	LD	HL,#CRYDAT
+	LD	B,#0
+	LD	C,7(IX)	; INPUT ALGOLIZM
+	ADD	HL,BC
+	LD	C,(HL)		; C=ｷｬﾘｱ
+	LD	B,#4		; 4 OPERATER
+
+STVOL2:
+	RR	C
+	LD	D,A
+	CALL	C,PSGOUT	;  ｷｬﾘｱ ﾅﾗ PSGOUT ﾍ
+	ADD	A,#4
+	DJNZ	STVOL2
+	RET
+
+	
+; **	Timer-B ｶｳﾝﾀ･ｾｯﾄ ﾙｰﾁﾝ   **
+
+; 	IN: E<= TIMER_B COUNTER
+	
+STTMB:
+	PUSH AF
+	PUSH DE
+STTMB2:
+	
+	LD D,#0x26
+	CALL PSGOUT
+
+	LD D,#0x27
+	LD E,#0x78
+	CALL PSGOUT     ;  Timer-B OFF
+	LD E,#0x7A
+	CALL PSGOUT     ;  Timer-B ON
+
+	LD A,#5
+	OUT (#0xe4),A
+
+	POP DE
+	POP AF
+	RET
+
+	
+; **	LFO ﾙｰﾁﾝ	**
+	
+PLLFO:
+	
+; ---	FOR FM & SSG LFO	---
+	
+	BIT	7,31(IX)	;  CHECK bit 7 ... LFO FLAG
+	RET	Z
+
+	LD	L,2(IX)
+	LD	H,3(IX)
+	DEC	HL
+	LD 	A,(HL)
+	CP	#0xf0
+	RET	Z	;  ｲｾﾞﾝ ﾉ ﾃﾞｰﾀ ｶﾞ '&' ﾅﾗ RET
+
+	BIT	5,31(IX)	; LFO CONTINE FLAG
+	JR	NZ,CTLFO	; bit 5 = 1 ﾅﾗ LFO ｹｲｿﾞｸ
+
+; **	LFO INITIARIZE   **
+
+        CALL	LFORST
+	CALL	LFORST2
+	LD	A,21(IX)
+	LD	22(IX),A
+	SET	5,31(IX)	; SET CONTINUE FLAG
+	
+CTLFO:
+	LD	A,20(IX)
+	OR	A
+	JR	Z,CTLFO1
+	DEC	A
+	LD	20(IX),A
+	RET
+CTLFO1:
+	DEC	22(IX)	;ｶｳﾝﾀ
+	RET	NZ
+	
+	LD	A,21(IX)
+	LD	22(IX),A	;ｶｳﾝﾀ ｻｲ ｾｯﾃｲ
+	LD	A,28(IX)	;  GET PEAK LEVEL COUNTER (P.L.C	OR	A
+	JR	NZ,PLLFO1	;  P.L.C > 0 ﾅﾗ PLLFO1
+
+	AND	A
+	LD	HL,#0
+	LD	D,26(IX)
+	LD	E,25(IX)
+	SBC	HL,DE
+	LD	26(IX),H
+	LD	25(IX),L	; WAVE ﾊﾝﾃﾝ
+	LD	A,27(IX)
+	LD	28(IX),A	;  P.L.C ｻｲ ｾｯﾃｲ
+
+PLLFO1:
+	DEC	28(IX)		; P.L.C.-1
+	LD	L,25(IX)
+	LD	H,26(IX)
+	CALL	PLS2
+	RET
+PLS2:
+	LD	A,(PCMFLG)
+	OR	A
+	JR	Z,PLSKI2
+	LD	DE,(DELT_N)
+	ADD	HL,DE
+	LD	(DELT_N),HL
+	LD	D,#0x9
+	LD	E,L
+	CALL	PCMOUT
+	INC	D
+	LD	E,H
+	CALL	PCMOUT
+	RET
+PLSKI2:
+	LD	E,29(IX)	;  GET FNUM1
+	LD	D,30(IX)	;  GET B/FNUM2
+	ADD	HL,DE		;  HL= NEW F-NUMBER
+	LD	29(IX),L	; SET NEW F-NUM1
+	LD	30(IX),H	; SET NEW F-NUM2
+	LD	A,(SSGF1)
+	OR	A
+	JR	Z,LFOP5
+	
+; ---	FOR SSG	LFO	---
+	
+	LD	A,32(IX)	; GET KEY CODE&OCTAVE
+	
+	SRL	A
+	SRL	A
+	SRL	A
+	SRL	A
+	
+	OR	A		;  OCTAVE=1?
+	JR	Z,SSLFO2
+	LD	B,A
+	
+SNUMGETL:
+	
+	SRL	H
+	RR	L
+	DJNZ	SNUMGETL
+
+SSLFO2:
+	LD	E,L
+	LD	D,8(IX)
+	CALL	PSGOUT
+
+	INC	D
+	LD	E,H
+	CALL	PSGOUT
+
+	RET
+	
+; ---	FOR FM LFO	---
+	
+LFOP5:
+	BIT	6,33(IX)
+	JR	NZ,LFOP6
+	BIT	1,8(IX)	;  CH=3?
+	JR	Z,PLLFO2	; NOT CH3 THEN PLLFO2
+	LD	A,(PLSET1+1)
+	CP	#0x78
+	JR	NZ,PLLFO2	; NOT SE MODE
+	LD	(NEWFNM),HL
+LFOP4:
+	LD	HL,#DETDAT
+	LD	IY,#OP_SEL
+	LD	B,#4
+LFOP3:
+	PUSH	BC
+	LD	DE,(NEWFNM)
+	LD	C,(HL)
+	LD	B,#0
+	INC	HL
+	EX	DE,HL
+	ADD	HL,BC
+	
+	PUSH	DE
+	LD	E,H
+	LD	D,(IY)
+	INC	IY
+	CALL	PSGOUT
+	DEC	D
+	DEC	D
+	DEC	D
+	DEC	D
+	LD	E,L
+	CALL	PSGOUT
+	POP	DE
+	EX	DE,HL
+	POP	BC
+	DJNZ	LFOP3
+	RET
+PLLFO2:
+	LD	E,H
+	LD	A,#0xa4	;  PORT A4H
+	ADD	A,8(IX)
+	LD	D,A
+	CALL	PSGOUT
+	SUB	#4
+	LD	E,L	;  F-NUMBER1 DATA
+	LD	D,A
+	CALL	PSGOUT
+	RET
+	
+LFOP6:
+	LD	C,#1
+	LD	A,#0x40
+	ADD	A,8(IX)
+	LD	E,L
+	BIT	0,C
+	CALL	NZ,LFP62
+	BIT	2,C
+	CALL	NZ,LFP62
+	BIT	1,C
+	CALL	NZ,LFP62
+	BIT	3,C
+	RET	Z
+LFP62:
+	LD	D,A
+	CALL	PSGOUT
+	ADD	A,#4
+	RET
+	
+; ---	RESET PEAK L.&DELAY	---
+	
+LFORST:
+	LD	A,19(IX)
+	LD	20(IX),A	; LFO DELAY ﾉ ｻｲｾｯﾃｲ
+	RES	5,31(IX)	; RESET LFO CONTINE FLAG
+	RET
+LFORST2:
+	LD	A,27(IX)
+	SRL	A
+	LD	28(IX),A	; LFO PEAK LEVEL ｻｲ ｾｯﾃｲ
+	LD	A,23(IX)	;
+	LD	25(IX),A	; ﾍﾝｶﾘｮｳ ｻｲｾｯﾃｲ
+	LD	A,24(IX)	;
+	LD	26(IX),A
+	RET
+	
+SSG:
+	
+; **	SSG ｵﾝｹﾞﾝｴﾝｿｳ ﾙｰﾁﾝ   **
+
+SSGSUB:
+	LD	A,(IX)
+	DEC	A
+	LD	(IX),A
+	JR	Z,SSSUB7
+
+	LD	B,18(IX)	;  'q'
+	CP	B
+	JR	NZ,SSSUB0
+	
+	LD	H,3(IX)
+	LD	L,2(IX)	;  HL=SOUND DATA ADD
+	LD	A,(HL)		;  A=DATA
+	CP	#0xfd		; COUNT OVER?
+	JR	Z,SSUB0
+	CALL	SSSUBA		; TO REREASE
+	RET
+SSUB0:
+ 	RES	6,31(IX)	;  SET TIE FLAG
+SSSUB0:
+	BIT 	7,6(IX)	; ENVELOPE CHECK
+	RET 	Z
+	CALL	SOFENV
+	LD	E,A
+	LD	A,(READY)
+	OR	A
+	JR	NZ,SSSUB02
+	LD	E,#0
+SSSUB02:
+	LD	D,7(IX)
+	CALL	PSGOUT
+	RET
+	
+SSSUB7:
+	LD	H,3(IX)
+	LD	L,2(IX)	;  HL AS SOUND DATA ADD
+	LD	A,(HL)		;  A=DATA
+	CP	#0xfd		; COUNT OVER?
+	JR	NZ,SSSUBE
+SSUB1:
+	RES	6,31(IX)	;  SET TIE FLAG
+	INC	HL
+	JP	SSSUBB
+SSSUBE:
+	SET	6,31(IX)
+SSSUBB:
+	LD	A,(HL)
+	OR	A	;  CHECK END MARK
+	JR	NZ,SSSUB2
+	SET	0,31(IX)
+	LD	D,5(IX)
+	LD	E,4(IX)	;  HL=DATA TOP ADD
+	LD	A,E
+	OR	D
+	JP	Z,SSGEND
+	EX	DE,HL
+SSSUB1:
+	LD	A,(HL)	;  INPUT FLAG &LENGTH
+	
+SSSUB2:
+	INC	HL
+	CP	#0xf0	;  COMMAND OF PSG?
+ 	JP	NC,SSSUB8
+	
+	RLCA
+	SRL	A		;  CY=REST FLAG
+	LD	0(IX),A	;  SET WAIT COUNTER
+	JR	NC,SSSUB6	;  ｷｭｳﾌ ﾅﾗ SSSUBA
+	CALL	SSSUBA
+	JP	SETPT
+	
+; **	SET FINE TUNE & COARSE TUNE	**
+	
+SSSUB6:
+	LD	A,(HL)		;  LOAD OCT & KEY CODE
+	INC	HL
+	
+	BIT	6,31(IX)
+	JR	NZ,SSSKIP0	;  NON TIE
+	
+	LD	C,A
+	LD	B,32(IX)
+	SUB	B
+	JP	Z,SETPT		; IF NOW CODE=BEFORE CODE THEN SETPT
+	
+	LD	A,C
+	
+SSSKIP0:
+	LD	32(IX),A	; STORE KEY CODE & OCTAVE
+	
+	PUSH	HL
+	LD	B,A
+	AND	#0b00001111	;  GET KEY CODE
+	ADD	A,A
+	LD	E,A
+	LD	D,#0
+	LD	HL,#SNUMB
+	ADD	HL,DE
+	
+	LD	A,(HL)		;  GET FNUM2
+	INC	HL
+	LD	L,(HL)		;  GET FNUM1
+	LD	H,A
+	
+	LD	D,10(IX)	;
+	LD	E,9(IX)	;  GET DETUNE DATA
+	ADD	HL,DE		;  DETUNE PLUS
+  	LD	30(IX),H	; SAVE FOR LFO
+	LD	29(IX),L
+	
+	SRL	B
+	SRL	B
+	SRL	B
+	SRL	B
+	
+	DEC	B
+	INC	B		;  OCTAVE=1?
+	JR	Z,SSSUB4	;  1 ﾅﾗ SSSUB4 ﾍ
+	
+SSSUB5:
+	SRL	H
+	RR	L
+	DJNZ	SSSUB5		;  OCTAVE DATA ﾉ ｹｯﾃｲ
+	
+SSSUB4:
+	
+	LD	E,L
+	LD	D,8(IX)
+	CALL	PSGOUT
+	
+	LD	E,H
+	INC	D
+	CALL	PSGOUT
+	
+	BIT	6,31(IX)
+	JR	NZ,SSSUBF
+	CALL	SOFENV
+	JR	SSSUB9
+	
+SSSUBF:			; KEYON ｻﾚﾀﾄｷ ﾉ ｼｮﾘ
+;	BIT	7,33(IX)				;■削除
+;	JR	Z,SSSUBG	; NOT HARD ENV.		;■
+	
+; ---	HARD ENV. KEY ON	---
+	
+;	LD	E,16					;■
+;	LD	D,7(IX)				;■
+;	CALL	PSGOUT		; HARD ENV.KEYON	;■
+	
+;	LD	A,33(IX)				;■
+;	AND	#0b00001111				;■
+;	LD	E,A					;■
+;	LD	D,0DH					;■
+;	CALL	PSGOUT					;■
+;	JR	SSSUBH					;■
+	
+; ---	SOFT ENV. KEYON		---
+	
+SSSUBG:
+	LD	A,6(IX)
+	AND	#0b00001111
+	OR	#0b10010000	;  TO STATE 1 (ATTACK)
+	LD	6(IX),A
+	
+	LD	A,12(IX)	;  ENVE INIT
+	LD	11(IX),A
+	RES	5,31(IX)	; RESET LFO CONTINE FLAG
+	CALL	SOFEV7
+SSSUBH:
+	LD	C,27(IX)
+	SRL	C
+	LD	28(IX),C	;  LFO PEAK LEVEL ｻｲ ｾｯﾃｲ
+	LD	C,19(IX)
+	LD	20(IX),C	;  LFO DELAY ﾉ ｻｲｾｯﾃｲ
+SSSUB9:
+	POP	HL
+	
+; **   VOLUME OUT PROCESS   **
+	
+;
+;  ENTRY A: VOLUME DATA
+;
+
+SSSUB3:
+;	BIT	7,33(IX)					;■削除
+;	JR	NZ,SETPT	; IF HARD ENVE THEN SETPT	;■
+	
+	LD	E,A
+	LD	A,(READY)
+	OR	A
+	JR	NZ,SSSUB32
+	LD	E,#0
+SSSUB32:
+	LD	D,7(IX)
+	CALL	PSGOUT
+	
+; **   SET POINTER   **
+	
+SETPT:
+        LD	3(IX),H
+	LD	2(IX),L	;  SET NEXT SOUND DATA ADDRES
+	RET
+SNUMB:				;  SSG o1 ﾉ ｼｭｳﾊｽｳ DATA
+	.dw	#0xe80e,#0x120e,#0x480d,#0x890C,#0xd50b,#0x2B0B
+	.dw	#0x8a0a,#0xf309,#0x6409,#0xdd08,#0x5E08,#0x0E607
+	
+; **	KEY OFF ｼﾞ ﾉ RR ｼｮﾘ	**
+	
+SSSUBA:
+	
+; --	HARD ENV. KEY OFF	--
+	
+;	BIT	7,33(IX)				;■削除
+;	JR	Z,SSUBAB	; NOT HARD ENV.		;■
+;	LD	E,0					;■
+;	LD	D,7(IX)				;■
+;	CALL	PSGOUT		; HARD ENV.KEYOFF	;■
+	
+; --	SOFT ENV. KEY OFF	--
+	
+;SSUBAB:						;■削除
+	BIT	5,33(IX)
+	JR	Z,SSUBAC
+	RES	6,31(IX)
+	JP	SSSUB0
+SSUBAC:
+	XOR	A
+	BIT	7,6(IX)
+	JR	Z,SSSUB3	;  ﾘﾘｰｽ ｼﾞｬﾅｹﾚﾊﾞ SSSUB3
+	LD	A,6(IX)
+	AND	#0b10001111	; STATE 4 (ﾘﾘｰｽ)
+	LD	6(IX),A
+	CALL	SOFEV9
+	JR	SSSUB3
+	
+; **   ｻﾌﾞ ｺﾏﾝﾄﾞ ﾉ ｹｯﾃｲ   **
+	
+SSSUB8:
+	AND	#0x0F		; A=COMMAND No.(0-F)
+	LD	DE,#SSSUBB
+	PUSH	DE		; STORE RETURN ADDRES
+	LD	DE,#PSGCOM
+	LD	B,A
+	ADD	A,A
+	ADD	A,B		; A*3
+	ADD	A,E
+	LD	E,A
+	ADC	A,D
+	SUB	E
+	LD	D,A		; DE+A*3
+	PUSH	DE
+	RET
+	
+; **   PSG COMMAND TABLE   **
+	
+PSGCOM:
+	JP	OTOSSG		;F0-ｵﾝｼｮｸ ｾｯﾄ         '@'
+	JP	PSGVOL		;F1-VOLUME SET
+	JP	FRQ_DF		;F2-DETUNE
+	JP	SETQ		;F3-COMMAND OF        'q'
+	JP	LFOON		;F4-LFO
+	JP	REPSTF		;F5-REPEAT START SET  '['
+	JP	REPENF		;F6-REPEAT END SET    ']'
+	JP	NOISE		;F7-MIX PORT          'P'
+	JP	NOISEW		;F8-NOIZE PARAMATER   'w'
+	JP	FLGSET		;F9-FLAGSET
+	JP	ENVPST		;FA-SOFT ENVELOPE     'E'
+	JP	VOLUPS		;FB-VOLUME UP    ')'
+        JP	NTMEAN		;FC-
+	JP	TIE
+	JP	RSKIP
+	JP	SECPRC		;FF- to sec com
+	
+; **	HARD ENVE SET	**
+	
+;HRDENV:						;■削除
+;	LD	E,(HL)					;■
+;	INC	HL					;■
+;	LD	D,0DH					;■
+;	CALL	PSGOUT					;■
+;	LD	A,E					;■
+;	OR	#0b10000000	; SET H.E FLAG		;■
+;	LD	33(IX),A	; H.E MODE		;■
+;	LD	6(IX),16				;■
+;	RET						;■
+	
+; **	HARD ENVE PERIOD	**
+	
+;ENVPOD:						;■削除
+;	LD	E,(HL)					;■
+;	INC	HL					;■
+;	LD	D,0BH					;■
+;	CALL	PSGOUT					;■
+;	LD	E,(HL)					;■
+;	INC	HL					;■
+;	INC	D					;■
+;	CALL	PSGOUT					;■
+;	RET						;■
+	
+; **   WRITE REG   **
+	
+W_REG:
+	LD	D,(HL)
+	INC	HL
+	LD	E,(HL)
+	INC	HL
+	CALL	PSGOUT
+	RET
+	
+; **   MIX PORT CONTROL   **
+	
+NOISE:
+	LD	C,(HL)
+	INC	HL
+	
+	LD	B,8(IX)	; CH NO.
+	
+	LD	A,(PREGBF+5)
+	LD	E,A
+	SRL	B
+	INC	B
+	LD	D,B
+	LD	A,#0b01111011
+NOISE1:
+	RLCA
+	DJNZ	NOISE1
+	AND	E
+	LD	E,A
+	LD	A,C
+	LD	B,D
+	RRCA
+NOISE2:
+	RLCA
+	DJNZ	NOISE2
+	OR	E
+	LD	D,#7
+	LD	E,A
+	CALL	PSGOUT
+	
+	LD	A,E
+	LD	(PREGBF+5),A
+	RET
+	
+; **   ﾉｲｽﾞ ｼｭｳﾊｽｳ   **
+	
+NOISEW:
+	LD	E,(HL)
+	INC	HL
+	LD	D,#6
+	CALL	PSGOUT
+	LD	A,E
+	LD	(PREGBF+4),A
+	RET
+	
+; **   ｴﾝﾍﾞﾛｰﾌﾟ ﾊﾟﾗﾒｰﾀ ｾｯﾄ   **
+	
+ENVPST:
+	EX	DE,HL
+	PUSH	IX
+	POP	HL
+	LD	BC,#12
+	ADD	HL,BC
+	EX	DE,HL
+	LD	BC,#6
+	LDIR
+	LD	A,6(IX)
+	OR	#0b10010000	; ｴﾝﾍﾞﾌﾗｸﾞ ｱﾀｯｸﾌﾗｸﾞ ｾｯﾄ
+	LD	6(IX),A
+	RET
+	
+; **   PSG ｵﾝｼｮｸｾｯﾄ   **
+	
+OTOSSG:
+	LD	A,(HL)
+	AND	#0b00001111
+	INC	HL
+	PUSH	HL
+	CALL	OTOCAL
+	CALL	ENVPST
+	POP	HL
+	RET
+OTOCAL:
+	LD	HL,#SSGDAT
+	ADD	A,A
+	LD	C,A
+	ADD	A,A
+	ADD	A,C	;*6
+	LD	E,A
+	LD	D,#0
+	ADD	HL,DE
+	RET
+	
+SSGDAT:
+	.db	255,255,255,255,0,255 ; E
+	.db	255,255,255,200,0,10
+	.db	255,255,255,200,1,10
+	.db	255,255,255,190,0,10
+	.db	255,255,255,190,1,10
+	.db	255,255,255,170,0,10
+	.db	40,70,14,190,0,15
+	.db	120,030,255,255,0,10
+	.db	255,255,255,225,8,15
+	.db	255,255,255,1,255,255
+	.db	255,255,255,200,8,255
+	.db	255,255,255,220,20,8
+	.db	255,255,255,255,0,10
+	.db	255,255,255,255,0,10
+	.db	120,80,255,255,0,255
+	.db	255,255,255,220,0,255
+	
+; **	SSG VOLUME UP & DOWN	**
+	
+VOLUPS:
+	LD	D,(HL)
+	INC	HL
+	
+;	BIT	7,33(IX)				;■削除
+;	RET	NZ					;■
+	
+	LD	A,6(IX)
+	LD	E,A
+	AND	#0b00001111
+	ADD	A,D
+	CP	#16
+	RET	NC
+	LD	D,A
+	LD	A,E
+	AND	#0b11110000
+	OR	D
+	LD	6(IX),A
+	RET
+	
+	
+; **	PSG VOLUME	**
+	
+PSGVOL:
+;	RES	7,33(IX)	; RES HARD ENV FLAG	;■削除
+	
+	LD	A,6(IX)
+	AND	#0b11110000
+	LD	E,A
+	LD	C,(HL)
+PV1:
+	LD	A,(TOTALV)
+	ADD	A,C
+	CP	#16
+	JR	C,PV2
+	XOR	A
+PV2:
+	OR	E
+	INC	HL
+	LD	6(IX),A
+	RET
+	
+; **	SSG ALL SOUND OFF	**
+	
+SSGOFF:
+	LD	B,#3
+	LD	D,#8
+	LD	E,#0
+SSGOF1:
+	CALL	PSGOUT
+	INC	D
+	DJNZ	SSGOF1
+	RET
+	
+; **   SSG KEY OFF   **
+	
+SKYOFF:
+	XOR	A
+	LD	6(IX),A	; ENVE FLAG RESET
+	
+	LD	E,A
+	LD	D,7(IX)
+	CALL	PSGOUT
+	RET
+	
+	
+; **	SOFT ENVEROPE PROCESS	**
+	
+SOFENV:
+	BIT	4,6(IX)	; CHECK ATTACK FLAG
+	JR	Z,SOFEV2
+	
+	LD	A,11(IX)
+	LD	D,13(IX)
+	ADD	A,D
+	JR	NC,SOFEV1
+	LD	A,#0xff
+SOFEV1:
+	CP	#0xff
+	LD	11(IX),A
+	JR	NZ,SOFEV7
+	
+	LD	A,6(IX)
+	XOR	#0b00110000
+	LD	6(IX),A	; TO STATE 2 (DECAY)
+	JR	SOFEV7
+	
+SOFEV2:
+	BIT	5,6(IX)
+	JR	Z,SOFEV4
+	
+	LD	A,11(IX)
+	LD	D,14(IX)	; GET DECAY
+	LD	E,15(IX)	; GET SUSTAIN
+	
+	SUB	D
+	JR	C,SOFEV8
+	CP	E
+	JR	NC,SOFEV3
+SOFEV8:
+	LD	A,E
+SOFEV3:
+	CP	E
+	LD	11(IX),A
+	JR	NZ,SOFEV7
+	LD	A,6(IX)
+	XOR	#0b01100000
+	LD	6(IX),A	; TO STATE 3 (SUSTAIN)
+	JR	SOFEV7
+	
+SOFEV4:
+	BIT	6,6(IX)
+	JR	Z,SOFEV9
+	
+	LD	A,11(IX)
+	LD	D,16(IX)	;  GET SUSTAIN LEVEL
+	SUB	D
+	JR	NC,SOFEV5
+	XOR	A
+	
+SOFEV5:
+	OR	A
+	LD	11(IX),A
+	JR	NZ,SOFEV7
+	LD	A,6(IX)
+	AND	#0b10001111
+	LD	6(IX),A	; END OF ENVE
+	JR	SOFEV7
+	
+SOFEV9:
+	LD	A,11(IX)
+	LD	D,17(IX)    ; GET REREASE
+	SUB	D
+	JR	NC,SOFEVA
+	XOR	A
+SOFEVA:
+	LD	11(IX),A
+	
+; **	VOLUME CALCURATE	**
+	
+SOFEV7:
+	PUSH	HL
+	LD	E,11(IX)
+	LD	D,#0
+	LD	HL,#0
+	LD	A,6(IX)	; GET VOLUME
+	AND	#0b00001111
+	INC	A
+	LD	B,A
+SOFEV6:
+	ADD	HL,DE
+	DJNZ	SOFEV6
+	LD	A,H
+	POP	HL
+	BIT	6,31(IX)
+	RET	NZ
+	BIT	5,33(IX)
+	RET	Z
+	ADD	A,17(IX)
+	SRL	A
+	RET
+	
+; **	ｴﾝｿｳ ｵﾜﾘ	**
+	
+FMEND:
+	LD	2(IX),L
+	LD	3(IX),H
+	LD	A,(PCMFLG)
+	OR	A
+	JR	NZ,PCMEND
+	CALL	KEYOFF
+	RET
+PCMEND:
+	LD	DE,#0xb00
+	CALL	PCMOUT
+	LD	DE,#0x100
+	CALL	PCMOUT
+	LD	DE,#0x21
+	CALL	PCMOUT
+	RET
+SSGEND:
+	LD	2(IX),L
+	LD	3(IX),H
+	CALL	SKYOFF
+	RES	7,31(IX)	; RESET LFO FLAG
+	RET
+	
+	
+	
+; **   VOLUME OR FADEOUT etc RESET   **
+	
+WORKINIT:
+	XOR	A
+	LD	(C2NUM),A
+	LD	(CHNUM),A
+	LD	(PVMODE),A
+	
+	LD	A,(MUSICNUM)
+	LD	HL,#MU_TOP
+WI1:
+	LD	DE,#MAXCH*4
+	OR	A
+	JR	Z,WI2
+	INC	HL
+	ADD	HL,DE
+	LD	E,(HL)
+	INC	HL
+	LD	D,(HL)
+	LD	HL,#MU_TOP
+	ADD	HL,DE
+	DEC	A
+	JR	WI1
+WI2:
+	LD	A,(HL)
+	LD	(TIMER_B),A
+	INC	HL
+	LD	(TB_TOP),HL
+	
+	LD	B,#6
+	LD	IX,#CH1DAT
+WI4:
+	PUSH	BC
+	CALL	FMINIT
+	LD	DE,#WKLENG
+	ADD	IX,DE
+	POP	BC
+	DJNZ	WI4
+	
+	XOR	A
+	LD	(CHNUM),A
+	LD	IX,#DRAMDAT
+	CALL	FMINIT
+	
+	XOR	A
+	LD	(CHNUM),A
+	LD	B,#4
+	LD	IX,#CHADAT
+WI6:
+	PUSH	BC
+	CALL	FMINIT
+	LD	DE,#WKLENG
+	ADD	IX,DE
+	POP	BC
+	DJNZ	WI6
+	RET
+	
+	
+FMINIT:
+	PUSH	IX
+	POP	HL
+	LD	E,L
+	LD	D,H
+	INC	DE
+	LD	(HL),#0
+	LD	BC,#WKLENG-1
+	LDIR
+	
+	LD	(IX),#1
+	LD	6(IX),#0
+	
+; ---	POINTER ﾉ ｻｲｾｯﾃｲ	---
+	
+	LD	HL,(TB_TOP)	; HL=TABLE TOP ADR (Ch)
+	
+	LD	E,(HL)
+	INC	HL
+	LD	D,(HL)
+	INC	HL
+	PUSH	HL
+	LD	HL,#MU_TOP
+	ADD	HL,DE
+	LD	2(IX),L
+	LD	3(IX),H
+	POP	HL
+	LD	E,(HL)
+	INC	HL
+	LD	D,(HL)
+	LD	A,E
+	OR	D
+	JR	Z,FMI2
+	LD	HL,#MU_TOP
+	ADD	HL,DE
+	LD	4(IX),L
+	LD	5(IX),H
+FMI2:
+	LD	HL,#C2NUM
+	INC	(HL)
+	LD	HL,(TB_TOP)
+	LD	DE,#4
+	ADD	HL,DE
+	LD	(TB_TOP),HL
+	
+	LD	A,(CHNUM)
+	CP	#3
+	JR	NC,SSINIT
+	
+	LD	8(IX),A
+	INC	A
+	LD	(CHNUM),A
+	RET
+	
+; ---   FOR SSG   ---
+	
+SSINIT:
+	ADD	A,#5
+	LD	7(IX),A
+	LD	A,(CHNUM)
+	SUB	#3
+	ADD	A,A
+	LD	8(IX),A
+	
+	LD	A,(CHNUM)
+	INC	A
+	LD	(CHNUM),A
+	RET
+	
+	
+; **	CHANGE SE MODE	**
+	
+TO_NML:
+	LD	A,#0x38
+	LD	(PLSET1+1),A
+	LD	A,#0x3A
+TNML2:
+	LD	(PLSET2+1),A
+	LD	D,#0x27
+	LD	E,A
+	CALL	PSGOUT
+	RET
+TO_EFC:
+	LD	A,#0x78
+	LD	(PLSET1+1),A
+	LD	A,#0x7A
+	JR	TNML2
+	
+	
+; ***	ADPCM	PLAY	***
+	
+	;	IN:(STTADR)<=ｻｲｾｲ ｽﾀｰﾄ ｱﾄﾞﾚｽ
+	;	   (ENDADR)  <=ｻｲｾｲ ｴﾝﾄﾞ ｱﾄﾞﾚｽ
+	;	   (DELT_N)<=ｻｲｾｲ ﾚｰﾄ
+	
+PLAY:
+	LD	A,(READY)
+	OR	A
+	RET	Z
+	
+	PUSH	HL
+	
+	LD	DE,#0xb00
+	CALL	PCMOUT
+	LD	DE,#0x100
+	CALL	PCMOUT
+	
+	LD	DE,#0x21
+	CALL	PCMOUT
+	LD	DE,#0x1008	;
+	CALL	PCMOUT		;
+	LD	DE,#0x1080	;
+	CALL	PCMOUT		; INIT
+	
+	LD	HL,(STTADR)
+	LD	D,#2
+	LD	E,L
+	CALL	PCMOUT		; START ADR
+	INC	D
+	LD	E,H
+	CALL	PCMOUT
+	
+	LD	HL,(ENDADR)
+	LD	D,#4
+	LD	E,L
+	CALL	PCMOUT		; END ADR
+	INC	D
+	LD	E,H
+	CALL	PCMOUT
+	
+	LD	D,#0x9
+	LD	A,(DELT_N)	; ｻｲｾｲ ﾚｰﾄ ｶｲ
+	LD	E,A
+	CALL	PCMOUT
+	LD	D,#0x0A
+	LD	A,(DELT_N+1)	; ｻｲｾｲ ﾚｰﾄ ｼﾞｮｳｲ
+	LD	E,A
+	CALL	PCMOUT
+	
+	LD	DE,#0xa0
+	CALL	PCMOUT
+	
+	LD	D,#0x0B
+	LD	E,6(IX)
+	LD	A,(TOTALV)
+	ADD	A,A
+	ADD	A,A
+	ADD	A,E
+	CP	#250
+	JR	C,PL1
+	XOR	A
+PL1:
+	LD	E,A
+	LD	A,(PVMODE)
+	OR	A
+	JR	Z,PL2
+	LD	A,7(IX)
+	ADD	A,E
+	LD	E,A
+PL2:
+	CALL	PCMOUT		; VOLUME
+	
+	LD	D,#0x1
+	LD	A,(PCMLR)
+	RRCA
+	RRCA
+	AND	#0b11000000
+	LD	E,A
+	CALL	PCMOUT		; 1 bit TYPE,L&R OUT
+	
+	LD	A,(PCMNUM)
+	LD	(P_OUT),A	; ｼﾝｺﾞｳﾀﾞｽ
+	
+	POP	HL
+	RET
+	
+	
+; ***	ADPCM	OUT	***
+	
+PCMOUT:
+	PUSH	BC
+	
+	LD	A,(PORT13+1)
+	LD	C,A
+PCMO2:
+	IN	A,(C)
+	JP	M,PCMO2
+	
+	OUT	(C),D
+PCMO3:
+	IN	A,(C)
+	JP	M,PCMO3
+	INC	C
+	
+	OUT	(C),E
+	
+	POP	BC
+	RET
+	
+INFADR:
+	LD	IX,#NOTSB2
+	RET
+	
+; **	ﾜﾘｺﾐ ｾｯﾃｲ/ﾎﾞｰﾄﾞ ﾁｪｯｸ ｿﾉﾀ	**
+	
+CHK:
+	XOR	A
+	LD	(NOTSB2),A
+	
+	LD	HL,#TYPE1
+	LD	DE,#M_VECTR
+	LDI
+	LDI
+	LDI
+	
+	LD	C,#0x44
+	CALL	STT1
+	DEC	A
+	JR	Z,STTE
+	LD	C,#0xa8
+	CALL	STT1
+	DEC	A
+	JR	Z,STT2
+	LD	(NOTSB2),A
+	JR	STTE
+STT2:
+	LD	HL,#TYPE2
+	LD	DE,#M_VECTR
+	LDI
+	LDI
+	LDI
+	JR	STTE
+	
+; --	CHECK BORD TYPE	--
+	
+STT1:
+	LD	A,#0xff
+	OUT	(C),A
+	PUSH	BC
+	POP	BC
+	INC	BC
+	IN	A,(C)
+	RET
+	
+STTE:
+	RET
+	
+	
+; **	MUSIC WORK	**
+	
+NOTSB2:	.db	0
+PVMODE:	.db	0	;PCMvolMODE
+READY:	.db	0	;KEYON ENA/DISA
+P_OUT:	.db	0
+M_VECTR:.db	0	;32H OR AAH
+PORT13:	.dw	0	;44H OR A8H
+TOTALV:	.db	0
+FDCO:	.db	0,0
+	
+SSGF1:			;  SSG 4-6CH  PLAY FLAG
+	.db	0
+DRMF1:	.db	0
+KEYBUF:	.db	0
+FMPORT:	.db	0
+FNUM:	.dw	0
+TYPE1:	.db	#0x32,0x044,0x046
+TYPE2:	.db	#0xaa,0x0A8,0x0AC
+	
+	
+; **	ﾎﾞﾘｭｰﾑ ﾃﾞｰﾀ   **
+
+FMVDAT:					; ﾎﾞﾘｭｰﾑ ﾃﾞｰﾀ (FM)
+	.db	0x36,0x33,0x30,0x2D
+	.db	0x2A,0x28,0x25,0x22		;  0,  1,  2,  3
+	.db	0x20,0x1D,0x1A,0x18		;  4,  5,  6,  7
+	.db	0x15,0x12,0x10,0x0D		;  8,  9, 10, 11
+	.db	0x0A,0x08,0x05,0x02		; 12, 13, 14, 15
+
+CRYDAT:			; ｷｬﾘｱ / ﾓｼﾞｭﾚｰﾀ ﾉ ﾃﾞｰﾀ
+	.db	0x08	;
+	.db	0x08	; ｶｸ ﾋﾞｯﾄ ｶﾞ ｷｬﾘｱ/ﾓｼﾞｭﾚｰﾀ ｦ ｱﾗﾜｽ
+	.db	0x08	;
+	.db	0x08	; Bit=1 ｶﾞ ｷｬﾘｱ
+	.db	0x0C	;      0 ｶﾞ ﾓｼﾞｭﾚｰﾀ
+	.db	0x0E	;
+	.db	0x0E	; Bit0=OP 1 , Bit1=OP 2 ... etc
+	.db	0x0F	;
+	
+; **	PMS/AMS/LR DATA	**
+	
+PALDAT:
+	.db	#0xc0
+	.db	#0xc0
+	.db	#0xc0
+	.db	0	; DUMMY
+	.db	#0xc0
+	.db	#0xc0
+	.db	#0xc0
+PCMLR:
+	.db	0
+	
+; **	SOUND WORK (FM)	**
+CH1DAT:
+	.db	1	; LENGTH ｶｳﾝﾀｰ		IX+ 0
+	.db	24	; ｵﾝｼｮｸ ﾅﾝﾊﾞｰ		1
+	.dw	0	; DATA ADDRES WORK	2,3
+	.dw	0	; DATA TOP ADDRES	4,5
+	.db	10	; VOLUME DATA		6
+	.db	0	; ｱﾙｺﾞﾘｽﾞﾑ No.		7
+	.db	0	; ﾁｬﾝﾈﾙ ﾅﾝﾊﾞｰ          	8
+	.dw	0	; ﾃﾞﾁｭｰﾝ DATA		9,10
+	.db	0	;			11
+	.db	0	; for ﾘﾊﾞｰﾌﾞ		12
+	.ds	5	; SOFT ENVE DUMMY	13-17
+	.db	0	; qｵﾝﾀｲｽﾞ		18
+
+	.db	0	; LFO DELAY		19
+	.db	0	; WORK			20
+	.db	0	; LFO COUNTER		21
+	.db	0	; WORK			22
+	.dw	0	; LFO ﾍﾝｶﾘｮｳ 2BYTE	23,24
+	.dw	0	; WORK			25,26
+
+	.db	0	; LFO PEAK LEVEL	27
+	.db	0	; WORK			28
+	.db	0	; FNUM1 DATA		29
+	.db	0	; B/FNUM2 DATA		30
+	.db	#0b00000001	;bit 7=LFO FLAG	31
+	
+			; bit	6=KEYOFF FLAG
+			;	5=LFO CONTINUE FLAG
+			;	4=TIE FLAG
+			;	3=MUTE FLAG
+			;	2=LFO 1SHOT FLAG
+			;
+			;	0=1LOOPEND FLAG
+	.db 	0	; BEFORE CODE		32
+	.db	0	; bit	6=		33
+			;	5=REVERVE FLAG
+			;	4=REVERVE MODE
+	.dw	0	;	ﾘﾀｰﾝｱﾄﾞﾚｽ	34,35
+	.db	0,0     ; 36,37 (ｱｷ)
+CH2DAT:
+	.db	1
+	.db	24
+	.dw	#0x0
+	.dw	#0x0
+	.db	10
+	.db	0
+	.db	1
+	.dw	#0x0
+	.ds	7
+	.db	0	;18
+
+	.db	0
+	.db	0
+	.db	0
+	.db	0
+	.dw	0
+	.dw	0
+
+	.db	0
+	.db	0
+	.db	0
+	.db	0
+	.db	#0b00000010
+	.dw	0,0,0
+CH3DAT:
+	.db	1
+	.db	24
+	.dw	#0x0
+	.dw	#0x0
+	.db	10
+	.db	0
+	.db	2
+	.dw	#0x0
+	.ds	7
+	.db	0	;18
+
+	.db	0
+	.db	0
+	.db	0
+	.db	0
+	.dw	0
+	.dw	0
+
+	.db	0
+	.db	0
+	.db	0
+	.db	0
+	.db	#0b00000011
+	.dw	0,0,0
+	
+; **	WORK (SSG)	**
+
+CH4DAT:
+	.db	1	; COUNTER WORK		0
+	.db	0	; ｵﾝｼｮｸ No.		1
+	.dw	#0x0	; DATA ADRS WORK	2,3
+	.dw	#0x0	; DATA TOP ADRS		4,5
+	.db	8	; CURENT VOLUME(bit0-3)	6
+			; bit 4 = attack flag
+			; bit 5 = decay flag
+			; bit 6 = sustain flag
+			; bit 7 = soft envelope flag
+	
+	.db	8	; VOL.REG.No.		7
+	.db	0       ; CHANNEL No.          	8
+	.dw	0	; FOR DETUNE		9,10
+	.db	0	; SOFT ENVE COUNTER	11
+	.ds	6	; SOFT ENVE		12-17
+	
+	.db	0	; COUNTER OF 'q'	18
+	
+	.db	0	; LFO DELAY		19
+	.db	0	; WORK			20
+	.db	0	; LFO COUNTER		21
+	.db	0	; WORK			22
+	.dw	0	; LFO ﾍﾝｶﾘｮｳ 2BYTE	23,24
+	.dw	0	; WORK			25,26
+
+	.db	0	; LFO PEAK LEVEL	27
+	.db	0	; WORK			28
+	.db	0	; FNUM1 DATA		29
+	.db	0	; B/FNUM2 DATA		30
+	.db	#0b00000100	; bit 7=LFO FLAG	31
+			; bit	6=KEYOFF FLAG
+			; bit	5=LFO CONTINUE FLAG
+			; bit	4=TIE FLAG
+			;	3=MUTE FLAG
+	
+			;	0=1LOOPEND FG
+	.db	0	; BEFORE CODE		32
+	.db      0       ; bit 7 = HARD ENVE FLAG 33
+			; bit 0-3 = HARD ENVE TYPE
+	.dw	0
+	.db	0,0
+
+CH5DAT:
+	.db	1
+	.db	0
+	.dw	#0x0
+	.dw	#0x0
+	.db	8
+	
+	.db	9
+	.db	2
+	.dw	0
+	.db	0
+	.ds	6
+	
+	.db	0
+	
+	.db	0
+	.db	0
+	.db	0
+	.db	0
+	.dw	0
+	.dw	0
+	
+	.db	0
+	.db	0
+	.db	0
+	.db	0
+	.db	#0b00000101
+	.dw	0,0,0
+	
+CH6DAT:
+	.db	1
+	.db	0
+	.dw	#0x0
+	.dw	#0x0
+	.db	8
+	
+	.db	10
+	.db	4
+	.dw	0
+	.db	0
+	.ds	6
+	
+	.db	0
+	
+	.db	0
+	.db	0
+	.db	0
+	.db	0
+	.dw	0
+	.dw	0
+	
+	.db	0
+	.db	0
+	.db	0
+	.db	0
+	.db	#0b00000110
+	.dw	0,0,0
+	
+DRAMDAT:
+	.db	1,0
+	.dw	0,0
+	.db	10,0,2
+	.dw	0
+	.ds	7
+	.db	0	;18
+	.ds	19
+CHADAT:
+	.db	1,0
+	.dw	0,0
+	.db	10,0,2
+	.dw	0
+	.ds	7
+	.db	0	;18
+	.ds	19
+CHBDAT:
+	.db	1,0
+	.dw	0,0
+	.db	10,0,2
+	.dw	0
+	.ds	7
+	.db	0	;18
+	.ds	19
+CHCDAT:
+	.db	1,0
+	.dw	0,0
+	.db	10,0,2
+	.dw	0
+	.ds	7
+	.db	0	;18
+	.ds	19
+PCMDAT:
+	.db	1,0
+	.dw	0,0
+	.db	10,0,2
+	.dw	0
+	.ds	7
+	.db	0	;18
+	.ds	19
+	
+RHYTHM:	.db	0
+	
+WKLENG	.equ	CH2DAT-CH1DAT
+	
+; **	PSG REGISTOR WORK	**
+	
+PREGBF:
+	.db	0,0,0,0,0,0,0,0,0
+INITPM:
+	.db	0,0,0,0,0,56,0,0,0
+	
+; **	SE MODE(MODE2) ﾉ ﾃﾞﾁｭｰﾝ ﾜｰｸ	**
+
+DETDAT:
+	.db	0	;		OP1
+	.db	0	;		OP2
+	.db	0	;		  3
+	.db	0	;		  4
+	
+; **	DRAM VOLUME DATA	**
+	
+DRMVOL:
+	.db	#0xc0	; BASS
+	.db	#0xc0	; SNEA
+	.db	#0xc0	; SYMB
+	.db	#0xc0	; HI-HAT
+	.db	#0xc0	; TAM
+	.db	#0xc0	; RIM
+	
+NEWFNM:
+	.dw	0
+OP_SEL:
+	.db	#0xa6,#0x0AC,#0x0AD,#0x0AE	; OP 4,3,1,2
+	
+CHNUM:
+	.db	0
+C2NUM:	.db	0
+TB_TOP:
+	.dw	0
+TIMER_B:
+	.db	100
+	
+	
+; ***	ADPCM WORK	***
+	
+	
+PCMNMB:		; C-B ﾏﾃﾞ ﾉ ｻｲｾｲ ｻﾝﾌﾟﾘﾝｸﾞ ﾚｰﾄ
+	.dw	#0x49ba+200,#0x4E1C+200,#0x52C1+200,#0x57AD+200
+	.dw	#0x5ce4+200,#0x626A+200,#0x6844+200,#0x6E77+200
+	.dw	#0x7509+200,#0x7BFE+120,#0x835E+200,#0x8B2D+200
+	
+STTADR:
+	.dw	0
+ENDADR:
+	.dw	0
+DELT_N:
+	.dw	0	; ｻｲｾｲ ﾚｰﾄ
+PCMNUM:
+	.db	0
+PCMFLG:	.db	0
+	
+FNUMB:
+	.dw	0x26A,0x28F,0x2B6,0x2DF,0x30B,0x339
+	.dw 0x36A,0x39E,0x3D5,0x410,0x44E,0x48F
+	
+; **	ｴｽｹｰﾌﾟ ｼｮﾘ	**
+	
+ESC_PRC:
+	LD	C,A
+	LD	A,(KEYBUF)
+	LD	B,A
+	LD	A,C
+	LD	(KEYBUF),A
+	CP	B
+	RET	Z
+	BIT	7,A
+	RET	NZ
+	LD	A,(ESCAPE)
+	CPL
+	LD	(ESCAPE),A
+	CALL	AKYOFF
+	CALL	SSGOFF
+	LD	A,(T_FLAG)
+	CPL
+	LD	(T_FLAG),A
+	IN	A,(8)
+	BIT	7,A
+	RET	NZ
+	CALL	MSTOP
+	RET
+	
+; **	PRINT TIME	**
+	
+TIME:
+	LD	A,(T_FLAG)
+	OR	A
+	JR	Z,TIME1
+	
+	CALL	GETTIME
+	LD	HL,#0xf00f
+	CALL	CULSEC
+	LD	DE,(ALLSEC)
+	AND	A
+	SBC	HL,DE
+	CALL	CULTIM
+	CALL	PTIME
+TIME1:
+	RET
+	
+PTIME:
+	LD	A,(SEC)
+	LD	DE,#0xf3c8+60
+	CALL	PTIME1
+	LD	A,(MIN)
+	LD	DE,#0xf3c8+57
+	CALL	PTIME1
+	RET
+PTIME1:
+	LD	L,A
+	LD	H,#0
+	CALL	HEXDEC
+	INC	HL
+	INC	HL
+	INC	HL
+	LDI
+	LDI
+	RET
+	
+; **	TIME STOP	**
+	
+TSC:
+	LD	C,#11
+	LD	B,#11
+	LD	A,#1
+TSC2:
+	PUSH	BC
+	LD	B,A
+	CALL	WKGET
+	POP	BC
+	BIT	0,31(IX)
+	JR	Z,TSC3
+	DEC	C
+TSC3:
+	INC	A
+	DJNZ	TSC2
+	LD	A,C
+	OR	A
+	RET	NZ
+	LD	(T_FLAG),A
+	RET
+	
+; --	Breg.CHﾉ ﾜｰｸｱﾄﾞﾚｽ ｦ ｶｴｽ	--
+	
+	;IN:B<=1-11
+	
+	
+WKGET:
+	PUSH	DE
+	LD	IY,#CH1DAT-36
+	LD	IX,#CH1DAT-WKLENG
+	LD	DE,#WKLENG
+WG2:
+	ADD	IX,DE
+	DJNZ	WG2
+	POP	DE
+	RET
+	
+; **	ｵﾝｼｮｸｦ ﾜｰｸﾆｶｸ(#0x8b00->)	**
+	
+PUTWK:
+	LD	HL,#0x8b00
+	LD	A,D
+	SUB	#0x30
+	LD	D,A
+	CP	#0x90-0x30
+	RET	NC
+	LD	A,(FMPORT)
+	OR	A
+	JR	Z,PW2
+	LD	A,D
+	ADD	A,#0x90-0x30
+	LD	D,A
+PW2:
+	LD	A,D
+	ADD	A,L
+	LD	L,A
+	ADC	A,H
+	SUB	L
+	LD	H,A
+	LD	(HL),E
+	RET

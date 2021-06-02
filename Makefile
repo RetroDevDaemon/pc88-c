@@ -41,8 +41,9 @@ binary: CODE=0xc000
 APPNAME=app.d88
 
 ## EMULATOR EXECUTABLE ##
-#EMUEXE=#C:\Users\Bent\Downloads\m88\m88x5.exe 
+#EMUEXE=C:\Users\Bent\Downloads\m88\m88x5.exe 
 EMUEXE=~/Downloads/quasi88-065 app.d88
+#EMUEXE=quasi88 app.d88
 
 # This is updated when new .c files are added
 PC88CFILES=out/crt0.rel \

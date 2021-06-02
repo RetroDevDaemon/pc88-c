@@ -31,15 +31,16 @@ COLOR Text screen color mode: 0-Color 1-B&W
 #define SYS_CTL_REGA    0x30
 /* SYSTEM CONTROL REGISTER B //
 ** WRITE: System Control Port
-Bit	    7	6	5	    4	    3	    2	    1	    0
-                25LINE	HCOLOR	GRAPH	RMODE	MMODE	200LINE
+Bit	    7	6	5	      4	      3	    2	    1	    0
+            25LINE	HCOLOR	GRAPH	RMODE	MMODE	200LINE
 25LINE Hi-res 25 row mode: 0-All other modes 1-ON
 HCOLOR Graphic color mode: 0-B&W 1-Color
 GRAPH Graphic control: 0-Graphic screens off 1-ON
 RMODE ROM mode: 0-N88-BASIC 1-N-BASIC
 MMODE RAM mode: 0-ROM/RAM 1-64K RAM
 200LINE	Hi-res CRT mode: 0-640×400 1-640x200
-  Recommended values: 0b000110x1 
+  Recommended values: 0b000110x1
+                      0b00010011 
 ** READ: Dipswitch status
 Bit	7	    6	    5	    4	    3	    2	    1	    0
     SW4-S2	SW3-S0	SW2-S6	SW2-S5	SW2-S4	SW2-S3	SW2-S2	SW2-S1
@@ -54,6 +55,12 @@ SW2-S2 Parity bit: 0-Even 1-Odd
 SW2-S1 Parity check: 0-Party 1-No parity
 //*/
 #define SYS_CTL_REGB    0x31
+#define LINES25 (1<<5)
+#define HCOLOR (1<<4)
+#define GRAPH (1<<3)
+#define RMODE (1<<2)
+#define MMODE (1<<1)
+#define LINE200 (1)
 /* MODE SET REGISTER
 [R/W] These registers are not decoded on systems
     before the PC-8801mkII. On models after SR,
