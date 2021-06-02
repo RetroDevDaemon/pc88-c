@@ -9,6 +9,15 @@
 //
 void Vblank() __critical __interrupt;
 inline void SetVBLIRQ();
+void LoadFullscreenMap(u8* curMap);
+inline void GameInit();
+inline void CheckV2();
+
+//
+static u8 map_a[144];
+static u16* tiles[1];// = { &tile_01b_b[0] };
+// Tiles are 64*3 bytes (4x16x3)
+static u8* CURRENT_MAP;
 
 //
 inline void SetVBLIRQ()
@@ -37,6 +46,13 @@ inline void CheckV2()
     }
 }
 
+
+inline void GameInit()
+{
+    tiles[0] = &tile_01b_b[0];
+}
+
+
 //
 void main()
 {
@@ -52,25 +68,46 @@ void main()
 
 #define GAMEVIEW_W 16
 #define GAMEVIEW_H 9
-    // Game Init
+    // Game Init - sets up pointers, memcpys etc
+    GameInit();
+    
+    // clear map (testing)
+    u8 i;
+    for(i = 0; i < 144; i++) map_a[i] = 0;
+    
     // Disable graphic display        
+    SetIOReg(SYS_CTL_REGB, CTLB_STATUS_DEFAULT ^ GRAPH);
+    
     // trial: draw a tile : 01b is 32x16px : 20 x 12.5 tiles max
     // draw ALL tiles - draw all on one plane first 
-    u16* scr = (u16*)0xc000;
-    u16* til = (u16*)&tile_01b_b[0];
-    SetIOReg(SYS_CTL_REGB, CTLB_STATUS_DEFAULT ^ GRAPH);
+    LoadFullscreenMap(&map_a[0]);    
+    
+    // Enable mainram and graphics
+    SETBANK_MAINRAM()
+    SetIOReg(SYS_CTL_REGB, CTLB_STATUS_DEFAULT);
 
+
+    IRQ_ON 
+
+    while(1){ }
+}
+
+
+void LoadFullscreenMap(u8* curMap)
+{
+    u16* scr;// = (u16*)0xc000;
+    u16* til;// = tiles[0];
     SETBANK_BLUE()
     u8 yrow;
     u8 i;
-    u16 ofs;
+    //u16 ofs;
     for(yrow = 1; yrow < GAMEVIEW_H; yrow++)
     {
         u8 xrow;
         for(xrow = 1; xrow < GAMEVIEW_W; xrow++)
         {
             scr = (u16*)(0xc000 + (xrow * 4) + (yrow * 1280)); //80*16
-            til = (u16*)&tile_01b_b[0];
+            til = tiles[curMap[(yrow*GAMEVIEW_W)+xrow]];
             for(i = 0; i < 16; i++)
             {
                 *scr++ = *til++;
@@ -79,7 +116,6 @@ void main()
             }
         }
     }
-    
     SETBANK_RED()
     for(yrow = 1; yrow < GAMEVIEW_H; yrow++)
     {
@@ -87,7 +123,7 @@ void main()
         for(xrow = 1; xrow < GAMEVIEW_W; xrow++)
         {
             scr = (u16*)(0xc000 + (xrow * 4) + (yrow * 1280));
-            til = (u16*)&tile_01b_r[0];
+            til = tiles[curMap[(yrow*GAMEVIEW_W)+xrow]] + 32;
             for(i = 0; i < 16; i++)
             {
                 *scr++ = *til++;
@@ -96,7 +132,6 @@ void main()
             }
         }
     }
-    
     SETBANK_GREEN()
     for(yrow = 1; yrow < GAMEVIEW_H; yrow++)
     {
@@ -104,7 +139,7 @@ void main()
         for(xrow = 1; xrow < GAMEVIEW_W; xrow++)
         {
             scr = (u16*)(0xc000 + (xrow * 4) + (yrow * 1280));
-            til = (u16*)&tile_01b_g[0];
+            til = tiles[curMap[(yrow*GAMEVIEW_W)+xrow]] + 64;
             for(i = 0; i < 16; i++)
             {
                 *scr++ = *til++;
@@ -113,11 +148,4 @@ void main()
             }
         }
     }
-    SetIOReg(SYS_CTL_REGB, CTLB_STATUS_DEFAULT);
-    
-    SETBANK_MAINRAM()
-
-    IRQ_ON 
-
-    while(1){ }
 }
