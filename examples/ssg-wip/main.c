@@ -82,13 +82,17 @@ const u16 octavetwo[12] = {
     SSG_B2
 };
 
+typedef signed int fix_16s;
+#define FIXED16(n) ((fix_16s)((n) << 8))
+
+
 struct m88header { 
     u8 numSongs;
     u8* FMOfs;
     u16 binSize;
 };
 struct m88data { 
-    u8 tempo; 
+    fix_16s tempo; 
     u8* partOffsets[11];
     u16 partLoops[11];
     u8* dataEndLoc;
@@ -97,16 +101,20 @@ struct m88data {
 struct Song { 
     struct m88header songheader;
     struct m88data songdata;
-    s16 partLengths[11]; // TODO fill these in
+    s16 partLengths[11]; // TODO fill these in - at the moment not used.
     u8 ssg_instr[3];
     u8 ssg_mix;
-    u8 ssg_vol[3];
-    u16 ssg_tone_len[3]; // Counts down!
+    s8 ssg_vol[3];
+    s8 ssg_tone_len[3]; // Counts down!
     u8 ssg_oct[3];
     u8 ssg_tone[3];
     u16 ssg_loc[3];
+    bool part_over[3];
+    bool ssg_fading[3];
+    s8 ssg_base_vol[3];
 };
 struct Song curSong;
+signed int ticker;
 
 void LoadSong(const u8* song)
 {   // Load song header
@@ -121,8 +129,9 @@ void LoadSong(const u8* song)
     sh->binSize += (*sctr++*256);
     // Load song data 
     struct m88data* sd = (struct m88data*)&curSong.songdata;
-    sd->tempo = (u8)(((*sctr++)*6)/600); // how many measures per minute in timer-B format
-    for(i = 0; i < 11; i++)
+    sd->tempo = FIXED16(*sctr++); // how many bpm (60 << 8) = 15360. each frame, add FIXED16(60) to a counter. 
+    // when that counter exceeds FIXED16(sd->tempo), decrement the TONE LENGTH of every SSG by 1. 
+    for(i = 0; i < 11; i++) 
     {
         sd->partOffsets[i] = *sctr++;
         sd->partOffsets[i] += *sctr++ * 256;
@@ -133,17 +142,16 @@ void LoadSong(const u8* song)
     sd->dataEndLoc = *sctr++;
     sd->dataEndLoc += *sctr * 256;
     // end loading in song "headers"
-    curSong.ssg_loc[0] = 0;
-    curSong.ssg_tone_len[0] = 0;
-    curSong.ssg_loc[1] = 0;
-    curSong.ssg_tone_len[1] = 0;
-    curSong.ssg_loc[2] = 0;
-    curSong.ssg_tone_len[2] = 0;
+    sctr = &curSong.ssg_loc[0];
+    for(i = 0; i < 15; i++) *sctr++ = 0;
+    /*
+    fill the rest of the song struct with 0 */
 }
 
 
 void SetSSGInstrument(u8 chn, u8 instr)
 {
+    // Only 1 instrument is supported atm, generic piano 
     switch(chn)
     {
         case(0):
@@ -158,37 +166,69 @@ void SetSSGInstrument(u8 chn, u8 instr)
         case(0):
             break;
         case(1):
+            // 255 255 255 200 0 10
+            //    A     D    S   R
             break;
     }
 }
 
+
+#define M_SSGINSTRUMENT 0xf0 // @n
+#define M_SSGVOLUME 0xf1    // vn
+//#define M_SSGDETUNE 0xf2    // Dn
+//#define M_GATETIME 0xf3     // qn
+//#define M_SSGSOFTLFO 0xf4   // Mn1,n2,n3,n4
+#define M_STARTLOOP 0xf5    // [
+    // 0xf5 x2 x1 where x2x1 = distance in hex to end of loop
+#define M_ENDLOOP 0xf6      // ]n
+    // 0xf6 x1 x2 x3 x4 where x1=work x2=loop no x4x3 = dist in hex to loop start
+#define M_SSGMIXER 0xf7 
+//#define M_SSGNOISEFQ 0xf8   // wn
+//#define M_SETFLAG 0xf9      // #n
+//#define M_SSGSOFTENV 0xfa   // not used... this is instrument code
+//#define M_RELVOLUME 0xfb    // )n1 or (n2
+//#define M_MAKEINSTR 0xfc    // not used yet
+//#define M_SLUR 0xfd         // &
+//#define M_EXITLOOP 0xfe     // /
+    // x1 x2 where x2x1 is distance to loop ending (so its a jump)
+//#define M_SSGENVTYP 0xf1ff
+//#define M_SSGENVFRQ 0xf2ff
+//#define M_REVERB 0xf3ff
+//#define M_REVERBMODE 0xf4ff
+//#define M_REVERBSWITCH 0xf5ff
+#define null 0
+#define Null null 
+
 void PlaySong()
 {
+    u8 j;
     struct m88data* songdata = (struct m88data*)&curSong.songdata;
-    
 
-    for(u8 j = 0; j < 3; j++)
+    for(j = 0; j < 3; j++)
     {
-        if(curSong.ssg_tone_len[j] == 0)
+        if(curSong.ssg_tone_len[j] <= 0)
         {   // This means this channel is ready for another input
+            //curSong.ssg_fading[j] = false;
             u8 songby = *(songdata->partOffsets[3+j] + curSong.ssg_loc[j]);
-            if(songby == 0xf0) // set instrument
+            if(songby == M_SSGINSTRUMENT) // set instrument
             { 
                 curSong.ssg_loc[j]++;
                 songby = *(songdata->partOffsets[3+j] + curSong.ssg_loc[j]); // which?
-                // call set instrument for this channel TODO
+                // call set instrument for this channel TODO instrument defs in the mucom88 docs
                 curSong.ssg_instr[j] = songby;
                 //SetSSGInstrument(j, songby);
             }
-            else if (songby == 0xf1)
+            else if (songby == M_STARTLOOP)
+            {
+                
+            }
+            else if (songby == M_SSGVOLUME)
             {
                 curSong.ssg_loc[j]++; // set ssg vol
                 songby = *(songdata->partOffsets[3+j] + curSong.ssg_loc[j]);
-                curSong.ssg_vol[j] = songby;
-                //SetIOReg(OPN_REG, CHA_AMP + j);
-                //SetIOReg(OPN_DAT, songby);
+                curSong.ssg_base_vol[j] = (songby - 2) & 0xf;
             }
-            else if (songby == 0xf7)
+            else if (songby == M_SSGMIXER)
             {
                 curSong.ssg_loc[j]++; // set SSG mixer
                 //[SSG] ミキサモード Pn (0:発音しない 1:トーン 2:ノイズ 3:トーン+ノイズ) - 9, 8, 1, 0
@@ -198,15 +238,18 @@ void PlaySong()
                 SetIOReg(OPN_REG, SSG_MIXER);
                 SetIOReg(OPN_DAT, curSong.ssg_mix);
             }
-            else if ((songby > 0) && (songby <= 0x7f))
+            else if ((songby > 0) && (songby < 128)) // play sound !!!
             {
-                curSong.ssg_loc[j]++; // play sound
-                curSong.ssg_tone_len[j] = songby; // first byte is length. 16 = 1/8 beat at 120T.
-                songby = *(songdata->partOffsets[3+j] + curSong.ssg_loc[j]);
-                curSong.ssg_oct[j] = (songby & 0xf0) >> 4; // second is tone
+                curSong.ssg_loc[j]++; 
+                curSong.ssg_tone_len[j] = songby; // first byte is length. 18h = 1/8 beat at 120T. LEN = 24, so 
+                songby = *(songdata->partOffsets[3+j] + curSong.ssg_loc[j]); // second byte is tone...
+                curSong.ssg_oct[j] = (songby & 0xf0) >> 4; 
                 curSong.ssg_tone[j] = (songby & 0x0f);
+                curSong.ssg_vol[j] = curSong.ssg_base_vol[j];
                 SetIOReg(OPN_REG, CHA_AMP + j);
-                SetIOReg(OPN_DAT, curSong.ssg_vol[j]);
+                SetIOReg(OPN_DAT, curSong.ssg_base_vol[j]);
+                //SetIOReg(OPN_REG, 0xc); // coarse envelope frequency adjustment (invesr, so lower = faster repeat)
+                //SetIOReg(OPN_DAT, 0b00000111);
                 switch(curSong.ssg_oct[j]+1){ 
                     case(2):
                         SetIOReg(OPN_REG, CHA_TONEL + (j*2));
@@ -241,34 +284,63 @@ void PlaySong()
                 }
             }
             else if ((songby > 0x80) && (songby < 0xf0))
-            {   // rest by setting volume to 0
-                SetIOReg(OPN_REG, CHA_AMP + j);
-                SetIOReg(OPN_DAT, 0);
-                curSong.ssg_tone_len[j] = (songby & 0b00111111); // 16 = 1/8
-                // a len of 16 we want to erase in 7.5 ticks (or 8).
-                // that is 8 frames, at 120 tempo is, 2 per frame.
+            {   // rest by setting volume to 0? (not needed when 1 instrument)
+                //SetIOReg(OPN_REG, CHA_AMP + j);
+                //SetIOReg(OPN_DAT, 0);
+                curSong.ssg_tone_len[j] = (songby & 0x7f); 
             }
-            else if (songby == 0)
+            else if (songby == null)
             {
                 SetIOReg(OPN_REG, CHA_AMP + j);
                 SetIOReg(OPN_DAT, 0);
                 curSong.ssg_loc[j]--;
-                curSong.ssg_vol[j] = 0;
+                curSong.part_over[j] = true;
             }
             curSong.ssg_loc[j]++;
         } 
-        else 
-        { 
-            curSong.ssg_tone_len[j] -= 1;
+        //else 
+        //{ 
+            //u8 tem = curSong.songdata.tempo;
+            //curSong.ssg_tone_len[j] -= 1;
+        //}
+    }
+    // Use this for tempo-exact timing!
+    ticker += FIXED16(60);
+    if(ticker >= curSong.songdata.tempo)
+    {
+        ticker -= curSong.songdata.tempo;
+        for(j = 0; j < 3; j++) 
+        {
+            if(curSong.ssg_tone_len[j] > 0) // is this tone still playing? 
+            {
+                curSong.ssg_tone_len[j]--;  // then tick it down
+                if(curSong.ssg_tone_len[j] < curSong.ssg_base_vol[j]) // am i OK to fade?
+                {
+                    curSong.ssg_fading[j] = true;
+                }
+                if(curSong.ssg_fading[j] == true)
+                {
+                    if(curSong.ssg_vol[j] > 1) // if I'm not at volume 0 yet... 
+                    {
+                        SetIOReg(OPN_REG, (CHA_AMP + j));
+                        SetIOReg(OPN_DAT, --curSong.ssg_vol[j]); // fade this channel more!
+                    }
+                    else 
+                        curSong.ssg_fading[j] = false;
+                }
+            }
         }
     }
-    /*bool stopq = true;
-    for(u8 s = 0; s < 3; s++){
-        if(curSong.ssg_vol[s] != 0){
-            stopq = false;
+    // if all 3 parts are done, then stop the song
+    bool keepPlaying = false;
+    for(j = 0; j < 3; j++)
+    {
+        if(curSong.part_over[j] == false) 
+        {
+            keepPlaying = true;
         }
     }
-    if(stopq) playingSong = false;*/
+    if(!keepPlaying) playingSong = false;
 }
 
 u32 idleCount;
@@ -318,7 +390,7 @@ void main()
     // Set up CurSong pointers
     LoadSong(&song[0]);
     playingSong = true;
-    
+    ticker = 0;
     // First, Write the address of the Vblank routine to the CRTC IRQ vector @ f302
     __asm 
         ld hl, #_Vblank

@@ -5,8 +5,13 @@
 CC=sdcc
 LD=sdldz80 
 AS=sdasz80
-CFLAGS=-Isrc -Isrc/lib 
-CMDFLAGS=#--cyclomatic
+CFLAGS=-Isrc -Isrc/lib
+OPTIMIZE=0
+ifeq ($(OPTIMIZE), 1) 
+CMDFLAGS=--cyclomatic --max-allocs-per-node100000 --opt-code-speed
+else
+CMDFLAGS=--cyclomatic --max-allocs-per-node2000 --opt-code-size --fomit-frame-pointer
+endif
 PY=python3
 DEL=rm -rf
 
@@ -35,7 +40,8 @@ binary: CODE=0xc000
 
 88FLAGS=-mz80 \
 	--stack-loc $(STACK) --code-loc $(CODE) --data-loc $(DATA) \
-	--fomit-frame-pointer --no-std-crt0
+	--no-std-crt0\
+	#--fomit-frame-pointer 
 
 ## DISC FILE NAME ##
 APPNAME=app.d88
@@ -60,7 +66,7 @@ PC88CFILES=out/crt0.rel \
 #PC88CFILES=out/crt0.rel out/ioreg.rel out/textmode.rel out/sys.rel
 
 
-out/%.rel: src/lib/%.c
+out/%.rel: src/lib/%.c 
 	@if [ ! -d "out" ]; then mkdir out; fi
 	sdcc -c -mz80 $(CFLAGS) -o $@ $<
 
@@ -73,8 +79,8 @@ default: $(PROJECT) $(PC88CFILES)
 	$(PY) tools/hex2bin.py out/main.ihx main.bin
 	$(PY) tools/maked88.py $(APPNAME) src/ipl.bin 0 0 1
 	$(PY) tools/maked88.py $(APPNAME) main.bin 0 0 2	
-	#$(PY) tools/maked88.py $(APPNAME) mus.drv 10 0 1
-	#$(PY) tools/maked88.py $(APPNAME) mtes 6 0 1
+#	$(PY) tools/maked88.py $(APPNAME) mus.drv 10 0 1
+#	$(PY) tools/maked88.py $(APPNAME) mtes 6 0 1
 	$(EMUEXE)
 
 #m88bin: 
