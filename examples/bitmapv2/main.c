@@ -4,13 +4,13 @@
 
 void main()
 {
-	IRQ_OFF
+	IRQ_OFF;
 
 	ExpandedGVRAM_On();
     EnableALU();
 
 	// Start by loading the bitmap and checking opcode #1
-	u8* bptr = &lum[0];
+	u8* bptr = (u8*)&lum[0];
 	u8 to_c = 0;
 	u8 num = 0;
 	if(*bptr == 0xfd) // copy next byte byte+2 times
@@ -20,10 +20,10 @@ void main()
 		num = *bptr++;
 	}
 	u8 i;
-	u8* vr = 0xc000;
+	u8* vr = (u8*)0xc000;
 	for(i = 0; i < num; i++)
 	{
-		*vr++ = (to_c & 0xf0) >> 4;
+		*vr++ = (u8)((to_c & 0xf0) >> 4);
 		
 	}
 
@@ -31,6 +31,6 @@ void main()
     ExpandedGVRAM_Off();    // required after V2 draw
     
     SETBANK_MAINRAM()
-    IRQ_ON
+    IRQ_ON;
 	while(1){}
 }

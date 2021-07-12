@@ -10,13 +10,13 @@ OPTIMIZE=0
 ifeq ($(OPTIMIZE), 1) 
 CMDFLAGS=--cyclomatic --max-allocs-per-node100000 --opt-code-speed
 else
-CMDFLAGS=--cyclomatic --max-allocs-per-node2000 --opt-code-size --fomit-frame-pointer
+CMDFLAGS=#--cyclomatic --max-allocs-per-node2000 --fomit-frame-pointer
 endif
 PY=python3
 DEL=rm -rf
 
 ## USED SECTORS ON DISC ##
-USEDSEC=0x5f
+USEDSEC=0x9f
 # If this number isn't correct, 
 # the app won't load right!
 # Make sure it's big enough!
@@ -79,8 +79,6 @@ default: $(PROJECT) $(PC88CFILES)
 	$(PY) tools/hex2bin.py out/main.ihx main.bin
 	$(PY) tools/maked88.py $(APPNAME) src/ipl.bin 0 0 1
 	$(PY) tools/maked88.py $(APPNAME) main.bin 0 0 2	
-#	$(PY) tools/maked88.py $(APPNAME) mus.drv 10 0 1
-#	$(PY) tools/maked88.py $(APPNAME) mtes 6 0 1
 	$(EMUEXE)
 
 #m88bin: 
