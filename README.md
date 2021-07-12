@@ -33,7 +33,7 @@ Octave, tempo, volume, repeat, SSG mixer control, noise frequency, flag byte.<br
 (Technically @ is supported but does nothing.)<br>
 To use the player, simply include the <b>compiled</b> song anywhere in code<br>
 and use the LoadSong() function to load the song data into predefined structs, then<br>
-PlaySong() every vertical blank to play it.<br><br>
+PlaySong() every vertical blank to play it. <b>Refer to examples/ssg-wip</b>.<br><br>
 -Some small bugfixes and optimizations.
 
 ## Important: requires SDCC to be on the path<br>
