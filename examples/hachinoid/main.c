@@ -360,7 +360,7 @@ inline void GAME_INIT()
 }
 void CPUWAIT(u16 n)
 {
-    for(u32 i = n * 1000; i > 0; i--) { 
+    for(s32 i = n * 1000; i > 0; i--) { 
         __asm__("nop");
     }
 }

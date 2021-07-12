@@ -180,6 +180,55 @@
 #define SSG_A6 (u16)(CPU4MHZ / (A6_440 * 32))
 #define SSG_A6S (u16)(CPU4MHZ / (A6S_440 * 32))
 #define SSG_B6 (u16)(CPU4MHZ / (B6_440 * 32))
+
+
+static const u16 octavetwo[12] = {
+    SSG_C2, SSG_C2S,
+    SSG_D2, SSG_D2S, 
+    SSG_E2,
+    SSG_F2, SSG_F2S,
+    SSG_G2, SSG_G2S,
+    SSG_A2, SSG_A2S,
+    SSG_B2
+};
+static const u16 octavethree[12] = {
+    SSG_C3, SSG_C3S,
+    SSG_D3, SSG_D3S, 
+    SSG_E3,
+    SSG_F3, SSG_F3S,
+    SSG_G3, SSG_G3S,
+    SSG_A3, SSG_A3S,
+    SSG_B3
+};
+static const u16 octavefour[12] = {
+    SSG_C4, SSG_C4S,
+    SSG_D4, SSG_D4S,
+    SSG_E4,
+    SSG_F4, SSG_F4S,
+    SSG_G4, SSG_G4S,
+    SSG_A4, SSG_A4S,
+    SSG_B4
+};
+static const u16 octavefive[12] = {
+    SSG_C5, SSG_C5S,
+    SSG_D5, SSG_D5S, 
+    SSG_E5,
+    SSG_F5, SSG_F5S,
+    SSG_G5, SSG_G5S,
+    SSG_A5, SSG_A5S,
+    SSG_B5
+};
+static const u16 octavesix[12] = {
+    SSG_C6, SSG_C6S,
+    SSG_D6, SSG_D6S, 
+    SSG_E6,
+    SSG_F6, SSG_F6S,
+    SSG_G6, SSG_G6S,
+    SSG_A6, SSG_A6S,
+    SSG_B6
+};
+
+
 /***** Usage from examples/psg : ********
 // Play C4 on Ch A, vol 15, no envelope, mute all other
 SetIOReg(OPN_REG, CHA_TONEL);

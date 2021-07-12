@@ -16,6 +16,7 @@ while i < len(inby):
         ostr += '\n\t'
     i += 1
 ostr += '\n};\n'
-f = open(bn + '.h' , 'w')
-f.write(ostr)
-f.close()
+#f = open(bn + '.h' , 'w')
+#f.write(ostr)
+#f.close()
+print(ostr)

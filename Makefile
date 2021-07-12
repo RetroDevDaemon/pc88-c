@@ -5,13 +5,18 @@
 CC=sdcc
 LD=sdldz80 
 AS=sdasz80
-CFLAGS=-Isrc -Isrc/lib 
-CMDFLAGS=#--cyclomatic
+CFLAGS=-Isrc -Isrc/lib
+OPTIMIZE=0
+ifeq ($(OPTIMIZE), 1) 
+CMDFLAGS=--cyclomatic --max-allocs-per-node100000 --opt-code-speed
+else
+CMDFLAGS=#--cyclomatic --max-allocs-per-node2000 --fomit-frame-pointer
+endif
 PY=python3
 DEL=rm -rf
 
 ## USED SECTORS ON DISC ##
-USEDSEC=0x5f
+USEDSEC=0x9f
 # If this number isn't correct, 
 # the app won't load right!
 # Make sure it's big enough!
@@ -35,7 +40,8 @@ binary: CODE=0xc000
 
 88FLAGS=-mz80 \
 	--stack-loc $(STACK) --code-loc $(CODE) --data-loc $(DATA) \
-	--fomit-frame-pointer --no-std-crt0
+	--no-std-crt0\
+	#--fomit-frame-pointer 
 
 ## DISC FILE NAME ##
 APPNAME=app.d88
@@ -60,12 +66,12 @@ PC88CFILES=out/crt0.rel \
 #PC88CFILES=out/crt0.rel out/ioreg.rel out/textmode.rel out/sys.rel
 
 
-out/%.rel: src/lib/%.c
+out/%.rel: src/lib/%.c 
 	@if [ ! -d "out" ]; then mkdir out; fi
 	sdcc -c -mz80 $(CFLAGS) -o $@ $<
 
 
-default: $(PROJECT) $(PC88CFILES)
+default: clean $(PROJECT) $(PC88CFILES)
 	$(PY) tools/maked88.py $(APPNAME)
 	$(PY) tools/hexer.py src/ipl.bin 0x2f $(USEDSEC)
 	$(CC) $(88FLAGS) $(CFLAGS) $(CMDFLAGS) $(PROJECT)/main.c out/*.rel -o out/main.ihx
@@ -73,8 +79,6 @@ default: $(PROJECT) $(PC88CFILES)
 	$(PY) tools/hex2bin.py out/main.ihx main.bin
 	$(PY) tools/maked88.py $(APPNAME) src/ipl.bin 0 0 1
 	$(PY) tools/maked88.py $(APPNAME) main.bin 0 0 2	
-	#$(PY) tools/maked88.py $(APPNAME) mus.drv 10 0 1
-	#$(PY) tools/maked88.py $(APPNAME) mtes 6 0 1
 	$(EMUEXE)
 
 #m88bin: 

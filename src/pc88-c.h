@@ -120,6 +120,10 @@ void SetIOReg(u8 r, u8 v);
 /* Attributes must be set in ascending X order on each row. 
     Attribute #0 on each row is ALWAYS read as X=0, regardless of its actual value. */
 
+// VBl/Clk irqs
+void Vblank() __critical __interrupt;
+void ClockInterrupt() __critical __interrupt;
+
 // WAITVBLANK
 void Wait_VBLANK();
 // GETKEYDOWN
