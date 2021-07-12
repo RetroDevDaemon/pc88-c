@@ -71,7 +71,7 @@ out/%.rel: src/lib/%.c
 	sdcc -c -mz80 $(CFLAGS) -o $@ $<
 
 
-default: $(PROJECT) $(PC88CFILES)
+default: clean $(PROJECT) $(PC88CFILES)
 	$(PY) tools/maked88.py $(APPNAME)
 	$(PY) tools/hexer.py src/ipl.bin 0x2f $(USEDSEC)
 	$(CC) $(88FLAGS) $(CFLAGS) $(CMDFLAGS) $(PROJECT)/main.c out/*.rel -o out/main.ihx
