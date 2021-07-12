@@ -1,4 +1,4 @@
-# PC88-C (0.1.0)
+# PC88-C (0.1.1)
 
 # Overview 
 A very minimal framework for PC88 development using C. <br> 
@@ -10,7 +10,7 @@ https://discord.gg/Js3uUrc
 <br>
 ## To-Dos
 -V2 ALU optimizations<br>
--PSG, OPN/+A<br>
+-OPN/A FM<br>
 -Joystick<br>
 -Disk saving<br>
 -Kanji ROM, nado<br>
@@ -20,13 +20,19 @@ Manual part 1, overview: https://barelyconsciousgames.blogspot.com/2021/02/pc-88
 Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/pc88-c-frame-for-nec-pc-8801-part-2.html <br> 
 
 ## What's new
-0.1.0<br>
--Added clock-irq example<br>
--Added bin2c.py (converts binary to .h)<br>
--Added xbas.c<br>
-xbas.c should compile on pretty much any nix.<br>
-It allows you to transfer BASIC programs to PC-88 over USB-Serial.<br>
-Stay tuned for disk writing, ROM extraction, etc.!<br> 
+0.1.1<br>
+-Added minimal SSG support for MUCOM88 compiled files.<br>
+CURRENT SUPPORT:<br>
+Channels D, E, F (SSG) on octaves 2 through 6<br>
+Supported MML: 
+```
+Tone and rest control (a-g, ., r, >, <)
+o, t, v, [, ], P, w, #
+```
+<br>
+Octave, tempo, volume, repeat, SSG mixer control, noise frequency, flag byte.<br>
+(Technically @ is supported but does nothing.)
+-Small bugfixes and optimizations
 
 
 ## Important: requires SDCC to be on the path<br>
@@ -89,6 +95,14 @@ If properly made/installed, the normal make command should work :)<br>
 <br>
 
 ## Revision history
+0.1.0<br>
+-Added clock-irq example<br>
+-Added bin2c.py (converts binary to .h)<br>
+-Added xbas.c<br>
+xbas.c should compile on pretty much any nix.<br>
+It allows you to transfer BASIC programs to PC-88 over USB-Serial.<br>
+Stay tuned for disk writing, ROM extraction, etc.!<br> 
+
 0.0.14b<br>
 -Fixed SetCursorPos (wasn't updating ROWPOINTER)<br>
 -Added VERY BASIC math routines<br>
