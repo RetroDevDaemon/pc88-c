@@ -21,7 +21,7 @@ Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/
 
 ## What's new
 0.1.1<br>
--Added minimal SSG support for MUCOM88 compiled files.<br>
+-Added minimal SSG support for MUCOM88 compiled files!<br>
 CURRENT SUPPORT:<br>
 Channels D, E, F (SSG) on octaves 2 through 6<br>
 Supported MML: 
@@ -29,11 +29,12 @@ Supported MML:
 Tone and rest control (a-g, ., r, >, <)
 o, t, v, [, ], P, w, #
 ```
-<br>
 Octave, tempo, volume, repeat, SSG mixer control, noise frequency, flag byte.<br>
-(Technically @ is supported but does nothing.)
--Small bugfixes and optimizations
-
+(Technically @ is supported but does nothing.)<br>
+To use the player, simply include the <b>compiled</b> song anywhere in code<br>
+and use the LoadSong() function to load the song data into predefined structs, then<br>
+PlaySong() every vertical blank to play it.<br><br>
+-Some small bugfixes and optimizations.
 
 ## Important: requires SDCC to be on the path<br>
 If you have SDCC 4.1.0 and Python3, you should be able to build without issue.<br>
