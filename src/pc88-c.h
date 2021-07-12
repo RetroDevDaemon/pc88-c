@@ -31,6 +31,9 @@ typedef signed long long s64;
 #define null 0 
 #define NULL null 
 
+typedef signed int fix_16s;
+#define FIXED16(n) ((fix_16s)((n) << 8))
+
 // PlanarBitmap
 //  Consists of three pointers to the three RGB plane data, uncompressed
 //  and a width (divided by 8) and height.
@@ -47,6 +50,38 @@ typedef struct xypos {
     signed int x;
     signed int y;
 } XYpos;
+
+
+struct m88header { 
+    u8 numSongs;
+    u8* FMOfs;
+    u16 binSize;
+};
+struct m88data { 
+    fix_16s tempo; 
+    u8* partOffsets[11];
+    u16 partLoops[11];
+    u8* dataEndLoc;
+};
+
+struct Song { 
+    struct m88header songheader;
+    struct m88data songdata;
+    s16 partLengths[11]; // TODO fill these in - at the moment not used.
+    u8 ssg_instr[3];
+    u8 ssg_mix;
+    s8 ssg_vol[3];
+    s8 ssg_tone_len[3]; // Counts down!
+    u8 ssg_oct[3];
+    u8 ssg_tone[3];
+    u16 ssg_loc[3]; // 6
+    bool part_over[11]; // 11
+    bool ssg_fading[3]; // 3
+    s8 ssg_base_vol[3]; // 3
+    bool looping[11]; // 11
+    u8* loopLocs[11]; // 22
+    u8 flag;
+};
 
 
 #define SCREEN_TXT_BASE 0xf3c8
@@ -67,6 +102,19 @@ typedef struct xypos {
 // IO REGISTER INFO
 #include "lib/ioregs.h"
 // Please read me! Lots of info!
+///////////////////////
+
+////////////////////////
+// SSG SUPPORT
+
+void PlaySong();
+void byToHex(u8 by, u8* res);
+void LoadSong(const u8* song);
+
+
+#include "lib/ssg.h"
+
+
 ///////////////////////
 
 #define RS232_IRQ 0xf300
@@ -189,5 +237,7 @@ u16 rand16();
 #define IRQ_ON __asm ei __endasm;
 #define HALT __asm halt __endasm;
 #define BREAKPOINT HALT 
+
+
 
 #endif 

@@ -2,6 +2,17 @@
 #include <pc88-c.h>
 
 
+void byToHex(u8 by, u8* res)
+{
+    u8 a = by & 0xf;
+    u8 b = (by & 0xf0) >> 4;
+    if (a > 9) a += 7;
+    if (b > 9) b += 7;
+    a += 0x30;
+    b += 0x30;
+    res[0] = b; res[1] = a; res[2] = 0; 
+}
+
 u8 GetN88Rom() // UNSAFE!!
 {
     u8 romtype = 0;
