@@ -62,7 +62,6 @@ PC88CFILES=out/crt0.rel \
 	out/textmode.rel \
 	out/beep.rel \
 	out/vram_util.rel \
-	out/ssg.rel \
 	out/sys.rel
 #PC88CFILES=out/crt0.rel out/ioreg.rel out/textmode.rel out/sys.rel
 

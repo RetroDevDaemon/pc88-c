@@ -12,6 +12,9 @@
 *  RD            : 4 bit envelope shape
 *  RE/RF         : I/O Ports A/B
 */
+#ifndef SSGH 
+#define SSGH 
+
 #define OPN_REG 0x44
 #define OPN_DAT 0x45
 //[7] = 0b00111110
@@ -224,6 +227,4 @@ SetIOReg(OPN_DAT, 15);
 // max is 4095 or 4095 = 3993600 / 16X
 //65520X = 3993600 or B1, but C2 is better starting
 
-static struct Song CURRENT_SONG;
-static signed int SONG_TICK = 0;
-static bool SONG_PLAYING = false;
+#endif 

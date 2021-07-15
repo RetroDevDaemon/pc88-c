@@ -107,7 +107,7 @@ struct Song {
 ////////////////////////
 // SSG SUPPORT
 
-void PlaySong();
+bool PlaySong();
 void byToHex(u8 by, u8* res);
 void LoadSong(const u8* song);
 
