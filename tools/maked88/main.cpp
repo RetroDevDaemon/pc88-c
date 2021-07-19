@@ -16,6 +16,7 @@ int main(int argc, char* argv[])
     //d88disk d = d88disk(DISK_DEFAULT_SIZE);
     
     // Open the given disk name
+    //d88disk d1 = d88disk();
     d88disk d = d88disk(fileToOpen);
     
     //testing: print it
