@@ -2,15 +2,63 @@
 //#include "stdio.h" // 
 
 #define DISK_DEFAULT_SIZE 348848
+#define DEFAULT_NUM_TRACKS 80
+#define DEFAULT_NUM_SECTORS 16
+
+typedef unsigned char u8;
+
+class d88sector 
+{
+    public:
+        static u8 c;// = 0
+        static u8 h;// = 0
+        static u8 r;// = 0
+        static u8 n;// = 0
+        static int sectors; //= 0
+        static u8 density; //= 0
+        static u8 deleted;// = 0
+        static u8 fdc;// = 0
+        static int bytesize;// = 0
+        static std::vector<char> bytes;
+    public: 
+        d88sector();
+};
+
+d88sector::d88sector()
+{};
+
+class d88track
+{
+    public: 
+        int numSectors;
+        std::vector<d88sector> sectors; 
+    public: 
+        d88track();
+        d88track(int numSectors);
+};
+
+d88track::d88track() 
+    : numSectors(DEFAULT_NUM_SECTORS), 
+      sectors(std::vector<d88sector>(DEFAULT_NUM_SECTORS))
+{};
+d88track::d88track(int _numsec)
+    : numSectors(_numsec),
+      sectors(std::vector<d88sector>(_numsec))
+{};
 
 class d88disk 
 {
     public:
+        // define in constructor:
         int disksize;
         std::vector<char> bytes;
+        // Allocate static for these:
+        static std::vector<d88track> tracks;
+        static char diskname[16];
+        static u8 writeprotect;
+        static u8 mediatype;
     private:
         FILE* diskfile;
-        int fno;
     public:
         d88disk();
         d88disk(int _disksize);
@@ -34,23 +82,21 @@ d88disk::d88disk(int _disksize)
 
 d88disk::d88disk(char* filename)
 {
-    // Open given file 
     diskfile = fopen(filename, "rb");
-    // Seek to end, get fsize
-    fno = fileno(diskfile);
     fseek(diskfile, 0L, SEEK_END);
     disksize = ftell(diskfile);
-    // Allocate byte array
     bytes = std::vector<char>(disksize);
-    // read and close
-    fseek(diskfile, 0L, SEEK_SET);
-    //FILE* f = fdopen(diskfile, "rb");
-    //read(fno, &bytes[0], disksize);
-    for(int i = 0; i < disksize; i++)
-    {
-        char c = '?';
-        printf("%d", read(fno, &c, 1));
-        fseeko(diskfile, i, SEEK_SET);
-    }
     fclose(diskfile);
+
+    int fd;
+    if ((fd = open(filename, O_RDWR)) >= 0)
+    {
+        char c;
+        int i;
+        while (read(fd, &c, 1) == 1){
+            bytes[i++] = c;
+        }
+    }
+    close(fd);
+
 }

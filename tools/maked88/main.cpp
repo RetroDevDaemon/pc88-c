@@ -18,8 +18,8 @@ int main(int argc, char* argv[])
     // Open the given disk name
     d88disk d = d88disk(fileToOpen);
     
-    //print it
-    for(int i = 0; i < d.disksize; i++) printf("%d", d.bytes[i]);
+    //testing: print it
+    for(int i = 0; i < d.disksize; i++) printf("%c", d.bytes[i]);
     
     return 0;
 }
