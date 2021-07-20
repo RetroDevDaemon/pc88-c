@@ -1,8 +1,12 @@
 // maked88/main.c 
 #include "headers.h"
 
+
 int main(int argc, char* argv[])
 {
+    d88disk disk_a;
+    d88disk disk_b;
+
     // Handle args
     if(argc < 2)
     {
@@ -13,14 +17,17 @@ int main(int argc, char* argv[])
     char* fileToOpen = argv[1];
 
     // Make a new empty disk
-    //d88disk d = d88disk(DISK_DEFAULT_SIZE);
+    //disk_a = d88disk(DISK_DEFAULT_SIZE);
     
     // Open the given disk name
-    //d88disk d1 = d88disk();
-    d88disk d = d88disk(fileToOpen);
+    //disk_b = d88disk();
+    //disk_a = 0;//(void*)NULL;
+    disk_a = d88disk(fileToOpen);
+    disk_b = 0;
     
     //testing: print it
-    for(int i = 0; i < d.disksize; i++) printf("%c", d.bytes[i]);
+    //printf("%d", open_disks[0].disksize);
+    for(int i = 0; i < disk_a.disksize; i++) printf("%d", disk_a.bytes[i]);
     
     return 0;
 }

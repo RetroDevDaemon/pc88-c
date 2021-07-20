@@ -10,27 +10,19 @@ typedef unsigned char u8;
 class d88sector 
 {
     public:
-        static u8 c;// = 0
-        static u8 h;// = 0
-        static u8 r;// = 0
-        static u8 n;// = 0
-        static int sectors; //= 0
-        static u8 density; //= 0
-        static u8 deleted;// = 0
-        static u8 fdc;// = 0
-        int bytesize;// = 0
-        std::vector<char> bytes;
-    public: 
-        d88sector();
-        ~d88sector();
+         u8 c;// = 0
+         u8 h;// = 0
+         u8 r;// = 0
+         u8 n;// = 0
+         int sectors; //= 0
+         u8 density; //= 0
+         u8 deleted;// = 0
+         u8 fdc;// = 0
+         int bytesize;// = 0
+         std::vector<char> bytes;
+
 };
 
-d88sector::d88sector()
-    : bytesize(256)
-    , bytes(std::vector<char>(bytesize))
-{
-};
-d88sector::~d88sector(){};
 
 class d88track
 {
@@ -40,7 +32,6 @@ class d88track
     public: 
         d88track();
         d88track(int numSectors);
-        ~d88track();
 };
 
 d88track::d88track() 
@@ -51,7 +42,6 @@ d88track::d88track(int _numsec)
     : numSectors(_numsec),
       sectors(std::vector<d88sector>(_numsec))
 {};
-d88track::~d88track(){};
 
 class d88disk 
 {
@@ -59,18 +49,17 @@ class d88disk
         // define in constructor:
         int disksize;
         std::vector<char> bytes;
-        // Allocate static for these:
-        static std::vector<d88track> tracks;
-        static char diskname[16];
-        static u8 writeprotect;
-        static u8 mediatype;
+        // Allocate  for these:
+         std::vector<d88track> tracks;
+         char diskname[16];
+         u8 writeprotect;
+         u8 mediatype;
     private:
         FILE* diskfile;
     public:
         d88disk();
         d88disk(int _disksize);
         d88disk(char* filename);
-        ~d88disk();
      
 };
 
@@ -78,7 +67,6 @@ d88disk::d88disk()
     : disksize(DISK_DEFAULT_SIZE), 
       bytes(std::vector<char>(disksize))
 {
-    std::vector<d88track> tracks = std::vector<d88track>(80);
     for(int i = 0; i < disksize; i++) bytes[i] = 0;
 }
 
@@ -86,7 +74,6 @@ d88disk::d88disk(int _disksize)
     : disksize(_disksize)
     , bytes(std::vector<char>(disksize))
 {
-    std::vector<d88track> tracks = std::vector<d88track>(80);
     for(int i = 0; i < disksize; i++) bytes[i] = 0;
 }
 
@@ -113,5 +100,3 @@ d88disk::d88disk(char* filename)
     close(fd);
 
 }
-
-d88disk::~d88disk(){};
