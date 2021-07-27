@@ -8,7 +8,7 @@
 
 import sys 
 import os 
-
+import d88
 
 if(len(sys.argv) == 1):
     print('MakeD88.py\n\tUsage: $ python3 maked88.py <diskname> [<filename> <C> <H> <R>]\n\
