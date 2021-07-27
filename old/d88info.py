@@ -236,15 +236,6 @@ while i < len(MYDISK.tracktable):
 	i += 1
 #################################################
 	
-## odd track out:
-#print(MYDISK.tracks[2].sectors[0])
-#print(MYDISK.tracks[2].sectors[0].bytes, len(MYDISK.tracks[2].sectors[0].bytes))
-
-## replace the bad sectors:
-#MYDISK.tracks[2].sectors[0] = None 
-#MYDISK.tracks[2].sectors[9] = None#.pop(8) 
-#MYDISK.tracks[2].sectors[18] = None#.pop(16) 
-
 ## rearrange disk:
 i = 0
 temptrack = d88track()

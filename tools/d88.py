@@ -100,6 +100,7 @@ class disk():
                 s.bytesize = self.bytes[i] + (self.bytes[i+1] << 8) 
                 i += 2
                 j = 0
+                #print('DEBUG: ',s.bytesize)
                 while j < s.bytesize:
                     s.bytes.append(self.bytes[i])
                     i += 1
@@ -132,6 +133,64 @@ class disk():
             i += 4
         self.tracktable.pop() ## remove last element		
     ###
+    def UpdateMasterBytes(self):
+    	newbytes = []
+    	# write file name, flags, disk size then track headers
+    	i = 0
+    	while i < len(self.diskname):
+    		newbytes.append(chr(self.diskname[i])) 
+    		i += 1
+    	while i < 0x1b:
+    		newbytes.append(0) 
+    		i += 1
+    	newbytes.append(self.mediatype) 
+    	newbytes.append(self.disksize & 0xff) 
+    	newbytes.append((self.disksize & 0xff00) >> 8)
+    	newbytes.append((self.disksize & 0xff0000) >> 16) 
+    	newbytes.append(0) #32 bit place
+    	i = 0
+    	ofs = 0x2b0
+    	while i < len(self.tracks):
+    		ofs = self.tracktable[i]
+    		newbytes.append(ofs & 0xff)
+    		newbytes.append((ofs & 0xff00) >> 8)
+    		newbytes.append((ofs & 0xff0000) >> 16) 
+    		newbytes.append(0) 
+    		i += 1
+    	i = len(newbytes) 
+    	while i < 0x2b0:
+    		newbytes.append(0)
+    		i += 1
+    	#then bytes!
+    	# tracks[n].sectors[j].bytes[x]
+    	n = 0
+    	while n < len(self.tracks):
+    		j = 0
+    		while j < len(self.tracks[n].sectors):
+    			newbytes.append(self.tracks[n].sectors[j].c)
+    			newbytes.append(self.tracks[n].sectors[j].h)
+    			newbytes.append(self.tracks[n].sectors[j].r)
+    			newbytes.append(self.tracks[n].sectors[j].n)
+    			newbytes.append(self.tracks[n].sectors[j].sectors & 0xff)
+    			newbytes.append((self.tracks[n].sectors[j].sectors & 0xff00)>>8)
+    			newbytes.append(self.tracks[n].sectors[j].density) # 0 = 2D, 40h = SD, 01h = HD
+    			newbytes.append(self.tracks[n].sectors[j].deleted) #del/status flag
+    			newbytes.append(self.tracks[n].sectors[j].fdc) #del/status flag
+    			i = 0 
+    			while i < 5:
+    				newbytes.append(0) # reserved
+    				i += 1
+    			newbytes.append(self.tracks[n].sectors[j].bytesize & 0xff)
+    			newbytes.append((self.tracks[n].sectors[j].bytesize & 0xff00)>>8)
+    			x = 0
+    			while x < len(self.tracks[n].sectors[j].bytes):
+    				newbytes.append(self.tracks[n].sectors[j].bytes) 
+    				x += 1
+    			j += 1
+    		n+=1
+    	print(len(newbytes))
+    	self.bytes = newbytes
+    ##
     def copy(self, cop = -1):
         if(cop == -1):
             cop = disk(sz=self.disksize)
