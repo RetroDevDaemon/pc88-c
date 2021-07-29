@@ -1,6 +1,9 @@
 # PC88-C (0.1.1)
 
 # Overview 
+For source code for the Linux port of xdisk2 check here:<br>
+https://github.com/bferguson3/xdisk3<br>
+<br>
 A very minimal framework for PC88 development using C. <br> 
 `src/pc88-c.h` has all the good stuff. <br> 
 Check out the `src/lib/` folder for the detailed code. Everything should be laid bare.<br>
