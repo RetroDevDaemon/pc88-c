@@ -1,3 +1,7 @@
+/*! \addtogroup System
+ * @{ 
+*/
+
 #ifndef CRT0
 #define CRT0
     
@@ -18,3 +22,5 @@ void __init()
 
 
 #endif 
+
+/*! @} */

@@ -1,3 +1,7 @@
+/*! \addtogroup IORegs
+* @{
+*/
+
 #include <pc88-c.h>
 
 u8 ReadIOReg(u8 r) __naked
@@ -31,3 +35,5 @@ void SetIOReg(u8 r, u8 v) __naked
         ret
     __endasm;
 }
+
+/*! @} */

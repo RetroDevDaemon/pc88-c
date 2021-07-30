@@ -1,11 +1,15 @@
+/*! \addtogroup disk 
+* @{ 
+*/
+
 #include <pc88-c.h>
 
-/* dest - Destination to load data in RAM
-srcTrack - Source track on disk 
-srcSector - Source sector on disk 
-numSecs - Number of sectors to copy (bytes*256)
-drive - Drive number (default 0) */
-
+/** \param dest - Destination to load data in RAM
+ \param srcTrack - Source track on disk 
+ \param srcSector - Source sector on disk 
+ \param numSecs - Number of sectors to copy (bytes*256)
+ \param drive - Drive number (default 0) 
+*/
 void DiskLoad(u8* dest, u8 srcTrack, u8 srcSector, u8 numSecs, u8 drive) __naked 
 {
     /* As-is from IPL.BIN, taken from Maroon's page.
@@ -137,3 +141,5 @@ void DiskLoad(u8* dest, u8 srcTrack, u8 srcSector, u8 numSecs, u8 drive) __naked
 
     __endasm;
 }
+
+/*! @} */

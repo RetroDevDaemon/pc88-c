@@ -1,5 +1,9 @@
 #include <pc88-c.h>
 
+/*! \addtogroup Graphics
+* @{
+*}
+
 void Wait_VBLANK() __naked 
 {
     /* Taken from PC-88 info page:
@@ -18,3 +22,5 @@ void Wait_VBLANK() __naked
     ret
     __endasm;
 }
+
+/*! @} */

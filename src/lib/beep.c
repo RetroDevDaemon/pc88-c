@@ -1,3 +1,8 @@
+/*!
+ *  \addtogroup Beep
+ *  @{
+ */
+
 #include <pc88-c.h>
 
 void beep(u16 tone, u8 length) __naked
@@ -34,3 +39,5 @@ void beep(u16 tone, u8 length) __naked
         ret 
     __endasm;
 }
+
+/*! @} End of Doxygen Groups*/

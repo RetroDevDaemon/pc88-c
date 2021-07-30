@@ -1,3 +1,7 @@
+/*! \addtogroup Text 
+* @{ 
+*/
+
 #include <pc88-c.h>
 
 u8 TABULATE;
@@ -91,3 +95,6 @@ void SetTextAttribute(u8 x, u8 y, u8 attr)
     addr++;
     *addr = attr;
 }
+
+
+/*! @} */

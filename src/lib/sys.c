@@ -1,6 +1,9 @@
+/*! \addtogroup System
+* @{
+*/
+
 // sys.c
 #include <pc88-c.h>
-
 
 u8 GetN88Rom() // UNSAFE!!
 {
@@ -75,3 +78,5 @@ u16 GetSysMode()
     return ReadIOReg(0x31) * 256 | ReadIOReg(0x6e);
     
 }
+
+/*! @} */

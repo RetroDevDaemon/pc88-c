@@ -1,3 +1,7 @@
+/*! \addtogroup math 
+* @{ 
+*/
+
 #include <pc88-c.h>
 //#include <math.h>
 
@@ -39,3 +43,5 @@ u16 rand16()
 {
     return rand() << 8 | rand();
 }
+
+/*! @} */

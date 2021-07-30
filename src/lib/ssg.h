@@ -1,31 +1,35 @@
-/* R0, R1 (b0-3) : 12 bit period for Ch. A
-*  R2, R3 (b0-3) : 12 bit period for Ch. B
-*  R4, R5 (b0-3) : 12 bit period for Ch. C
-*  R6            : 5 bit noise period
-*  R7            : Output ctl: ~BANNNTTT
-*        BA: Input enable on IO port A/B
-*       NNN: Noise enable on Ch. CBA
-*       TTT:  Tone enable on Ch. CBA
-*  R8,R9,RA      : b0-3 amplitude (if b4=0)
-*                  b4 enable/disable envelope
-*  RB,RC         : 16-bit envelope period
-*  RD            : 4 bit envelope shape
-*  RE/RF         : I/O Ports A/B
+/*! \addtogroup SSG
+* @{ 
+*/
+
+/*! R0, R1 (b0-3) : 12 bit period for Ch. A\n
+*  R2, R3 (b0-3) : 12 bit period for Ch. B\n
+*  R4, R5 (b0-3) : 12 bit period for Ch. C\n
+*  R6            : 5 bit noise period\n
+*  R7            : Output ctl: ~BANNNTTT\n
+*        BA: Input enable on IO port A/B\n
+*       NNN: Noise enable on Ch. CBA\n
+*       TTT:  Tone enable on Ch. CBA\n
+*  R8,R9,RA      : b0-3 amplitude (if b4=0)\n
+*                  b4 enable/disable envelope\n
+*  RB,RC         : 16-bit envelope period\n
+*  RD            : 4 bit envelope shape\n
+*  RE/RF         : I/O Ports A/B\n
 */
 #define OPN_REG 0x44
 #define OPN_DAT 0x45
-//[7] = 0b00111110
-// derivative:
-// TONE = CLOCK / (16 * PERIOD)
-// PERIOD = 256*COARSE + FINE
-// relational:
-// PERIOD = CLOCK / (TONE * 16)
-// COARSE + (FINE / 256) = TONE / 256
-// https://pages.mtu.edu/~suits/notefreqs.html
-
-// Z80 actual speed:
+/*![7] = 0b00111110\n
+// derivative:\n
+// TONE = CLOCK / (16 * PERIOD)\n
+// PERIOD = 256*COARSE + FINE\n
+// relational:\n
+// PERIOD = CLOCK / (TONE * 16)\n
+// COARSE + (FINE / 256) = TONE / 256\n
+// https://pages.mtu.edu/~suits/notefreqs.html\n
+*/
+/// Z80 actual speed:
 #define CPU4MHZ 3993600
-// 440 Tunings:
+/// 440 Tunings:
 #define C2_440  65.41
 #define C2S_440 69.30
 #define D2_440 73.42
@@ -91,7 +95,7 @@
 #define A6S_440 1864.66
 #define B6_440 1975.53
 
-// Bit flags
+/// Bit flags
 #define CHA_TONEH 1
 #define CHA_TONEL 0
 #define CHB_TONEH 3
@@ -115,7 +119,7 @@
 #define CHB_TONE_OFF 0b10
 #define CHC_TONE_OFF 0b100
 
-// SSG Period inputs:
+/// SSG Period inputs:
 #define SSG_C2 (u16)(CPU4MHZ / (C2_440 * 32))
 #define SSG_C2S (u16)(CPU4MHZ / (C2S_440 * 32))
 #define SSG_D2 (u16)(CPU4MHZ / (D2_440 * 32))
@@ -227,10 +231,11 @@ static const u16 octavesix[12] = {
     SSG_A6, SSG_A6S,
     SSG_B6
 };
+/*! @} */
 
-
-/***** Usage from examples/psg : ********
+/*! *** Usage from examples/psg : ********
 // Play C4 on Ch A, vol 15, no envelope, mute all other
+<pre>
 SetIOReg(OPN_REG, CHA_TONEL);
 SetIOReg(OPN_DAT, SSG_C4 & 0xff);
 SetIOReg(OPN_REG, CHA_TONEH);
@@ -240,6 +245,8 @@ SetIOReg(OPN_REG, SSG_MIXER);
 SetIOReg(OPN_DAT, ~(CHA_TONE | 0xc0));
 SetIOReg(OPN_REG, CHA_AMP);
 SetIOReg(OPN_DAT, 15);
+</pre>
 **************************************/
 // max is 4095 or 4095 = 3993600 / 16X
 //65520X = 3993600 or B1, but C2 is better starting
+

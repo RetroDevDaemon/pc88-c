@@ -1,5 +1,9 @@
 #include <pc88-c.h>
 
+/*! \addtogroup Graphics
+* @{ 
+*/
+
 void EraseVRAMArea(XYpos* xy, u8 w, u8 h)
 {
     //u8 xo = xy->x % 8;
@@ -13,3 +17,5 @@ void EraseVRAMArea(XYpos* xy, u8 w, u8 h)
         vp += (80 - w);
     }
 }
+
+/*! @} */

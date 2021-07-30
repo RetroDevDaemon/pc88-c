@@ -1,3 +1,6 @@
+/*! \addtogroup keyboard
+* @{
+*/
 //kb-matrix.h
 // Read only
 #define KB_MATRIX_REG_0 0x00
@@ -138,3 +141,5 @@
 #define KB_PADRETURN  0xE1
 #define KB_LEFTSHIFT  0xE2
 #define KB_RIGHTSHIFT  0xE3
+
+/*! @} */

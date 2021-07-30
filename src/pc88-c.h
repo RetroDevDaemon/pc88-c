@@ -1,4 +1,9 @@
 // pc88-c.h 
+// Doxygen flag:
+/*!
+ *  \addtogroup PC88-C
+ *  @{
+ */
 
 /// A brief C framework for PC-88 development
 
@@ -10,8 +15,7 @@
 #ifndef PC88C
 #define PC88C
 
-// typedefs
-typedef unsigned char u8;           
+typedef unsigned char u8;      
 typedef unsigned int u16;
 typedef volatile unsigned char vu8;
 typedef volatile unsigned int vu16;
@@ -31,9 +35,11 @@ typedef signed long long s64;
 #define null 0 
 #define NULL null 
 
-// PlanarBitmap
-//  Consists of three pointers to the three RGB plane data, uncompressed
-//  and a width (divided by 8) and height.
+///pb
+/** PlanarBitmap
+*  Consists of three pointers to the three RGB plane data, uncompressed
+*  and a width (divided by 8) and height. 
+*/
 typedef const struct planarBitmap {
     const u8* r;
     const u8* g;
@@ -42,13 +48,13 @@ typedef const struct planarBitmap {
     u8 h;
 } PlanarBitmap, Sprite;
 
-// 4 bytes
+/// 4 bytes
 typedef struct xypos { 
     signed int x;
     signed int y;
 } XYpos;
 
-
+/// What
 #define SCREEN_TXT_BASE 0xf3c8
 #define SCREEN_ATTR_BASE SCREEN_TXT_BASE + 80
 #define GetVRAMPos(x,y) (vu8*)(((y)*80)+0xc000 + (x))
@@ -108,8 +114,12 @@ void print(String str);
 /**/void print40(String str);
 
 // TEXTMODE
+/** Attributes must be set in ascending X order on each row. 
+ *   Attribute #0 on each row is ALWAYS read as X=0, regardless of its actual value. 
+ */
 void SetTextAttribute(u8 x, u8 y, u8 attr);
-void ClearAttributeRam();       // Resets to the bios defaults.
+/// Resets to the bios defaults.
+void ClearAttributeRam();       
 void SetCursorPos(u8 x, u8 y);
 /**/void SetCursorPos40(u8 x, u8 y);
 
@@ -117,9 +127,6 @@ void SetCursorPos(u8 x, u8 y);
 //#define SetIOReg(r, v) r = v;//__asm__("ld a, %d", r) 
 u8 ReadIOReg(u8 r);
 void SetIOReg(u8 r, u8 v);
-/* Attributes must be set in ascending X order on each row. 
-    Attribute #0 on each row is ALWAYS read as X=0, regardless of its actual value. */
-
 // VBl/Clk irqs
 void Vblank() __critical __interrupt;
 void ClockInterrupt() __critical __interrupt;
@@ -147,9 +154,9 @@ void EraseVRAMArea(XYpos* xy, u8 w, u8 h);
 // SSG
 #include "ssg.h"
 
-// SYS
-//;bit7:0=8MHz 1=4MHz (FH以降)
-//;bit76.w:10=V1S 11=V1H 01=V2
+/// SYS
+///;bit7:0=8MHz 1=4MHz (FH以降)
+///;bit76.w:10=V1S 11=V1H 01=V2
 #define V1S_MODE_FLAG   (2<<14)
 #define V2_MODE_FLAG    (1<<14)
 #define V1H_MODE_FLAG   (3<<14)
@@ -174,13 +181,13 @@ u16 rand16();
         DrawPlaneBMP(pb->r, PLANE_RED, x, y, pb->w, pb->h); \
         DrawPlaneBMP(pb->g, PLANE_GREEN, x, y, pb->w, pb->h); \
         DrawPlaneBMP(pb->b, PLANE_BLUE, x, y, pb->w, pb->h);
-// Used in COLOR TEXT mode. Defines color and semigraphic toggle.
+/// Used in COLOR TEXT mode. Defines color and semigraphic toggle.
 #define COLORMODE_SET(color, semigraphic) \
     (u8)((color<<5)|(semigraphic<<4)|0b1000)
-// Used in COLOR TEXT mode. Defines text attributes.
+/// Used in COLOR TEXT mode. Defines text attributes.
 #define COLORMODE_ATTR(underline, upperline, reverse, blink, hidden) \
     (u8)((underline<<5)|(upperline<<4)|(reverse<<2)|(blink<<1)|(hidden))
-// Used in B&W TEXT mode. Bits 7, 5 and 4 must all be set for BW semigraphic mode.
+/// Used in B&W TEXT mode. Bits 7, 5 and 4 must all be set for BW semigraphic mode.
 #define BWMODE_ATTR(underline, upperline, reverse, blink, hidden) \
     (u8)((underline<<5)|(upperline<<4)|(reverse<<2)|(blink<<1)|(hidden))
 #define ATTR_BW_SEMIGRAPHIC 0b10011000
@@ -191,3 +198,5 @@ u16 rand16();
 #define BREAKPOINT HALT 
 
 #endif 
+
+/*! @} End of Doxygen Groups*/
