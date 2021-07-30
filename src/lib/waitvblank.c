@@ -2,7 +2,7 @@
 
 /*! \addtogroup Graphics
 * @{
-*}
+*/
 
 void Wait_VBLANK() __naked 
 {
