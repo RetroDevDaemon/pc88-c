@@ -18,7 +18,10 @@ https://discord.gg/Js3uUrc
 -Disk saving<br>
 -Kanji ROM, nado<br>
 <br>
-(kind of out of date):<br>
+## Documentation
+Doxygen:<br>
+https://bferguson3.github.io/pc88-c/<br>
+(Tutorial, of out of date):<br>
 Manual part 1, overview: https://barelyconsciousgames.blogspot.com/2021/02/pc-88-c-framework-for-nec-pc8801.html <br> 
 Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/pc88-c-frame-for-nec-pc-8801-part-2.html <br> 
 
