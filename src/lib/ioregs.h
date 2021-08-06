@@ -37,15 +37,16 @@ COLOR Text screen color mode: 0-Color 1-B&W
 /* SYSTEM CONTROL REGISTER B //
 <pre>
 ** WRITE: System Control Port
-Bit	    7	6	5	      4	      3	    2	    1	    0
-			25LINE	HCOLOR	GRAPH	RMODE	MMODE	200LINE
+Bit	76	5	4	3	2	    1	    0
+	--	25LINE	HCOLOR	GRAPH	RMODE	MMODE	200LINE
 25LINE Hi-res 25 row mode: 0-All other modes 1-ON
 HCOLOR Graphic color mode: 0-B&W 1-Color
 GRAPH Graphic control: 0-Graphic screens off 1-ON
 RMODE ROM mode: 0-N88-BASIC 1-N-BASIC
 MMODE RAM mode: 0-ROM/RAM 1-64K RAM
 200LINE	Hi-res CRT mode: 0-640×400 1-640x200
-  Recommended values: 0b000110x1
+  To check n88 rom temporarily: 0b00111001 (enable ROM and N-Basic if available)
+  Recommended value: 0b00011011
 					  0b00010011 
 ** READ: Dipswitch status
 Bit	7	    6	    5	    4	    3	    2	    1	    0
@@ -164,6 +165,8 @@ ld ($c0002),a   ; operation commands a vram 'copy'.
 #define SYS_MODE_SENSE 0x40   // Write also for beepin'
 #define STROBE_PORT 0x40      // Read
 
+//#define FM_IRQ1 0x32	  /*! PRIMARY FM DEVICE */
+//#define FM_IRQ2 0xAA	  /*! SECONDARY FM DEVICE */
 #define FM_REG_0 0x44     /*! <FR/MR - OPN, FH/MH> - OPNA SSG/FM1-3 */
 #define FM_REG_1 0x45     /*! <FR/MR - OPN, FH/MH> - OPNA SSG/FM1-3 */
 #define FM_REG_2 0x46     /*! FH/MH - OPNA ADPCM/FM4-6 */

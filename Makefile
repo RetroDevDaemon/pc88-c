@@ -27,8 +27,8 @@ PROJECT=examples/helloworld
 # $ make PROJECT=myproj
 
 ## MEMORY LOCATIONS ##
-
-default: STACK=0x100
+# stack grows downward, data grows upward. Should be the same value.
+default: STACK=0x100 
 default: DATA=0x100
 default: CODE=0x1000
 binary: STACK=0xc000
@@ -39,7 +39,7 @@ binary: CODE=0xc000
 # This is due to VRAM being in C000~.
 
 88FLAGS=-mz80 \
-	--stack-loc $(STACK) --code-loc $(CODE) --data-loc $(DATA) \
+	--stack-loc $(STACK) --code-loc $(CODE) \
 	--no-std-crt0\
 	#--fomit-frame-pointer 
 
@@ -48,8 +48,8 @@ APPNAME=app.d88
 
 ## EMULATOR EXECUTABLE ##
 #EMUEXE=C:\Users\Bent\Downloads\m88\m88x5.exe 
-#EMUEXE=~/Downloads/quasi88-065 app.d88
-EMUEXE=quasi88 app.d88
+EMUEXE=~/Downloads/quasi88-065 app.d88
+#EMUEXE=quasi88 app.d88
 
 # This is updated when new .c files are added
 PC88CFILES=out/crt0.rel \
@@ -61,6 +61,7 @@ PC88CFILES=out/crt0.rel \
 	out/draw.rel \
 	out/textmode.rel \
 	out/beep.rel \
+	out/ssg.rel \
 	out/vram_util.rel \
 	out/sys.rel
 #PC88CFILES=out/crt0.rel out/ioreg.rel out/textmode.rel out/sys.rel

@@ -35,6 +35,9 @@ typedef signed long long s64;
 #define null 0 
 #define NULL null 
 
+typedef signed int fix_16s;
+#define FIXED16(n) ((fix_16s)((n) << 8))
+
 ///pb
 /** PlanarBitmap
 *  Consists of three pointers to the three RGB plane data, uncompressed
@@ -122,6 +125,8 @@ void SetTextAttribute(u8 x, u8 y, u8 attr);
 void ClearAttributeRam();       
 void SetCursorPos(u8 x, u8 y);
 /**/void SetCursorPos40(u8 x, u8 y);
+/*! Converts a single byte to ASCII numeric form */
+u8* byToHex(u8 by); 
 
 // IOREGS
 //#define SetIOReg(r, v) r = v;//__asm__("ld a, %d", r) 
@@ -152,6 +157,8 @@ void beep(u16 tone, u8 length);
 void EraseVRAMArea(XYpos* xy, u8 w, u8 h);
 
 // SSG
+void LoadSong(const u8* song);
+
 #include "ssg.h"
 
 /// SYS

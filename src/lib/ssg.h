@@ -1,3 +1,6 @@
+#ifndef SSG 
+#define SSG 
+
 /*! \addtogroup SSG
 * @{ 
 */
@@ -185,6 +188,7 @@
 #define SSG_A6S (u16)(CPU4MHZ / (A6S_440 * 32))
 #define SSG_B6 (u16)(CPU4MHZ / (B6_440 * 32))
 
+void PlaySong();
 
 static const u16 octavetwo[12] = {
     SSG_C2, SSG_C2S,
@@ -231,6 +235,38 @@ static const u16 octavesix[12] = {
     SSG_A6, SSG_A6S,
     SSG_B6
 };
+
+struct m88header { 
+    u8 numSongs;
+    u8* FMOfs;
+    u16 binSize;
+};
+struct m88data { 
+    fix_16s tempo; 
+    u8* partOffsets[11];
+    u16 partLoops[11];
+    u8* dataEndLoc;
+};
+
+struct Song { 
+    struct m88header songheader;
+    struct m88data songdata;
+    s16 partLengths[11]; // TODO fill these in - at the moment not used.
+    u8 ssg_instr[3];
+    u8 ssg_mix;
+    s8 ssg_vol[3];
+    s8 ssg_tone_len[3]; // Counts down!
+    u8 ssg_oct[3];
+    u8 ssg_tone[3];
+    u16 ssg_loc[3]; // 6
+    bool part_over[11]; // 11
+    bool ssg_fading[3]; // 3
+    s8 ssg_base_vol[3]; // 3
+    bool looping[11]; // 11
+    u8* loopLocs[11]; // 22
+    u8 flag;
+};
+#endif 
 /*! @} */
 
 /*! *** Usage from examples/psg : ********

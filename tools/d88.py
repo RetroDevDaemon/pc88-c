@@ -1,6 +1,17 @@
 # d88
 # header for python scripting with PC88-C
-  
+'''
+  N88 BASIC DISK FORMAT
+Files listing
+d88 offset @ 0x277b0
+CHR 12-01-01
+
+x0 - x8 : 9 letter name, padded with 0x20
+x9      : file status byte: typically 0x80, 0x01
+xA      : data pointer; multiply by 8 to find sector
+           or: [0xA] * (2048 + 128)+688 = offset into disk image 
+xB - xF : generally FF
+'''
 
 class d88sector():
     def __init__(self):
@@ -50,8 +61,11 @@ class disk():
         else:
             self.bytes = []
             i = 0
-            while i < sz:
+            while i < 0x2b0:
                 self.bytes.append(0)
+                i += 1
+            while i < sz:
+                self.bytes.append(0xff) 
                 i += 1
         
         self.diskname = ''
@@ -302,6 +316,15 @@ class disk():
                     self.bytes[i+2] = r 
                     self.bytes[i+3] = 1 # TODO n
                     self.bytes[i+4] = 0x10 
+                    self.bytes[i+5] = 0
+                    self.bytes[i+6] = 0
+                    self.bytes[i+7] = 0
+                    self.bytes[i+8] = 0
+                    self.bytes[i+9] = 0
+                    self.bytes[i+0xa] = 0
+                    self.bytes[i+0xb] = 0
+                    self.bytes[i+0xc] = 0
+                    self.bytes[i+0xd] = 0
                     self.bytes[i+0xe] = 0 
                     self.bytes[i+0xf] = 1 #TODO bytes
                     r += 1

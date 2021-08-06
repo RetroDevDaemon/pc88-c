@@ -16,7 +16,7 @@ Main:
     call    0x5F0E          ; txt screen area 
     ld      a,#1            ; color/80c text mode
     out     (0x30),a 
-    ld      a,#0b00111011
+    ld      a,#0b00111011   ; disable basic rom for 64kb
     out     (0x31),a        ; hi-res 25row/color
     ld      a,#0b10001001
     out     (0x32),a        ; sound irq off/digital rgb
@@ -28,9 +28,9 @@ Main:
     ld      de,#((0 << 8) | 2)  ; track 0, sector 2 
     ld      bc,#((0x5f << 8) | 0)   ; sector size, drive no
     call    DISK_Load 
-    ld      sp,#0x0100 
+    ld      sp,#0xff
     ei 
-    jp      0x1000
+    jp      0xffff
 
 .console: 
     .ascii  /0,25,0,1/

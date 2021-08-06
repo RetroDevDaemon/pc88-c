@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['xypos_0',['xypos',['../structxypos.html',1,'']]]
+  ['xypos',['xypos',['../structxypos.html',1,'']]]
 ];

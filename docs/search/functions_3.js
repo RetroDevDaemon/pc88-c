@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['settextattribute_0',['SetTextAttribute',['../group___text.html#gaac08d0135426d4a917aa7038d243c599',1,'SetTextAttribute(u8 x, u8 y, u8 attr):&#160;textmode.c'],['../group___p_c88-_c.html#gaac08d0135426d4a917aa7038d243c599',1,'SetTextAttribute(u8 x, u8 y, u8 attr):&#160;textmode.c']]]
+  ['getkeydown',['GetKeyDown',['../group__keyboard.html#gae9cc2f60db0d9ca017b994fe93624b88',1,'GetKeyDown(u8 SCANCODE):&#160;getkeydown.c'],['../group___p_c88-_c.html#gae9cc2f60db0d9ca017b994fe93624b88',1,'GetKeyDown(u8 SCANCODE):&#160;getkeydown.c']]]
 ];

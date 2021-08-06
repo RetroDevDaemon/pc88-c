@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['planarbitmap_0',['planarBitmap',['../structplanar_bitmap.html',1,'']]]
+  ['planarbitmap',['planarBitmap',['../structplanar_bitmap.html',1,'']]]
 ];
