@@ -6,6 +6,24 @@ import os
 
 import d88
 
+def CheckLineEndings(f):
+    #ensure line endings are 0D 0A
+    f = open(f, 'rb')
+    b = f.read(256)
+    f.close()
+    i = 0
+    ok = False 
+    while i < 256:
+        if(b[i] == 0x0d):
+            ok = True
+        i += 1
+    return ok 
+
+def asrt(a):
+    if(a == -1):
+        print("Creation failed.")
+        sys.exit()
+            
 if(len(sys.argv) == 1):
     print('MakeD88.py\n\
     Usage: $ python3 maked88.py <diskname> [<filename> <C> <H> <R>]\n\
@@ -65,9 +83,7 @@ elif(len(sys.argv) > 2):
     if(len(sys.argv) < 5):# and len(sys.argv) != 5):
         print('Error parsing arguments. Run `python3 maked88.py` to see instructions.')
     else:
-    ########################################
-    #  N88 DISK BASIC FILE FORMATS 
-    ########################################
+    # Create the disk object if it doesn't exist:
         if(os.path.exists(sys.argv[1]) == False):
             print(sys.argv[1] + ' not found. Creating.')
             new = d88.disk(sz=348848) 
@@ -76,6 +92,7 @@ elif(len(sys.argv) > 2):
         else:
             new = d88.disk(sys.argv[1])
         new.GetTrackInfo()
+    # Get the file size of the input file:
         fn = sys.argv[2]
         f = open(sys.argv[2], 'rb') 
         f.seek(0,2)
@@ -85,7 +102,12 @@ elif(len(sys.argv) > 2):
         if(fsize > 348848):
             print("Won't fit!")
             sys.exit()
+    ########################################
+    #  N88 DISK BASIC FILE FORMATS 
+    ########################################
+    ## This looks super messy :(
         if ( sys.argv[3] == '-b' ):
+            ## PARSE FILE TYPE ARGUMENTS
             ftype = 'ASCII'
             if(len(sys.argv) >= 6):
                 if (sys.argv[5].upper() == 'BASIC'):
@@ -94,65 +116,61 @@ elif(len(sys.argv) > 2):
                     print("No BASIC compiler support yet... use binary.")
                     sys.exit()
                 elif (sys.argv[5].upper() == 'BINARY'):
+                    # Make sure start address is included
                     if(len(sys.argv) != 7):
                         print("Please designate a start address in hex format.")
                         sys.exit()
+                    # Parse it and create a binary stub
                     stloc = int(sys.argv[6],16) 
                     enloc = stloc + fsize 
-                    if(enloc > 0xffff):
+                    if(enloc > 0xffff): # error check
                         print("Won't fit!")
                         sys.exit()
                     print("Appending: ", hex(stloc), hex(enloc))
                     ftype = 'BINARY'
                 elif (sys.argv[5].upper() == 'ASCII'):
                     ftype = 'ASCII'
+            ##
             print("Adding file " + fn + ' in N88 mode to ' + sys.argv[1] + '...',end='')
+            # Convert it from hex if necessary
             dirofs = 0
             if(sys.argv[4][1] == 'x'):
                 dirofs = int(sys.argv[4], 16)
             else:
                 dirofs = int(sys.argv[4])
             # n88 disk basic mode - 8 sector (2kb) fidelity.
+            # Wierd math, but it works out.
             tgc = int(dirofs / 4)
             tgh = int((dirofs % 4)/2)
             tgr = ((dirofs % 2) * 8)+1
             bofs = dirofs * (0x800 + 0x80) + 0x2b0
             print(hex(bofs), dirofs, hex(tgc), tgh, tgr)
+            # Get the base path name
+            bn = os.path.basename(fn)
+            if(ftype == 'ASCII'):
+                ok = CheckLineEndings(sys.argv[2])
+                if(not ok):
+                    print("Input failed! Ensure input is CRLF format.")
+                    sys.exit()
+            # Open the given disk file 
             bnew = d88.disk(sys.argv[1])
             atf = False
             if(ftype=='ASCII'):
                 atf = True
-            a = bnew.AddFile(fn, tgc, tgh, tgr, respectBAM=True, ascii=atf, loadaddr=stloc, endaddr=stloc+fsize)
-            if(a == -1):
-                print("Creation failed.")
-                sys.exit()
-            bn = os.path.basename(fn)
-            if(ftype == 'ASCII'):
-                #ensure line endings are 0D 0A
-                f = open(sys.argv[2], 'rb')
-                b = f.read(256)
-                f.close()
-                i = 0
-                ok = False 
-                while i < 256:
-                    if(b[i] == 0x0d):
-                        ok = True
-                    i += 1
-                if(not ok):
-                    print("Input failed! Ensure input is CRLF format.")
-                    sys.exit()
+            # and add the file in binary mode with special flags
+            a = bnew.AddFile(fn, tgc, tgh, tgr, \
+                    respectBAM=True, ascii=atf, loadaddr=stloc, endaddr=stloc+fsize)
+            asrt(a)
+            # Add the directory and BAM entry too!
             a = bnew.AddDirEntry(bn, dirofs, fsize, filetype=ftype)
-            if(a == -1):
-                print("Creation failed.")
-                sys.exit()
+            asrt(a)
+            # And rewrite the bytes
             a = bnew.WriteBytes(sys.argv[1])
-            if(a == -1):
-                print("Creation failed.")
-                sys.exit()
+            asrt(a)
         else: 
-        ##################################
-        #  NORMAL C-H-R BASED FILE ADD
-        ##################################
+    ##################################
+    #  NORMAL C-H-R BASED FILE ADD
+    ##################################
             print('Adding file ' + fn + ' to ' + sys.argv[1] + '...', end=' ')
             new.AddFile(fn, int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]))
             new.WriteBytes(sys.argv[1])

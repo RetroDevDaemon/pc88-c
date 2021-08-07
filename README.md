@@ -1,12 +1,12 @@
-# PC88-C (0.1.1)
+# PC88-C (0.1.2)
 
 # Overview 
-For source code for the Linux port of xdisk2 check here:<br>
-https://github.com/bferguson3/xdisk3<br>
-<br>
 A very minimal framework for PC88 development using C. <br> 
 `src/pc88-c.h` has all the good stuff. <br> 
 Check out the `src/lib/` folder for the detailed code. Everything should be laid bare.<br>
+<br>
+For source code for the Linux port of xdisk2 check here:<br>
+https://github.com/bferguson3/xdisk3<br>
 <br>
 Consider joining the RetroDev Discord to discuss, ask questions, and contribute:<br>
 https://discord.gg/Js3uUrc
@@ -26,21 +26,22 @@ Manual part 1, overview: https://barelyconsciousgames.blogspot.com/2021/02/pc-88
 Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/pc88-c-frame-for-nec-pc-8801-part-2.html <br> 
 
 ## What's new
-0.1.1<br>
--Added minimal SSG support for MUCOM88 compiled files!<br>
-CURRENT SUPPORT:<br>
-Channels D, E, F (SSG) on octaves 2 through 6<br>
-Supported MML: 
+0.1.2<br>
+- Added Disk BASIC support to the d88 tool, and static makefile.<br>
+
+Example:
+`$ make -f Makefile.n88 PROJECT=examples/helloworld-static`<br>
+Then, write the disk using xdisk, and on the PC88:<br>
 ```
-Tone and rest control (a-g, ., r, >, <)
-o, t, v, [, ], P, w, #
+bload"2:main.bin
+def usr1=&he123
+a=usr1(0)
 ```
-Octave, tempo, volume, repeat, SSG mixer control, noise frequency, flag byte.<br>
-(Technically @ is supported but does nothing.)<br>
-To use the player, simply include the <b>compiled</b> song anywhere in code<br>
-and use the LoadSong() function to load the song data into predefined structs, then<br>
-PlaySong() every vertical blank to play it.<br><br>
--Some small bugfixes and optimizations.
+Where main.bin is the output file existing on disk drive 2,<br>
+and $e123 is the resultant address of _main(), taken from `out/main.map`.<br>
+Ensure that code, data and stack locations are properly set! Double check the makefile.<br>
+- Refactored SSG player properly.<br>
+<hr>
 
 ## Important: requires SDCC to be on the path<br>
 If you have SDCC 4.1.0 and Python3, you should be able to build without issue.<br>
@@ -102,6 +103,22 @@ If properly made/installed, the normal make command should work :)<br>
 <br>
 
 ## Revision history
+0.1.1<br>
+-Added minimal SSG support for MUCOM88 compiled files!<br>
+CURRENT SUPPORT:<br>
+Channels D, E, F (SSG) on octaves 2 through 6<br>
+Supported MML: 
+```
+Tone and rest control (a-g, ., r, >, <)
+o, t, v, [, ], P, w, #
+```
+Octave, tempo, volume, repeat, SSG mixer control, noise frequency, flag byte.<br>
+(Technically @ is supported but does nothing.)<br>
+To use the player, simply include the <b>compiled</b> song anywhere in code<br>
+and use the LoadSong() function to load the song data into predefined structs, then<br>
+PlaySong() every vertical blank to play it.<br><br>
+-Some small bugfixes and optimizations.<br>
+<br>
 0.1.0<br>
 -Added clock-irq example<br>
 -Added bin2c.py (converts binary to .h)<br>
@@ -109,7 +126,7 @@ If properly made/installed, the normal make command should work :)<br>
 xbas.c should compile on pretty much any nix.<br>
 It allows you to transfer BASIC programs to PC-88 over USB-Serial.<br>
 Stay tuned for disk writing, ROM extraction, etc.!<br> 
-
+<br>
 0.0.14b<br>
 -Fixed SetCursorPos (wasn't updating ROWPOINTER)<br>
 -Added VERY BASIC math routines<br>
