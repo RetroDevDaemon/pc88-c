@@ -113,10 +113,11 @@ elif(len(sys.argv) > 2):
             else:
                 dirofs = int(sys.argv[4])
             # n88 disk basic mode - 8 sector (2kb) fidelity.
-            tgc = int(dirofs / 8)*2
-            tgh = dirofs % 2
-            tgr = 1
-            print(dirofs, tgc, tgh, tgr)
+            tgc = int(dirofs / 4)
+            tgh = int((dirofs % 4)/2)
+            tgr = ((dirofs % 2) * 8)+1
+            bofs = dirofs * (0x800 + 0x80) + 0x2b0
+            print(hex(bofs), dirofs, hex(tgc), tgh, tgr)
             bnew = d88.disk(sys.argv[1])
             atf = False
             if(ftype=='ASCII'):

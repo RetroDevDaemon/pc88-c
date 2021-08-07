@@ -501,25 +501,35 @@ class disk():
         else: # respect the DOS format. (This means skip the DOS reserved
             if(loadaddr != -1): # and add a binary load address, if requested
                 self.bytes[start + bc] = loadaddr & 0xff 
-                bc += 1
-                self.bytes[start + bc] = loadaddr >> 8
-                bc += 1
-                self.bytes[start + bc] = endaddr & 0xff 
-                bc += 1
-                self.bytes[start + bc] = endaddr >> 8 
-                bc += 1
-            while i < len(outdat):
-                self.bytes[start + bc] = outdat[i]
-                i += 1
-                bc += 1 
-                if (i % 256 == 0):
-                    bc += 16 
-                if((start + bc) == 0x28480):
-                    bc += 0x440
+                self.bytes[start + bc+1] = loadaddr >> 8
+                self.bytes[start + bc+2] = endaddr & 0xff 
+                self.bytes[start + bc+3] = endaddr >> 8     
+                start += 4
+                while i < len(outdat):
+                    self.bytes[start + bc] = outdat[i]
+                    i += 1
+                    bc += 1 
+                    if ((i+4) % 256 == 0):
+                        bc += 16 
+                    if((start + bc) == 0x28480):
+                        bc += 0x440
+            else: # write normally 
+                while i < len(outdat):
+                    self.bytes[start + bc] = outdat[i]
+                    i += 1
+                    bc += 1 
+                    if ((i) % 256 == 0):
+                        bc += 16  # but still respect BAM:
+                    if((start + bc) == 0x28480):
+                        bc += 0x440
         if(ascii):
             self.bytes[start + bc] = 0x1a # file terminator 
             bc += 1
-        while ((i % 256) != 0):
+        if(loadaddr != -1):
+            oit = 4
+        else:
+            oit = 0
+        while (((i+oit) % 256) != 0):
             self.bytes[start+bc] = 0 # fill with 0 
             i += 1
             bc += 1

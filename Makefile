@@ -39,7 +39,7 @@ binary: CODE=0xc000
 # This is due to VRAM being in C000~.
 
 88FLAGS=-mz80 \
-	--stack-loc $(STACK) --code-loc $(CODE) \
+	--stack-loc $(STACK) --code-loc $(CODE) --data-loc $(DATA)\
 	--no-std-crt0\
 	#--fomit-frame-pointer 
 

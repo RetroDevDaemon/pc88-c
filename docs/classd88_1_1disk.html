@@ -96,9 +96,11 @@ def&#160;</td><td class="memItemRight" valign="bottom"><b>Format</b> (self, name
 <tr class="memitem:ace982e67813998133c435e5fe93223b6"><td class="memItemLeft" align="right" valign="top"><a id="ace982e67813998133c435e5fe93223b6"></a>
 def&#160;</td><td class="memItemRight" valign="bottom"><b>WriteBytes</b> (self, fn)</td></tr>
 <tr class="separator:ace982e67813998133c435e5fe93223b6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4ea9b0038811710934fded30a6544232"><td class="memItemLeft" align="right" valign="top"><a id="a4ea9b0038811710934fded30a6544232"></a>
-def&#160;</td><td class="memItemRight" valign="bottom"><b>AddFile</b> (self, fn, c, h, r)</td></tr>
-<tr class="separator:a4ea9b0038811710934fded30a6544232"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a93a3a89b9cb874bbf703b86f5d11b227"><td class="memItemLeft" align="right" valign="top">def&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classd88_1_1disk.html#a93a3a89b9cb874bbf703b86f5d11b227">AddDirEntry</a> (self, fn, ofs, sz, filetype='ASCII')</td></tr>
+<tr class="separator:a93a3a89b9cb874bbf703b86f5d11b227"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab569c667e0883bcfb8d379853cc75e71"><td class="memItemLeft" align="right" valign="top"><a id="ab569c667e0883bcfb8d379853cc75e71"></a>
+def&#160;</td><td class="memItemRight" valign="bottom"><b>AddFile</b> (self, fn, c, h, r, respectBAM=False, ascii=False, loadaddr=-1, endaddr=0)</td></tr>
+<tr class="separator:ab569c667e0883bcfb8d379853cc75e71"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Data Fields</h2></td></tr>
@@ -127,6 +129,89 @@ Data Fields</h2></td></tr>
 &#160;</td><td class="memItemRight" valign="bottom"><b>tracks</b></td></tr>
 <tr class="separator:af344adafdb150effb873827ed9f84935"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Member Function Documentation</h2>
+<a id="a93a3a89b9cb874bbf703b86f5d11b227"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a93a3a89b9cb874bbf703b86f5d11b227">&#9670;&nbsp;</a></span>AddDirEntry()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">def d88.disk.AddDirEntry </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>self</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>fn</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>ofs</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>sz</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>filetype</em> = <code>'ASCII'</code>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<pre class="fragment">N88 BASIC DISK FORMAT
+Files listing
+d88 offset @ 0x277b0
+CHR 12-01-01
+
+x0 - x8 : 9 letter name, padded with 0x20
+x9      : file status byte: typically 0x80, 0x01
+xA      : data pointer; multiply by 8 to find sector
+or: ptr * (2048 + 128)+688 = offset into disk image 
+    [0xa] * (0x800 + 0x80)+0x2b0
+xB - xF : generally FF
+
+PC88 BAM
+********
+12-1-13 to 12-1-16
+
+12-1-13: filled with 00 
+[ n88 basic autorun sector - explained below]
+
+12-1-14/15/16: (all 3 are duplicated)
+
+!ONE BLOCK IS 8 SECTORS ON DISK.!
+:0 - 159 (0-af) byte format:
+0 ~ af: Sector in this space is full. The byte value is the next sector 
+in this file.
+C1 ~ C8: 1 block of normal data, which takes up 1-8 sectors of the block.
+FE : System area (e.g. BAM)
+FF : Empty sector.
+
+:160+: ae f0 eb 00 [ls] [ls] ... ???
+This may be scratch area used by N88 Disk BASIC. The only consistency
+I've seen is that addresses ~0xb0 - 0xb3 are always [ae f0 eb 00]. 
+The rest of the area is filled with 0s.
+
+BASIC AUTORUN STUB:
+par example, for mucom:
+\00 \01 run"mlf88"\00 \00 \00</pre> 
+</div>
+</div>
 <hr/>The documentation for this class was generated from the following file:<ul>
 <li>tools/d88.py</li>
 </ul>

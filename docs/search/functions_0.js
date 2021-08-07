@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['bytohex',['byToHex',['../group___text.html#gab22a38f6e5ef7c4b83be823315c9959f',1,'byToHex(u8 by):&#160;textmode.c'],['../group___p_c88-_c.html#gab22a38f6e5ef7c4b83be823315c9959f',1,'byToHex(u8 by):&#160;textmode.c']]]
+  ['adddirentry',['AddDirEntry',['../classd88_1_1disk.html#a93a3a89b9cb874bbf703b86f5d11b227',1,'d88::disk']]]
 ];
