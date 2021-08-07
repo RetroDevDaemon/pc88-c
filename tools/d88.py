@@ -1,17 +1,6 @@
 # d88
 # header for python scripting with PC88-C
-'''
-  N88 BASIC DISK FORMAT
-Files listing
-d88 offset @ 0x277b0
-CHR 12-01-01
 
-x0 - x8 : 9 letter name, padded with 0x20
-x9      : file status byte: typically 0x80, 0x01
-xA      : data pointer; multiply by 8 to find sector
-           or: [0xA] * (2048 + 128)+688 = offset into disk image 
-xB - xF : generally FF
-'''
 
 class d88sector():
     def __init__(self):
@@ -123,7 +112,7 @@ class disk():
                 sn += 1
             self.tracks.append(tr)
             f += 1
-        
+    
     def GetDiskInfo(self):
         i = 0
         while i < 0x10:
@@ -152,7 +141,7 @@ class disk():
     	# write file name, flags, disk size then track headers
     	i = 0
     	while i < len(self.diskname):
-    		newbytes.append(chr(self.diskname[i])) 
+    		newbytes.append(ord(self.diskname[i])) 
     		i += 1
     	while i < 0x1b:
     		newbytes.append(0) 
@@ -335,13 +324,162 @@ class disk():
     def WriteBytes(self, fn):
         f = open(fn, 'wb')
         i  =0
+        tb = 0
         while i < len(self.bytes):
-            f.write(bytes([self.bytes[i]]))
+            if(type(self.bytes[i]) == 'str'):
+                tb = bytes([ord(self.bytes[i])])
+            else:
+                tb = bytes([self.bytes[i]])
+            f.write(tb)
             i += 1
         f.close()        
         print(fn, 'written successfully.')
 
-    def AddFile(self, fn, c, h, r):
+    def AddDirEntry(self, fn, ofs, sz, filetype='ASCII'):
+        # sector 12-1-1
+        '''
+        N88 BASIC DISK FORMAT
+        Files listing
+        d88 offset @ 0x277b0
+        CHR 12-01-01
+
+        x0 - x8 : 9 letter name, padded with 0x20
+        x9      : file status byte: typically 0x80, 0x01
+        xA      : data pointer; multiply by 8 to find sector
+                or: ptr * (2048 + 128)+688 = offset into disk image 
+                    [0xa] * (0x800 + 0x80)+0x2b0
+        xB - xF : generally FF
+        
+        PC88 BAM
+        ********
+        12-1-13 to 12-1-16
+
+        12-1-13: filled with 00 
+        [ n88 basic autorun sector - explained below]
+
+        12-1-14/15/16: (all 3 are duplicated)
+
+        !ONE BLOCK IS 8 SECTORS ON DISK.!
+        :0 - 159 (0-af) byte format:
+        0 ~ af: Sector in this space is full. The byte value is the next sector 
+                in this file.
+        C1 ~ C8: 1 block of normal data, which takes up 1-8 sectors of the block.
+        FE : System area (e.g. BAM)
+        FF : Empty sector.
+
+        :160+: ae f0 eb 00 [ls] [ls] ... ???
+        This may be scratch area used by N88 Disk BASIC. The only consistency
+        I've seen is that addresses ~0xb0 - 0xb3 are always [ae f0 eb 00]. 
+        The rest of the area is filled with 0s.
+
+        BASIC AUTORUN STUB:
+        par example, for mucom:
+        \00 \01 run"mlf88"\00 \00 \00'''
+        # if the first two bytes of the basic stub are ff, fill it in with 0
+        if( (self.bytes[0x28480] == 0xff) and (self.bytes[0x28481] == 0xff)):
+            i = 0x28480 
+            while i < 0x28480+256:
+                self.bytes[i] = 0
+                i += 1
+        totsec = int(sz / 2048)
+        BAM0 = 0x28590
+        BAM1 = 0x286a0
+        BAM2 = 0x287b0 
+        # fill in the bottom bytes with 00 and the 4 bytes above.
+        i = 0xa0
+        self.bytes[BAM0 + i] = 0xae 
+        self.bytes[BAM1 + i] = 0xae 
+        self.bytes[BAM2 + i] = 0xae 
+        i += 1
+        self.bytes[BAM0 + i] = 0xf0 
+        self.bytes[BAM1 + i] = 0xf0 
+        self.bytes[BAM2 + i] = 0xf0 
+        i += 1 
+        self.bytes[BAM0 + i] = 0xeb 
+        self.bytes[BAM1 + i] = 0xeb 
+        self.bytes[BAM2 + i] = 0xeb 
+        i += 1
+        while i < 256:
+            self.bytes[BAM0 + i] = 0
+            self.bytes[BAM1 + i] = 0
+            self.bytes[BAM2 + i] = 0
+            i += 1 
+        if(self.bytes[BAM0 + ofs] != 0xff):
+            print("That sector is taken!")
+            return -1
+        while(totsec > 0): # do we need to spread this out over multiple blocks?
+            # find first available block byte FORWARD that is FF. We need to avoid
+            # diskbasic / dos / bam sectors.
+            g = 0
+            while( (self.bytes[BAM0 + ofs + g] != 0xff) or \
+                   (self.bytes[BAM0 + ofs + g] == 0xfe) ):
+                g += 1 
+                if((ofs + g) > 159):
+                    print("won't fit!")
+                    return -1
+            self.bytes[BAM0 + ofs] = ofs + g
+            self.bytes[BAM1 + ofs] = ofs + g
+            self.bytes[BAM2 + ofs] = ofs + g
+            totsec -= 1
+        g = 0
+        while( (self.bytes[BAM0 + ofs + g] != 0xff) or \
+                (self.bytes[BAM0 + ofs + g] == 0xfe) ):
+            g += 1 
+            if((ofs + g) > 159):
+                print("won't fit!")
+                return -1
+        cval = int(((sz % 2048) / 256) + 1)
+        self.bytes[BAM0 + ofs + g] = cval | 0xc0
+        self.bytes[BAM1 + ofs + g] = cval | 0xc0
+        self.bytes[BAM2 + ofs + g] = cval | 0xc0
+        # if the file has a . then split it
+        if ( fn.find('.') != -1 ):
+            fn = fn.split('.') 
+            newfn = ''
+            i = 0
+            while i < len(fn[0]):
+                newfn = newfn + fn[0][i]
+                i = i + 1
+            if len(newfn) < 6:
+                while(len(newfn) < 6):
+                    newfn = newfn + ' '
+            if len(newfn) > 6:
+                newfn = newfn[:6]
+            i = 0
+            while i < len(fn[1]):
+                newfn = newfn + fn[1][i]
+                i = i + 1
+            if len(newfn) > 9:
+                newfn = newfn[:9]
+        else:
+            while(len(fn) < 9):
+                fn = fn + ' '
+            newfn = fn[:9]
+        
+        # ^ why is string manipulation such a pita?
+        #TODO better file replace search
+        # start at 0x277b0 #FIXME for other offsets 
+        # 0x277c9 is the first status byte in the directory sector
+        i = 0x277c9
+        while(self.bytes[i] != 0xff):
+            i = i + 16
+        if(filetype == 'BASIC'):
+            self.bytes[i] = 0x80 # compiled BASIC
+        elif(filetype == 'ASCII'):
+            self.bytes[i] = 0 
+        elif(filetype == 'BINARY'):
+            self.bytes[i] = 1
+        i = i & 0xffff0
+        f = 0
+        while f < len(newfn):
+            self.bytes[i] = ord(newfn[f]) # write filename
+            i += 1
+            f += 1
+        i += 1
+        self.bytes[i] = ofs #write block number/ dir offset
+        return 
+
+    def AddFile(self, fn, c, h, r, respectBAM=False, ascii=False, loadaddr=-1, endaddr=0):
         tow = open(fn, 'rb') 
         outdat = bytearray(tow.read()) 
         tow.close() 
@@ -353,12 +491,38 @@ class disk():
         start = self.tracktable[starttrack] + ((startsec - 1) * (256+16)) + 16
         print("Track:",starttrack,"Sector:",startsec)
         print("Disk offset",hex(start))
-        while i < len(outdat):
-            self.bytes[start + bc] = outdat[i]
+        if(not respectBAM):
+            while i < len(outdat):
+                self.bytes[start + bc] = outdat[i]
+                i += 1
+                bc += 1 
+                if (i % 256 == 0):
+                    bc += 16 
+        else: # respect the DOS format. (This means skip the DOS reserved
+            if(loadaddr != -1): # and add a binary load address, if requested
+                self.bytes[start + bc] = loadaddr & 0xff 
+                bc += 1
+                self.bytes[start + bc] = loadaddr >> 8
+                bc += 1
+                self.bytes[start + bc] = endaddr & 0xff 
+                bc += 1
+                self.bytes[start + bc] = endaddr >> 8 
+                bc += 1
+            while i < len(outdat):
+                self.bytes[start + bc] = outdat[i]
+                i += 1
+                bc += 1 
+                if (i % 256 == 0):
+                    bc += 16 
+                if((start + bc) == 0x28480):
+                    bc += 0x440
+        if(ascii):
+            self.bytes[start + bc] = 0x1a # file terminator 
+            bc += 1
+        while ((i % 256) != 0):
+            self.bytes[start+bc] = 0 # fill with 0 
             i += 1
-            bc += 1 
-            if (i % 256 == 0):
-                bc += 16 
+            bc += 1
         # this is error checking, it could be useless.
         if(self.bytes[start+bc] == 0xff):
             self.bytes[start+bc] = 0xc9
