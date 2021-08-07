@@ -60,7 +60,7 @@ $ python3 -m pip install --upgrade Pillow
 $ pip (or pip3) install numpy
 $ pip (or pip3) install intelhex
 ```
-<br>
+
 `Makefile` - Creates app.d88 for use in an emulator.<br>
 Usage: `make PROJECT=examples/1bitsprite USEDSEC=0x2f`<br>
 Creates app.d88 in root of '1bitsprite' project and overrides the value of the initial number of sectors to copy in from the autoloader to 2Fh.<br>
