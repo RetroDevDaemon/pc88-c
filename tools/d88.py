@@ -491,7 +491,7 @@ class disk():
         start = self.tracktable[starttrack] + ((startsec - 1) * (256+16)) + 16
         print("Track:",starttrack,"Sector:",startsec)
         print("Disk offset",hex(start))
-        if(not respectBAM):
+        if(respectBAM==False):
             while i < len(outdat):
                 self.bytes[start + bc] = outdat[i]
                 i += 1
@@ -505,6 +505,7 @@ class disk():
                 self.bytes[start + bc+2] = endaddr & 0xff 
                 self.bytes[start + bc+3] = endaddr >> 8     
                 start += 4
+                print(hex(start))
                 while i < len(outdat):
                     self.bytes[start + bc] = outdat[i]
                     i += 1

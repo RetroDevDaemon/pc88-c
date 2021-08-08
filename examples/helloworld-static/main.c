@@ -7,6 +7,7 @@ typedef unsigned int u16;
 u8 TABULATE;
 vu8* SCREEN_POINTER;
 u8 LINE_POINTER;
+u8 _c[2] = { 0, 0 };
 
 inline void putchr(u8 c)
 {
@@ -47,8 +48,9 @@ int main()
     SCREEN_POINTER = (vu8*)SCREEN_TXT_BASE;
     LINE_POINTER = (u8)0;
     SetCursorPos(20, 10);
-    print("Hello World!");
-
+    print("Hello World!\x00");
+    _c[0] = *(u8*)(0x8000);
+    print(_c);
 	// Taken from Bookworm's Library:
 	/*
 	__asm 

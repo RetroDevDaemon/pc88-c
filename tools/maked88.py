@@ -100,7 +100,7 @@ elif(len(sys.argv) > 2):
         f.close()
         stloc = -1
         if(fsize > 348848):
-            print("Won't fit!")
+            print("Won't fit! File too big for disk")
             sys.exit()
     ########################################
     #  N88 DISK BASIC FILE FORMATS 
@@ -124,6 +124,7 @@ elif(len(sys.argv) > 2):
                     stloc = int(sys.argv[6],16) 
                     enloc = stloc + fsize 
                     if(enloc > 0xffff): # error check
+                        print(stloc,enloc)
                         print("Won't fit!")
                         sys.exit()
                     print("Appending: ", hex(stloc), hex(enloc))
@@ -142,7 +143,7 @@ elif(len(sys.argv) > 2):
             # Wierd math, but it works out.
             tgc = int(dirofs / 4)
             tgh = int((dirofs % 4)/2)
-            tgr = ((dirofs % 2) * 8)+1
+            tgr = ((dirofs % 2) * 8) 
             bofs = dirofs * (0x800 + 0x80) + 0x2b0
             print(hex(bofs), dirofs, hex(tgc), tgh, tgr)
             # Get the base path name
@@ -158,7 +159,7 @@ elif(len(sys.argv) > 2):
             if(ftype=='ASCII'):
                 atf = True
             # and add the file in binary mode with special flags
-            a = bnew.AddFile(fn, tgc, tgh, tgr, \
+            a = bnew.AddFile(fn, tgc, tgh, tgr+1, \
                     respectBAM=True, ascii=atf, loadaddr=stloc, endaddr=stloc+fsize)
             asrt(a)
             # Add the directory and BAM entry too!
@@ -172,7 +173,7 @@ elif(len(sys.argv) > 2):
     #  NORMAL C-H-R BASED FILE ADD
     ##################################
             print('Adding file ' + fn + ' to ' + sys.argv[1] + '...', end=' ')
-            new.AddFile(fn, int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]))
+            new.AddFile(fn, int(sys.argv[3]), int(sys.argv[4]), int(sys.argv[5]), respectBAM=False)
             new.WriteBytes(sys.argv[1])
 else:
     ###############################
