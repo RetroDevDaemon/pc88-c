@@ -42,16 +42,7 @@ class Macro:
 			a = a + self.listing[i]
 			i += 1
 		return a
-	#def FixListing(self):
-	#	i = 0
-	#	while i < len(self.listing):
-	#		j = 0
-	#		while j < len(self.parameters):
-				#if(self.listing[i].find(self.parameters[j]) != -1):
-					#print('Parameter ' + str(j) + 'on list \#' + str(i))
-	#			j += 1
-	#		i += 1
-		#
+
 	def copy(self):
 		target = Macro()
 		for f in self.parameters:

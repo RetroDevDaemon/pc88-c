@@ -8,6 +8,9 @@ inline void SetVBLIRQ();
 static u8* songPointer;
 static bool SONGPLAYING = false;
 
+//playing:
+#include "testssg.h"
+// not playing
 const unsigned char song[] = {\
 // Vgm_ 1.60 header
 	'V', 'g', 'm', ' ', 0x0, 0x0, 0x0, 0x0, 0x60, 0x1, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 
@@ -62,11 +65,13 @@ void Vblank() __critical __interrupt
 	// Do our Vblank code:
     if(SONGPLAYING)
     {
-    	VGMPlayer();
+	VGMPlayer();
     }
 
     IRQ_ON
 }
+
+u8* songStart;
 
 void main()
 {
@@ -78,9 +83,15 @@ void main()
 	SetVBLIRQ();        // And enable the VBL interrupt!
 	IRQ_ON 
 
-	LoadVGM((const u8*)&song);
+	LoadVGM((const u8*)&outsong);
 	//songPointer = (const u8*)&song + 0x80;
 	//SONGPLAYING = true;
+
+	print("Now playing: Shantae - Burning Town (Jake Kaufman)");
+	SetCursorPos(0,1);
+	print("Converted from Deflemask for Pi");
+	SetCursorPos(0,2);
+	print("Using a 3-channel SN76489 to YM2203 script");
 
 	while(1)
 	{}
@@ -88,7 +99,8 @@ void main()
 
 void LoadVGM(const u8* sn) 
 {
-	songPointer = sn + 0x80;
+	songPointer = sn + 0x40; // 1.50 FIXME
+	songStart = songPointer;
 	SONGPLAYING = true;
 }
 
@@ -143,13 +155,16 @@ void VGMPlayer() __naked
 
 	_WRITEOPN:
 		; Get register
-		call _GETNEXTBYTE		
 		ld c,#0x44
-		out (c), a 
-		
-		; Get byte 
 		call _GETNEXTBYTE
+		out (c), a 
+		;nop 
+		;nop 
+		;nop
+		;nop 
+		; Get byte 
 		ld c,#0x45
+		call _GETNEXTBYTE
 		out (c), a 		
 
 		; Loop 
@@ -163,8 +178,10 @@ void VGMPlayer() __naked
 		jp endPlay 
 
 	_ENDSONG: 
-		xor a 
-		ld (_SONGPLAYING),a
+		;xor a 
+		;ld (_SONGPLAYING),a
+		ld hl,(_songStart) 
+		ld (_songPointer),hl 
 		jp endPlay 
 
 	_ERROR:
