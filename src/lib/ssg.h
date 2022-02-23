@@ -314,7 +314,7 @@ struct Song {
     u8 flag;
 };
 
-struct InstrumentL { //25 bytes
+typedef struct instrument_lite { //25 bytes
     u8 fb_alg;      //b0
     u8 dt_mult[4];  //30
     u8 totallv[4];  //40
@@ -322,8 +322,8 @@ struct InstrumentL { //25 bytes
     u8 decay[4];    //60
     u8 susr[4];     //70
     u8 susl_relr[4];//80
-};
-struct Instrument { //32 bytes
+} InstrumentL;
+typedef struct instrument_full { //32 bytes
     u8 fb_alg;
     u8 dt_mult[4];
     u8 totallv[4];
@@ -332,7 +332,7 @@ struct Instrument { //32 bytes
     u8 susr[4];
     u8 susl_relr[4];
     char name[7];
-};
+} Instrument;
 
 #endif 
 /*! @} */

@@ -48,7 +48,7 @@ APPNAME=app.d88
 
 ## EMULATOR EXECUTABLE ##
 #EMUEXE=C:\Users\Bent\Downloads\m88\m88x5.exe 
-EMUEXE=~/Downloads/quasi88-0.6.4/quasi88.sdl ./app.d88
+EMUEXE=~/Downloads/quasi88-0.6.4/quasi88.sdl -mem_wait -fdc_wait -fmgen ./app.d88
 #EMUEXE=quasi88 app.d88
 
 # This is updated when new .c files are added

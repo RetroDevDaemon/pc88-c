@@ -3,38 +3,6 @@
 
 #include "banklite.h"
 
-struct Song currentSong;
-int ticker;
-bool playingSong;
-
-// TODO: Prolly wont implement this
-void SetSSGInstrument(u8 chn, u8 instr)
-{
-    // Only 1 instrument is supported atm, generic piano 
-    switch(chn)
-    {
-        case(0):
-            break;
-        case(1):
-            break;
-        case(2):
-            break;
-    }
-    switch(instr)
-    {
-        case(0):
-            break;
-        case(1):
-            // 255 255 255 200 0 10
-            //    A     D    S   R
-            break;
-    }
-}
-
-void SetFMInstrument(u8 chn, u8 instr)
-{
-
-}
 
 // `D, `E, `F
 // (1 instrument for ssg...)
@@ -67,7 +35,7 @@ void SetFMInstrument(u8 chn, u8 instr)
 //#define M_REVERB 0xf3ff
 //#define M_REVERBMODE 0xf4ff
 //#define M_REVERBSWITCH 0xf5ff
-#define null (void*)0
+//#define null (void*)0
 #define Null null 
 
 // Organization of 11-channels in m88 files:
@@ -76,6 +44,64 @@ void SetFMInstrument(u8 chn, u8 instr)
 // RHY
 // FM4 FM5 FM6
 // (ADPCM)
+
+struct Song currentSong;
+int ticker;
+bool playingSong;
+
+// TODO: Prolly wont implement this
+void SetSSGInstrument(u8 chn, u8 instr)
+{
+    // Only 1 instrument is supported atm, generic piano 
+    switch(chn)
+    {
+        case(0):
+            break;
+        case(1):
+            break;
+        case(2):
+            break;
+    }
+    switch(instr)
+    {
+        case(0):
+            break;
+        case(1):
+            // 255 255 255 200 0 10
+            //    A     D    S   R
+            break;
+    }
+}
+
+void SetFMInstrument(u8 chn, u8 instr_no)
+{
+    InstrumentL* ins = \
+        (InstrumentL*)(u16)&banklite + (sizeof(InstrumentL) * instr_no);
+    u8 tgt_reg = 0x30 | chn;
+    SetIOReg(OPN_REG, 0xb0 | chn);
+    SetIOReg(OPN_DAT, ins->fb_alg);
+    for(u8 c = 0; c < 4; c++)
+    {
+        SetIOReg(OPN_REG, tgt_reg); //$30
+        SetIOReg(OPN_DAT, ins->dt_mult[c]);
+        tgt_reg += 0x10;
+        SetIOReg(OPN_REG, tgt_reg); //$40
+        SetIOReg(OPN_DAT, ins->totallv[c]);
+        tgt_reg += 0x10;
+        SetIOReg(OPN_REG, tgt_reg); //$50
+        SetIOReg(OPN_DAT, ins->ks_atkr[c]);
+        tgt_reg += 0x10;
+        SetIOReg(OPN_REG, tgt_reg); //$60
+        SetIOReg(OPN_DAT, ins->decay[c]);
+        tgt_reg += 0x10;
+        SetIOReg(OPN_REG, tgt_reg); //$70
+        SetIOReg(OPN_DAT, ins->susr[c]);
+        tgt_reg += 0x10;
+        SetIOReg(OPN_REG, tgt_reg); //$80
+        SetIOReg(OPN_DAT, ins->susl_relr[c]);
+        tgt_reg = (0x30 | chn) + (c * 4);
+    }
+}
 
 void LoadSong(const u8* song)
 {   // Load song header
@@ -128,7 +154,6 @@ void PlaySong()
         if(channel <= 2)
         {
             //* FM CHANNELS 1 2 3 *//
-            //#define M_INSTRUMENT 0xf0 // @n
             //#define M_VOLUME 0xf1    // vn
             //#define M_DETUNE 0xf2    // Dn
             //#define M_GATETIME 0xf3     // qn
@@ -323,24 +348,24 @@ void PlaySong()
                 currentSong.ssg_tone_len[j]--;  // then tick it down
                 if(currentSong.ssg_tone_len[j] < currentSong.ssg_base_vol[j]) // am i OK to fade?
                 {
-                    //currentSong.ssg_fading[j] = true;
-                    SetIOReg(OPN_REG, (CHA_AMP + j));
-                    SetIOReg(OPN_DAT, 0);
-                    currentSong.ssg_vol[j]=0;
+                    currentSong.ssg_fading[j] = true;
+                    //SetIOReg(OPN_REG, (CHA_AMP + j));
+                    //SetIOReg(OPN_DAT, 0);
+                    //currentSong.ssg_vol[j]=0;
                 }
-                /*
+                
                 if(currentSong.ssg_fading[j] == true) 
                 {
                     if(currentSong.ssg_vol[j] > 1) // if I'm not at volume 0 yet... 
                     {
                         SetIOReg(OPN_REG, (CHA_AMP + j));
-                        SetIOReg(OPN_DAT, 0);//--currentSong.ssg_vol[j]); // fade this channel more!
-                        currentSong.ssg_vol[j]=0;
+                        SetIOReg(OPN_DAT, --currentSong.ssg_vol[j]); // fade this channel more!
+                        //currentSong.ssg_vol[j]=0;
                     }
                     else 
                         currentSong.ssg_fading[j] = false;
                 }
-                */
+                
             }
         }
     }
