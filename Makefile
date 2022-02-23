@@ -89,6 +89,12 @@ run:
 xdisk:
 	$(XDISK)
 
+docs:
+	rm -rf docs
+	mkdir docs
+	cd docs
+	doxygen ..
+
 #m88bin: 
 #	$(AS) -los out/music2.rel src/music2.z80
 #	$(LD) -i out/music2.ihx out/music2.rel
