@@ -134,7 +134,13 @@ void LoadSong(const u8* song)
     /*
     fill the rest of the song struct with 0 */
 }
+/*
+Supported MML:
 
+Tone and rest control (a-g, ., r, >, <)
+o, t, v, [, ], P, w, #
+Octave, tempo, volume, repeat, SSG mixer control, noise frequency, flag byte.
+*/
 
 void PlaySong()
 {
