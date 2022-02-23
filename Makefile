@@ -27,10 +27,10 @@ PROJECT=examples/helloworld
 # $ make PROJECT=myproj
 
 ## MEMORY LOCATIONS ##
-# stack grows downward, data grows upward. Should be the same value.
-default: STACK=0x100 
-default: DATA=0x100
-default: CODE=0x1000
+# stack grows downward, code/data grows upward(?)
+default: STACK=0xFF
+default: DATA=0xc000
+default: CODE=0x100
 binary: STACK=0xc000
 binary: DATA=0xd800
 binary: CODE=0xc000
@@ -39,7 +39,7 @@ binary: CODE=0xc000
 # This is due to VRAM being in C000~.
 
 88FLAGS=-mz80 \
-	--stack-loc $(STACK) --code-loc $(CODE) \
+	--stack-loc $(STACK) --code-loc $(CODE) --data-loc $(DATA)\
 	--no-std-crt0\
 	#--fomit-frame-pointer 
 
@@ -69,7 +69,7 @@ PC88CFILES=out/crt0.rel \
 
 out/%.rel: src/lib/%.c 
 	@if [ ! -d "out" ]; then mkdir out; fi
-	sdcc -c -mz80 $(CFLAGS) -o $@ $<
+	sdcc -c -mz80 $(CFLAGS) $(CMDFLAGS) -o $@ $<
 
 
 default: clean $(PROJECT) $(PC88CFILES)
@@ -80,8 +80,7 @@ default: clean $(PROJECT) $(PC88CFILES)
 	$(PY) tools/hex2bin.py out/main.ihx main.bin
 	$(PY) tools/maked88.py $(APPNAME) src/ipl.bin 0 0 1
 	$(PY) tools/maked88.py $(APPNAME) main.bin 0 0 2	
-	$(EMUEXE)
-
+	
 run:
 	$(EMUEXE)
 

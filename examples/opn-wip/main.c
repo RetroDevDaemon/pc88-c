@@ -48,8 +48,8 @@ void main()
 
 // cycle counts:
 // 367h when song is over
-// 284h when 1 SSG (270
-// 256h when 3 SSG (240
+// 284h when 1 SSG (270 223
+// 256h when 3 SSG (240 286
 
 
 void Vblank() __critical __interrupt

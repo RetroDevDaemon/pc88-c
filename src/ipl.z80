@@ -24,7 +24,7 @@ Main:
     out     (0xE6),a 
     out     (0xE4),a        ; disable all IRQ
     out     (0x5F),a        ; mainRAM 
-    ld      hl,#0x1000          ; prog exe address 
+    ld      hl,#0x100          ; prog exe address , should be _CODE
     ld      de,#((0 << 8) | 2)  ; track 0, sector 2 
     ld      bc,#((0x5f << 8) | 0)   ; sector size, drive no
     call    DISK_Load 
