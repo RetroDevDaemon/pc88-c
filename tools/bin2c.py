@@ -10,8 +10,8 @@ ostr = 'const unsigned char ' + bn + '[] = {\n\t'
 i = 0
 while i < len(inby):
 
-    ostr += hex(inby[i])#hex(a|b|c|d)
-    ostr += ', '
+    ostr += str(inby[i])#hex(a|b|c|d)
+    ostr += ','
     if((i+1)%16 == 0):
         ostr += '\n\t'
     i += 1

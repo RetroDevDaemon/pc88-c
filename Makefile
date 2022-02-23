@@ -48,7 +48,7 @@ APPNAME=app.d88
 
 ## EMULATOR EXECUTABLE ##
 #EMUEXE=C:\Users\Bent\Downloads\m88\m88x5.exe 
-EMUEXE=~/Downloads/quasi88-065 app.d88
+EMUEXE=~/Downloads/quasi88-0.6.4/quasi88.sdl ./app.d88
 #EMUEXE=quasi88 app.d88
 
 # This is updated when new .c files are added
@@ -80,6 +80,9 @@ default: clean $(PROJECT) $(PC88CFILES)
 	$(PY) tools/hex2bin.py out/main.ihx main.bin
 	$(PY) tools/maked88.py $(APPNAME) src/ipl.bin 0 0 1
 	$(PY) tools/maked88.py $(APPNAME) main.bin 0 0 2	
+	$(EMUEXE)
+
+run:
 	$(EMUEXE)
 
 #m88bin: 

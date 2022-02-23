@@ -21,6 +21,11 @@
 */
 #define OPN_REG 0x44
 #define OPN_DAT 0x45
+#define OPNA_REG 0x46
+#define OPNA_DAT 0x47
+#define OPNA_SYS 0x29
+// bit 7 - enable FM456/ADPCM
+
 /*![7] = 0b00111110\n
 // derivative:\n
 // TONE = CLOCK / (16 * PERIOD)\n
@@ -110,9 +115,9 @@
 #define CHA_AMP 8
 #define CHB_AMP 9
 #define CHC_AMP 10
-#define SSG_ENVPDH 0xb
-#define SSG_ENVPDL 0xc
-#define SSG_ENVTYPE 0xd
+#define FMTONE_ENVPDH 0xb
+#define FMTONE_ENVPDL 0xc
+#define FMTONE_ENVTYPE 0xd
 #define SSG_IOA 0xe
 #define SSG_IOB 0xf
 #define CHA_NOISE_OFF 0b1000
@@ -123,117 +128,138 @@
 #define CHC_TONE_OFF 0b100
 
 /// SSG Period inputs:
-#define SSG_C2 (u16)(CPU4MHZ / (C2_440 * 32))
-#define SSG_C2S (u16)(CPU4MHZ / (C2S_440 * 32))
-#define SSG_D2 (u16)(CPU4MHZ / (D2_440 * 32))
-#define SSG_D2S (u16)(CPU4MHZ / (D2S_440 * 32))
-#define SSG_E2 (u16)(CPU4MHZ / (E2_440 * 32))
-#define SSG_F2 (u16)(CPU4MHZ / (F2_440 * 32))
-#define SSG_F2S (u16)(CPU4MHZ / (F2S_440 * 32))
-#define SSG_G2 (u16)(CPU4MHZ / (G2_440 * 32))
-#define SSG_G2S (u16)(CPU4MHZ / (G2S_440 * 32))
-#define SSG_A2 (u16)(CPU4MHZ / (A2_440 * 32))
-#define SSG_A2S (u16)(CPU4MHZ / (A2S_440 * 32))
-#define SSG_B2 (u16)(CPU4MHZ / (B2_440 * 32))
+//3993600 / (65.41 * 32)
+#define FMTONE_C2 (const u16)(1908)//(CPU4MHZ / (C2_440 * 32))
+#define FMTONE_C2S (const u16)(CPU4MHZ / (C2S_440 * 32))
+#define FMTONE_D2 (const u16)(CPU4MHZ / (D2_440 * 32))
+#define FMTONE_D2S (const u16)(CPU4MHZ / (D2S_440 * 32))
+#define FMTONE_E2 (const u16)(CPU4MHZ / (E2_440 * 32))
+#define FMTONE_F2 (const u16)(CPU4MHZ / (F2_440 * 32))
+#define FMTONE_F2S (const u16)(CPU4MHZ / (F2S_440 * 32))
+#define FMTONE_G2 (const u16)(CPU4MHZ / (G2_440 * 32))
+#define FMTONE_G2S (const u16)(CPU4MHZ / (G2S_440 * 32))
+#define FMTONE_A2 (const u16)(CPU4MHZ / (A2_440 * 32))
+#define FMTONE_A2S (const u16)(CPU4MHZ / (A2S_440 * 32))
+#define FMTONE_B2 (const u16)(CPU4MHZ / (B2_440 * 32))
 
-#define SSG_C3 (u16)(CPU4MHZ / (C3_440 * 32))
-#define SSG_C3S (u16)(CPU4MHZ / (C3S_440 * 32))
-#define SSG_D3 (u16)(CPU4MHZ / (D3_440 * 32))
-#define SSG_D3S (u16)(CPU4MHZ / (D3S_440 * 32))
-#define SSG_E3 (u16)(CPU4MHZ / (E3_440 * 32))
-#define SSG_F3 (u16)(CPU4MHZ / (F3_440 * 32))
-#define SSG_F3S (u16)(CPU4MHZ / (F3S_440 * 32))
-#define SSG_G3 (u16)(CPU4MHZ / (G3_440 * 32))
-#define SSG_G3S (u16)(CPU4MHZ / (G3S_440 * 32))
-#define SSG_A3 (u16)(CPU4MHZ / (A3_440 * 32))
-#define SSG_A3S (u16)(CPU4MHZ / (A3S_440 * 32))
-#define SSG_B3 (u16)(CPU4MHZ / (B3_440 * 32))
+#define FMTONE_C3 (const u16)(CPU4MHZ / (C3_440 * 32))
+#define FMTONE_C3S (const u16)(CPU4MHZ / (C3S_440 * 32))
+#define FMTONE_D3 (const u16)(CPU4MHZ / (D3_440 * 32))
+#define FMTONE_D3S (const u16)(CPU4MHZ / (D3S_440 * 32))
+#define FMTONE_E3 (const u16)(CPU4MHZ / (E3_440 * 32))
+#define FMTONE_F3 (const u16)(CPU4MHZ / (F3_440 * 32))
+#define FMTONE_F3S (const u16)(CPU4MHZ / (F3S_440 * 32))
+#define FMTONE_G3 (const u16)(CPU4MHZ / (G3_440 * 32))
+#define FMTONE_G3S (const u16)(CPU4MHZ / (G3S_440 * 32))
+#define FMTONE_A3 (const u16)(CPU4MHZ / (A3_440 * 32))
+#define FMTONE_A3S (const u16)(CPU4MHZ / (A3S_440 * 32))
+#define FMTONE_B3 (const u16)(CPU4MHZ / (B3_440 * 32))
 
-#define SSG_C4 (u16)(CPU4MHZ / (C4_440 * 32))
-#define SSG_C4S (u16)(CPU4MHZ / (C4S_440 * 32))
-#define SSG_D4 (u16)(CPU4MHZ / (D4_440 * 32))
-#define SSG_D4S (u16)(CPU4MHZ / (D4S_440 * 32))
-#define SSG_E4 (u16)(CPU4MHZ / (E4_440 * 32))
-#define SSG_F4 (u16)(CPU4MHZ / (F4_440 * 32))
-#define SSG_F4S (u16)(CPU4MHZ / (F4S_440 * 32))
-#define SSG_G4 (u16)(CPU4MHZ / (G4_440 * 32))
-#define SSG_G4S (u16)(CPU4MHZ / (G4S_440 * 32))
-#define SSG_A4 (u16)(CPU4MHZ / (A4_440 * 32))
-#define SSG_A4S (u16)(CPU4MHZ / (A4S_440 * 32))
-#define SSG_B4 (u16)(CPU4MHZ / (B4_440 * 32))
+#define FMTONE_C4 (const u16)(CPU4MHZ / (C4_440 * 32))
+#define FMTONE_C4S (const u16)(CPU4MHZ / (C4S_440 * 32))
+#define FMTONE_D4 (const u16)(CPU4MHZ / (D4_440 * 32))
+#define FMTONE_D4S (const u16)(CPU4MHZ / (D4S_440 * 32))
+#define FMTONE_E4 (const u16)(CPU4MHZ / (E4_440 * 32))
+#define FMTONE_F4 (const u16)(CPU4MHZ / (F4_440 * 32))
+#define FMTONE_F4S (const u16)(CPU4MHZ / (F4S_440 * 32))
+#define FMTONE_G4 (const u16)(CPU4MHZ / (G4_440 * 32))
+#define FMTONE_G4S (const u16)(CPU4MHZ / (G4S_440 * 32))
+#define FMTONE_A4 (const u16)(CPU4MHZ / (A4_440 * 32))
+#define FMTONE_A4S (const u16)(CPU4MHZ / (A4S_440 * 32))
+#define FMTONE_B4 (const u16)(CPU4MHZ / (B4_440 * 32))
 
-#define SSG_C5 (u16)(CPU4MHZ / (C5_440 * 32))
-#define SSG_C5S (u16)(CPU4MHZ / (C5S_440 * 32))
-#define SSG_D5 (u16)(CPU4MHZ / (D5_440 * 32))
-#define SSG_D5S (u16)(CPU4MHZ / (D5S_440 * 32))
-#define SSG_E5 (u16)(CPU4MHZ / (E5_440 * 32))
-#define SSG_F5 (u16)(CPU4MHZ / (F5_440 * 32))
-#define SSG_F5S (u16)(CPU4MHZ / (F5S_440 * 32))
-#define SSG_G5 (u16)(CPU4MHZ / (G5_440 * 32))
-#define SSG_G5S (u16)(CPU4MHZ / (G5S_440 * 32))
-#define SSG_A5 (u16)(CPU4MHZ / (A5_440 * 32))
-#define SSG_A5S (u16)(CPU4MHZ / (A5S_440 * 32))
-#define SSG_B5 (u16)(CPU4MHZ / (B5_440 * 32))
+#define FMTONE_C5 (const u16)(CPU4MHZ / (C5_440 * 32))
+#define FMTONE_C5S (const u16)(CPU4MHZ / (C5S_440 * 32))
+#define FMTONE_D5 (const u16)(CPU4MHZ / (D5_440 * 32))
+#define FMTONE_D5S (const u16)(CPU4MHZ / (D5S_440 * 32))
+#define FMTONE_E5 (const u16)(CPU4MHZ / (E5_440 * 32))
+#define FMTONE_F5 (const u16)(CPU4MHZ / (F5_440 * 32))
+#define FMTONE_F5S (const u16)(CPU4MHZ / (F5S_440 * 32))
+#define FMTONE_G5 (const u16)(CPU4MHZ / (G5_440 * 32))
+#define FMTONE_G5S (const u16)(CPU4MHZ / (G5S_440 * 32))
+#define FMTONE_A5 (const u16)(CPU4MHZ / (A5_440 * 32))
+#define FMTONE_A5S (const u16)(CPU4MHZ / (A5S_440 * 32))
+#define FMTONE_B5 (const u16)(CPU4MHZ / (B5_440 * 32))
 
-#define SSG_C6 (u16)(CPU4MHZ / (C6_440 * 32))
-#define SSG_C6S (u16)(CPU4MHZ / (C6S_440 * 32))
-#define SSG_D6 (u16)(CPU4MHZ / (D6_440 * 32))
-#define SSG_D6S (u16)(CPU4MHZ / (D6S_440 * 32))
-#define SSG_E6 (u16)(CPU4MHZ / (E6_440 * 32))
-#define SSG_F6 (u16)(CPU4MHZ / (F6_440 * 32))
-#define SSG_F6S (u16)(CPU4MHZ / (F6S_440 * 32))
-#define SSG_G6 (u16)(CPU4MHZ / (G6_440 * 32))
-#define SSG_G6S (u16)(CPU4MHZ / (G6S_440 * 32))
-#define SSG_A6 (u16)(CPU4MHZ / (A6_440 * 32))
-#define SSG_A6S (u16)(CPU4MHZ / (A6S_440 * 32))
-#define SSG_B6 (u16)(CPU4MHZ / (B6_440 * 32))
+#define FMTONE_C6 (const u16)(CPU4MHZ / (C6_440 * 32))
+#define FMTONE_C6S (const u16)(CPU4MHZ / (C6S_440 * 32))
+#define FMTONE_D6 (const u16)(CPU4MHZ / (D6_440 * 32))
+#define FMTONE_D6S (const u16)(CPU4MHZ / (D6S_440 * 32))
+#define FMTONE_E6 (const u16)(CPU4MHZ / (E6_440 * 32))
+#define FMTONE_F6 (const u16)(CPU4MHZ / (F6_440 * 32))
+#define FMTONE_F6S (const u16)(CPU4MHZ / (F6S_440 * 32))
+#define FMTONE_G6 (const u16)(CPU4MHZ / (G6_440 * 32))
+#define FMTONE_G6S (const u16)(CPU4MHZ / (G6S_440 * 32))
+#define FMTONE_A6 (const u16)(CPU4MHZ / (A6_440 * 32))
+#define FMTONE_A6S (const u16)(CPU4MHZ / (A6S_440 * 32))
+#define FMTONE_B6 (const u16)(CPU4MHZ / (B6_440 * 32))
 
 void PlaySong();
 
+
+
+// FM
+#define OPN_TEST_REG 0x21
+#define OPN_TIMERSET_1 0x24
+#define OPN_TIMERSET_2 0x25
+#define OPN_TIMERSET_3 0x26
+#define OPN_TIMER_OP 0x27
+#define OPN_INPUTDIV_1 0x2d
+#define OPN_INPUTDIV_2 0x2e // 2-6 for fm, 1-4 for square
+#define OPN_INPUTDIV_3 0x2f
+#define OPN_DETUNEMUL 0x30
+// 0 1 2 . 4 5 6 . 8 9 A . C D E
+#define OPN_FMLEVEL 0x40
+#define OPN_FMKEY 0x50
+#define OPN_FMDECAY 0x60
+#define OPN_FMSUSTAIN 0x70
+#define OPN_FMRELEASE 0x80
+#define OPN_FMENVELOPE 0x90
+
 static const u16 octavetwo[12] = {
-    SSG_C2, SSG_C2S,
-    SSG_D2, SSG_D2S, 
-    SSG_E2,
-    SSG_F2, SSG_F2S,
-    SSG_G2, SSG_G2S,
-    SSG_A2, SSG_A2S,
-    SSG_B2
+    FMTONE_C2, FMTONE_C2S,
+    FMTONE_D2, FMTONE_D2S, 
+    FMTONE_E2,
+    FMTONE_F2, FMTONE_F2S,
+    FMTONE_G2, FMTONE_G2S,
+    FMTONE_A2, FMTONE_A2S,
+    FMTONE_B2
 };
 static const u16 octavethree[12] = {
-    SSG_C3, SSG_C3S,
-    SSG_D3, SSG_D3S, 
-    SSG_E3,
-    SSG_F3, SSG_F3S,
-    SSG_G3, SSG_G3S,
-    SSG_A3, SSG_A3S,
-    SSG_B3
+    FMTONE_C3, FMTONE_C3S,
+    FMTONE_D3, FMTONE_D3S, 
+    FMTONE_E3,
+    FMTONE_F3, FMTONE_F3S,
+    FMTONE_G3, FMTONE_G3S,
+    FMTONE_A3, FMTONE_A3S,
+    FMTONE_B3
 };
 static const u16 octavefour[12] = {
-    SSG_C4, SSG_C4S,
-    SSG_D4, SSG_D4S,
-    SSG_E4,
-    SSG_F4, SSG_F4S,
-    SSG_G4, SSG_G4S,
-    SSG_A4, SSG_A4S,
-    SSG_B4
+    FMTONE_C4, FMTONE_C4S,
+    FMTONE_D4, FMTONE_D4S,
+    FMTONE_E4,
+    FMTONE_F4, FMTONE_F4S,
+    FMTONE_G4, FMTONE_G4S,
+    FMTONE_A4, FMTONE_A4S,
+    FMTONE_B4
 };
 static const u16 octavefive[12] = {
-    SSG_C5, SSG_C5S,
-    SSG_D5, SSG_D5S, 
-    SSG_E5,
-    SSG_F5, SSG_F5S,
-    SSG_G5, SSG_G5S,
-    SSG_A5, SSG_A5S,
-    SSG_B5
+    FMTONE_C5, FMTONE_C5S,
+    FMTONE_D5, FMTONE_D5S, 
+    FMTONE_E5,
+    FMTONE_F5, FMTONE_F5S,
+    FMTONE_G5, FMTONE_G5S,
+    FMTONE_A5, FMTONE_A5S,
+    FMTONE_B5
 };
 static const u16 octavesix[12] = {
-    SSG_C6, SSG_C6S,
-    SSG_D6, SSG_D6S, 
-    SSG_E6,
-    SSG_F6, SSG_F6S,
-    SSG_G6, SSG_G6S,
-    SSG_A6, SSG_A6S,
-    SSG_B6
+    FMTONE_C6, FMTONE_C6S,
+    FMTONE_D6, FMTONE_D6S, 
+    FMTONE_E6,
+    FMTONE_F6, FMTONE_F6S,
+    FMTONE_G6, FMTONE_G6S,
+    FMTONE_A6, FMTONE_A6S,
+    FMTONE_B6
 };
 
 struct m88header { 
@@ -244,7 +270,12 @@ struct m88header {
 struct m88data { 
     fix_16s tempo; 
     u8* partOffsets[11];
+    // FM1 FM2 FM3
+    // SSG1 SSG2 SSG3
+    // RHY
+    // FM4 FM5 FM6
     u16 partLoops[11];
+    
     u8* dataEndLoc;
 };
 
@@ -252,20 +283,57 @@ struct Song {
     struct m88header songheader;
     struct m88data songdata;
     s16 partLengths[11]; // TODO fill these in - at the moment not used.
-    u8 ssg_instr[3];
+    
+    u8 fm_instr[6];
+    s8 fm_vol[6];
+    s8 fm_tone_len[6];
+    u8 fm_oct[6];
+    u8 fm_tone[6];
+    //u16 fm_loc[6];
+    u16 part_loc[11];
+
+    u8 rhy_instr;
+    s8 rhy_vol;
+
     u8 ssg_mix;
+    u8 ssg_instr[3];
     s8 ssg_vol[3];
     s8 ssg_tone_len[3]; // Counts down!
     u8 ssg_oct[3];
     u8 ssg_tone[3];
-    u16 ssg_loc[3]; // 6
+    //u16 part_loc[3]; // 6
+
     bool part_over[11]; // 11
+    bool chan_disabled[11];
+    
     bool ssg_fading[3]; // 3
     s8 ssg_base_vol[3]; // 3
+    
     bool looping[11]; // 11
     u8* loopLocs[11]; // 22
     u8 flag;
 };
+
+struct InstrumentL { //25 bytes
+    u8 fb_alg;      //b0
+    u8 dt_mult[4];  //30
+    u8 totallv[4];  //40
+    u8 ks_atkr[4];  //50
+    u8 decay[4];    //60
+    u8 susr[4];     //70
+    u8 susl_relr[4];//80
+};
+struct Instrument { //32 bytes
+    u8 fb_alg;
+    u8 dt_mult[4];
+    u8 totallv[4];
+    u8 ks_atkr[4];
+    u8 decay[4];
+    u8 susr[4];
+    u8 susl_relr[4];
+    char name[7];
+};
+
 #endif 
 /*! @} */
 
@@ -273,9 +341,9 @@ struct Song {
 // Play C4 on Ch A, vol 15, no envelope, mute all other
 <pre>
 SetIOReg(OPN_REG, CHA_TONEL);
-SetIOReg(OPN_DAT, SSG_C4 & 0xff);
+SetIOReg(OPN_DAT, FMTONE_C4 & 0xff);
 SetIOReg(OPN_REG, CHA_TONEH);
-SetIOReg(OPN_DAT, (SSG_C4 & 0xf00) >> 8);
+SetIOReg(OPN_DAT, (FMTONE_C4 & 0xf00) >> 8);
 //0b00111110:
 SetIOReg(OPN_REG, SSG_MIXER);
 SetIOReg(OPN_DAT, ~(CHA_TONE | 0xc0));

@@ -9,7 +9,7 @@ inline void SetIRQs()
 }
 
 extern bool playingSong;
-extern struct Song curSong;
+extern struct Song currentSong;
 extern signed int ticker;
 
 u32 idleCount;
@@ -23,7 +23,7 @@ void main()
     u8 i = 0;
     playingSong = false;
     
-    // Set up CurSong pointers
+    // Set up currentSong pointers
     LoadSong(&song[0]);
     playingSong = true;
     ticker = 0;
@@ -36,12 +36,21 @@ void main()
     
     SetIRQs();        // And enable the VBL interrupt!
     
+    SetCursorPos(0, 1);
+    print("Idle cycles : ");
+
     IRQ_ON 
     while(1)
     { 
         idleCount++;
     }
 }
+
+// cycle counts:
+// 367h when song is over
+// 284h when 1 SSG
+// 256h when 3 SSG
+
 
 void Vblank() __critical __interrupt
 {
@@ -50,16 +59,11 @@ void Vblank() __critical __interrupt
     if(playingSong)
         PlaySong();
     
-    SetCursorPos(0, 0);
-    if(playingSong) print("Playing ... ");
-    else print(" Song over !");
-    SetCursorPos(0, 1);
-    print("Idle cycles : ");
-
-    u8* d = byToHex((u8)(idleCount >> 8)); // TODO make byToHex return a str?
+    SetCursorPos(15, 1);
+    u8* d = byToHex((u8)(idleCount >> 8)); 
     print(d);
-    d = byToHex((u8)(idleCount & 0xff));
-    print(d);
+    u8* d2 = byToHex((u8)(idleCount & 0xff));
+    print(d2);
     
     idleCount = 0;
     
