@@ -28,8 +28,8 @@ PROJECT=examples/helloworld
 
 ## MEMORY LOCATIONS ##
 # stack grows downward, code/data grows upward(?)
-default: STACK=0xFF
-default: DATA=0xc000
+default: STACK=0xff
+default: DATA=0xb000
 default: CODE=0x100
 binary: STACK=0xc000
 binary: DATA=0xd800
@@ -50,6 +50,8 @@ APPNAME=app.d88
 #EMUEXE=C:\Users\Bent\Downloads\m88\m88x5.exe 
 EMUEXE=~/Downloads/quasi88-0.6.4/quasi88.sdl -mem_wait -fdc_wait -fmgen ./app.d88
 #EMUEXE=quasi88 app.d88
+
+XDISK=~/Projects/xdisk3/pc/xdisk3 w -p/dev/ttyUSB0 -1 -d2 $(APPNAME)
 
 # This is updated when new .c files are added
 PC88CFILES=out/crt0.rel \
@@ -83,6 +85,9 @@ default: clean $(PROJECT) $(PC88CFILES)
 	
 run:
 	$(EMUEXE)
+
+xdisk:
+	$(XDISK)
 
 #m88bin: 
 #	$(AS) -los out/music2.rel src/music2.z80
