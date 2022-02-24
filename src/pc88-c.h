@@ -133,6 +133,8 @@ u8* byToHex(u8 by);
 //#define SetIOReg(r, v) r = v;//__asm__("ld a, %d", r) 
 u8 ReadIOReg(u8 r);
 void SetIOReg(u8 r, u8 v);
+void SetOPNReg(u8 r, u8 v) __naked;
+
 // VBl/Clk irqs
 void Vblank() __critical __interrupt;
 void ClockInterrupt() __critical __interrupt;
@@ -157,10 +159,8 @@ void beep(u16 tone, u8 length);
 // VRAM_UTIL
 void EraseVRAMArea(XYpos* xy, u8 w, u8 h);
 
-// SSG
-void LoadSong(const u8* song);
-
-#include "ssg.h"
+// OPN
+#include "opn.h"
 
 /// SYS
 ///;bit7:0=8MHz 1=4MHz (FH以降)
@@ -203,7 +203,7 @@ u16 rand16();
 #define IRQ_OFF __asm di __endasm;
 #define IRQ_ON __asm ei __endasm;
 #define HALT __asm halt __endasm;
-#define BREAKPOINT HALT 
+#define BREAKPOINT print("BRK");HALT;
 
 #endif 
 

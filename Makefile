@@ -10,7 +10,7 @@ OPTIMIZE=0
 ifeq ($(OPTIMIZE), 1) 
 CMDFLAGS=--cyclomatic --max-allocs-per-node100000 --opt-code-speed
 else
-CMDFLAGS=#--cyclomatic --max-allocs-per-node2000 --fomit-frame-pointer
+CMDFLAGS=--cyclomatic#--max-allocs-per-node2000 --fomit-frame-pointer
 endif
 PY=python3 -B
 DEL=rm -rf
@@ -63,7 +63,7 @@ PC88CFILES=out/crt0.rel \
 	out/draw.rel \
 	out/textmode.rel \
 	out/beep.rel \
-	out/ssg.rel \
+	out/opn.rel \
 	out/vram_util.rel \
 	out/sys.rel
 #PC88CFILES=out/crt0.rel out/ioreg.rel out/textmode.rel out/sys.rel

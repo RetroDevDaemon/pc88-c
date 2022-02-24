@@ -1,0 +1,687 @@
+\hypertarget{group__SSG}{}\doxysection{SSG}
+\label{group__SSG}\index{SSG@{SSG}}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structm88header}{m88header}}
+\item 
+struct \mbox{\hyperlink{structm88data}{m88data}}
+\item 
+struct \mbox{\hyperlink{structinstrument__lite}{instrument\+\_\+lite}}
+\item 
+struct \mbox{\hyperlink{structSong}{Song}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{group__SSG_gadac93bbfe720c5e7ad0c200fcab65b49}{OPN\+\_\+\+REG}}~0x44
+\item 
+\mbox{\Hypertarget{group__SSG_ga3caa4db6322221fca30269c29ca76835}\label{group__SSG_ga3caa4db6322221fca30269c29ca76835}} 
+\#define {\bfseries OPN\+\_\+\+DAT}~0x45
+\item 
+\mbox{\Hypertarget{group__SSG_ga5ea36e7d4feb7e097bfa01d179107251}\label{group__SSG_ga5ea36e7d4feb7e097bfa01d179107251}} 
+\#define {\bfseries OPNA\+\_\+\+REG}~0x46
+\item 
+\mbox{\Hypertarget{group__SSG_ga6eb4df46900fc84b3016a8e8bbe76210}\label{group__SSG_ga6eb4df46900fc84b3016a8e8bbe76210}} 
+\#define {\bfseries OPNA\+\_\+\+DAT}~0x47
+\item 
+\mbox{\Hypertarget{group__SSG_ga199241dbd5028e8b80a6e86c67f65acc}\label{group__SSG_ga199241dbd5028e8b80a6e86c67f65acc}} 
+\#define {\bfseries OPNA\+\_\+\+SYS}~0x29
+\item 
+\#define \mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}}~3993600
+\begin{DoxyCompactList}\small\item\em Z80 actual speed\+: \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{group__SSG_gaea54af5d1ebb57d4854aeef4c9cd8c2c}\label{group__SSG_gaea54af5d1ebb57d4854aeef4c9cd8c2c}} 
+\#define {\bfseries OPN\+\_\+\+TEST\+\_\+\+REG}~0x21
+\item 
+\mbox{\Hypertarget{group__SSG_gad963a82dac05961882f73e6efee6f90a}\label{group__SSG_gad963a82dac05961882f73e6efee6f90a}} 
+\#define {\bfseries OPN\+\_\+\+TIMERSET\+\_\+1}~0x24
+\item 
+\mbox{\Hypertarget{group__SSG_ga8fd9aee8529b6cc798484f2fb39fa201}\label{group__SSG_ga8fd9aee8529b6cc798484f2fb39fa201}} 
+\#define {\bfseries OPN\+\_\+\+TIMERSET\+\_\+2}~0x25
+\item 
+\mbox{\Hypertarget{group__SSG_ga35461775995b9d5c304ae39208678201}\label{group__SSG_ga35461775995b9d5c304ae39208678201}} 
+\#define {\bfseries OPN\+\_\+\+TIMERSET\+\_\+3}~0x26
+\item 
+\mbox{\Hypertarget{group__SSG_ga2b9d28ba251ab7d81a77cfd62c1a56f3}\label{group__SSG_ga2b9d28ba251ab7d81a77cfd62c1a56f3}} 
+\#define {\bfseries OPN\+\_\+\+TIMER\+\_\+\+OP}~0x27
+\item 
+\mbox{\Hypertarget{group__SSG_ga9ace7baa07ac00eb4383ce9c3a98e6f3}\label{group__SSG_ga9ace7baa07ac00eb4383ce9c3a98e6f3}} 
+\#define {\bfseries OPN\+\_\+\+INPUTDIV\+\_\+1}~0x2d
+\item 
+\mbox{\Hypertarget{group__SSG_ga611270b7a49178ce33d8668619adefbe}\label{group__SSG_ga611270b7a49178ce33d8668619adefbe}} 
+\#define {\bfseries OPN\+\_\+\+INPUTDIV\+\_\+2}~0x2e
+\item 
+\mbox{\Hypertarget{group__SSG_ga85ed13d9aabc1a18bc8d27ff1455eb73}\label{group__SSG_ga85ed13d9aabc1a18bc8d27ff1455eb73}} 
+\#define {\bfseries OPN\+\_\+\+INPUTDIV\+\_\+3}~0x2f
+\item 
+\mbox{\Hypertarget{group__SSG_gabc7c5ba3d6a3a4652492fdccbb6e93a0}\label{group__SSG_gabc7c5ba3d6a3a4652492fdccbb6e93a0}} 
+\#define {\bfseries OPN\+\_\+\+DETUNEMUL}~0x30
+\item 
+\mbox{\Hypertarget{group__SSG_gaa68d82ef250fec56de4f57957139d03e}\label{group__SSG_gaa68d82ef250fec56de4f57957139d03e}} 
+\#define {\bfseries OPN\+\_\+\+FMLEVEL}~0x40
+\item 
+\mbox{\Hypertarget{group__SSG_gaf5d0eb4cc7fb2885c5baa0acff5840d4}\label{group__SSG_gaf5d0eb4cc7fb2885c5baa0acff5840d4}} 
+\#define {\bfseries OPN\+\_\+\+FMKEY}~0x50
+\item 
+\mbox{\Hypertarget{group__SSG_gab392eb273cd2bbf3dbe65f8f070bb752}\label{group__SSG_gab392eb273cd2bbf3dbe65f8f070bb752}} 
+\#define {\bfseries OPN\+\_\+\+FMDECAY}~0x60
+\item 
+\mbox{\Hypertarget{group__SSG_ga96168ddbd1d442723ba5892f2c726f3b}\label{group__SSG_ga96168ddbd1d442723ba5892f2c726f3b}} 
+\#define {\bfseries OPN\+\_\+\+FMSUSTAIN}~0x70
+\item 
+\mbox{\Hypertarget{group__SSG_ga252d52d7ed1056e7802c455dbca1dda3}\label{group__SSG_ga252d52d7ed1056e7802c455dbca1dda3}} 
+\#define {\bfseries OPN\+\_\+\+FMRELEASE}~0x80
+\item 
+\mbox{\Hypertarget{group__SSG_ga1de958bbef6e99a58b0e42076ee68784}\label{group__SSG_ga1de958bbef6e99a58b0e42076ee68784}} 
+\#define {\bfseries OPN\+\_\+\+FMENVELOPE}~0x90
+\item 
+\mbox{\Hypertarget{group__SSG_ga0824fc331ef6a6f627f7827f2fc791a2}\label{group__SSG_ga0824fc331ef6a6f627f7827f2fc791a2}} 
+\#define \mbox{\hyperlink{group__SSG_ga0824fc331ef6a6f627f7827f2fc791a2}{CHA\+\_\+\+TONEH}}~1
+\begin{DoxyCompactList}\small\item\em Bit flags. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{group__SSG_ga546df1a4c8d297c110e9d3aa8044aab7}\label{group__SSG_ga546df1a4c8d297c110e9d3aa8044aab7}} 
+\#define {\bfseries CHA\+\_\+\+TONEL}~0
+\item 
+\mbox{\Hypertarget{group__SSG_gac329019b8caa5c04e3a2b5d7c2348a24}\label{group__SSG_gac329019b8caa5c04e3a2b5d7c2348a24}} 
+\#define {\bfseries CHB\+\_\+\+TONEH}~3
+\item 
+\mbox{\Hypertarget{group__SSG_gad2a5a90273a13543f73c742b256034a1}\label{group__SSG_gad2a5a90273a13543f73c742b256034a1}} 
+\#define {\bfseries CHB\+\_\+\+TONEL}~2
+\item 
+\mbox{\Hypertarget{group__SSG_ga6586386563110e85fc8434218f64537f}\label{group__SSG_ga6586386563110e85fc8434218f64537f}} 
+\#define {\bfseries CHC\+\_\+\+TONEH}~5
+\item 
+\mbox{\Hypertarget{group__SSG_gaec754f96673c46b0d497a179c6f32486}\label{group__SSG_gaec754f96673c46b0d497a179c6f32486}} 
+\#define {\bfseries CHC\+\_\+\+TONEL}~4
+\item 
+\mbox{\Hypertarget{group__SSG_ga4a1c3d0feeea0d48113ac3a50df64f1b}\label{group__SSG_ga4a1c3d0feeea0d48113ac3a50df64f1b}} 
+\#define {\bfseries SSG\+\_\+\+MIXER}~7
+\item 
+\mbox{\Hypertarget{group__SSG_ga7c0bca94c6b7b0537ee40787f69db199}\label{group__SSG_ga7c0bca94c6b7b0537ee40787f69db199}} 
+\#define {\bfseries SSG\+\_\+\+NOISETONE}~6
+\item 
+\mbox{\Hypertarget{group__SSG_gafda0e8f76a8ac84f09473555905437fe}\label{group__SSG_gafda0e8f76a8ac84f09473555905437fe}} 
+\#define {\bfseries CHA\+\_\+\+AMP}~8
+\item 
+\mbox{\Hypertarget{group__SSG_gaa36fcf532bf6f269983f0e2da3411b24}\label{group__SSG_gaa36fcf532bf6f269983f0e2da3411b24}} 
+\#define {\bfseries CHB\+\_\+\+AMP}~9
+\item 
+\mbox{\Hypertarget{group__SSG_gaa01ec8731cd406fdc80ea92b644637ee}\label{group__SSG_gaa01ec8731cd406fdc80ea92b644637ee}} 
+\#define {\bfseries CHC\+\_\+\+AMP}~10
+\item 
+\mbox{\Hypertarget{group__SSG_gab9d6a5cc813e548836213d23964c55a6}\label{group__SSG_gab9d6a5cc813e548836213d23964c55a6}} 
+\#define {\bfseries SSGTONE\+\_\+\+ENVPDH}~0xb
+\item 
+\mbox{\Hypertarget{group__SSG_ga7633d26165ac57c6fe838ad6ff3ebcef}\label{group__SSG_ga7633d26165ac57c6fe838ad6ff3ebcef}} 
+\#define {\bfseries SSGTONE\+\_\+\+ENVPDL}~0xc
+\item 
+\mbox{\Hypertarget{group__SSG_ga75cce8471514a33b9869836037db036e}\label{group__SSG_ga75cce8471514a33b9869836037db036e}} 
+\#define {\bfseries SSGTONE\+\_\+\+ENVTYPE}~0xd
+\item 
+\mbox{\Hypertarget{group__SSG_ga3bf71365e3aa1dcc3726d58014e8552a}\label{group__SSG_ga3bf71365e3aa1dcc3726d58014e8552a}} 
+\#define {\bfseries SSG\+\_\+\+IOA}~0xe
+\item 
+\mbox{\Hypertarget{group__SSG_ga9f229ee65b892eaa45d7219d5cd84637}\label{group__SSG_ga9f229ee65b892eaa45d7219d5cd84637}} 
+\#define {\bfseries SSG\+\_\+\+IOB}~0xf
+\item 
+\mbox{\Hypertarget{group__SSG_ga41436bc2ef55f383a4cc540639e04c84}\label{group__SSG_ga41436bc2ef55f383a4cc540639e04c84}} 
+\#define {\bfseries CHA\+\_\+\+NOISE\+\_\+\+OFF}~0b1000
+\item 
+\mbox{\Hypertarget{group__SSG_ga2e71bbaa9ed6dd2964b537f3f60e5310}\label{group__SSG_ga2e71bbaa9ed6dd2964b537f3f60e5310}} 
+\#define {\bfseries CHB\+\_\+\+NOISE\+\_\+\+OFF}~0b10000
+\item 
+\mbox{\Hypertarget{group__SSG_gad5ae84304c3ecb2942d1691bc4e3fe08}\label{group__SSG_gad5ae84304c3ecb2942d1691bc4e3fe08}} 
+\#define {\bfseries CHC\+\_\+\+NOISE\+\_\+\+OFF}~0b100000
+\item 
+\mbox{\Hypertarget{group__SSG_ga8a20a2b0cbb7f28e92b40d49faaf0109}\label{group__SSG_ga8a20a2b0cbb7f28e92b40d49faaf0109}} 
+\#define {\bfseries CHA\+\_\+\+TONE}~0b1
+\item 
+\mbox{\Hypertarget{group__SSG_gad738c8b57c72a5741052bc338518a64c}\label{group__SSG_gad738c8b57c72a5741052bc338518a64c}} 
+\#define {\bfseries CHB\+\_\+\+TONE\+\_\+\+OFF}~0b10
+\item 
+\mbox{\Hypertarget{group__SSG_gaeeb9da64f3d854d1f227a29682a4aefe}\label{group__SSG_gaeeb9da64f3d854d1f227a29682a4aefe}} 
+\#define {\bfseries CHC\+\_\+\+TONE\+\_\+\+OFF}~0b100
+\item 
+\#define \mbox{\hyperlink{group__SSG_ga352c21c8d2450cbbeeef990737d402c8}{C2\+\_\+440}}~65.\+41
+\begin{DoxyCompactList}\small\item\em SSG Period inputs\+: \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{group__SSG_gaf3edcd06944f529d99d882cf621defe0}\label{group__SSG_gaf3edcd06944f529d99d882cf621defe0}} 
+\#define {\bfseries C2\+S\+\_\+440}~69.\+30
+\item 
+\mbox{\Hypertarget{group__SSG_ga13c14d997285f9f81d13e788488443c5}\label{group__SSG_ga13c14d997285f9f81d13e788488443c5}} 
+\#define {\bfseries D2\+\_\+440}~73.\+42
+\item 
+\mbox{\Hypertarget{group__SSG_gaa44933ad3d66c220f8161dc098cb6040}\label{group__SSG_gaa44933ad3d66c220f8161dc098cb6040}} 
+\#define {\bfseries D2\+S\+\_\+440}~77.\+78
+\item 
+\mbox{\Hypertarget{group__SSG_gad3c82e1ffa2a496ec6db249a6d47b604}\label{group__SSG_gad3c82e1ffa2a496ec6db249a6d47b604}} 
+\#define {\bfseries E2\+\_\+440}~82.\+41
+\item 
+\mbox{\Hypertarget{group__SSG_gad6bc8be619680bbfb9869a41de51dd67}\label{group__SSG_gad6bc8be619680bbfb9869a41de51dd67}} 
+\#define {\bfseries F2\+\_\+440}~87.\+31
+\item 
+\mbox{\Hypertarget{group__SSG_ga2eb6490dee268c25676e45ccd375d178}\label{group__SSG_ga2eb6490dee268c25676e45ccd375d178}} 
+\#define {\bfseries F2\+S\+\_\+440}~92.\+50
+\item 
+\mbox{\Hypertarget{group__SSG_ga5ea75694e074bd463b2aa0b066d25ae2}\label{group__SSG_ga5ea75694e074bd463b2aa0b066d25ae2}} 
+\#define {\bfseries G2\+\_\+440}~98.\+00
+\item 
+\mbox{\Hypertarget{group__SSG_gadd1123103cdcf322a6e2d4f8dbc872e1}\label{group__SSG_gadd1123103cdcf322a6e2d4f8dbc872e1}} 
+\#define {\bfseries G2\+S\+\_\+440}~103.\+83
+\item 
+\mbox{\Hypertarget{group__SSG_ga49c6d70117934523fc798706eade0da0}\label{group__SSG_ga49c6d70117934523fc798706eade0da0}} 
+\#define {\bfseries A2\+\_\+440}~110.\+00
+\item 
+\mbox{\Hypertarget{group__SSG_ga74f6253b894dc63334474c1436b23588}\label{group__SSG_ga74f6253b894dc63334474c1436b23588}} 
+\#define {\bfseries A2\+S\+\_\+440}~116.\+54
+\item 
+\mbox{\Hypertarget{group__SSG_gadd27588ae39669f03be477459cdd6736}\label{group__SSG_gadd27588ae39669f03be477459cdd6736}} 
+\#define {\bfseries B2\+\_\+440}~123.\+47
+\item 
+\mbox{\Hypertarget{group__SSG_ga34e643527a4430c8735f6d61e04bc5f9}\label{group__SSG_ga34e643527a4430c8735f6d61e04bc5f9}} 
+\#define {\bfseries C3\+\_\+440}~130.\+81
+\item 
+\mbox{\Hypertarget{group__SSG_gad792f0b246331c37b7910f5277cbb6c0}\label{group__SSG_gad792f0b246331c37b7910f5277cbb6c0}} 
+\#define {\bfseries C3\+S\+\_\+440}~138.\+59
+\item 
+\mbox{\Hypertarget{group__SSG_ga66f54dc0dcb12759bf2977ad2e2c04c2}\label{group__SSG_ga66f54dc0dcb12759bf2977ad2e2c04c2}} 
+\#define {\bfseries D3\+\_\+440}~146.\+83
+\item 
+\mbox{\Hypertarget{group__SSG_gab30b78785a8a59a2484893e7ac394477}\label{group__SSG_gab30b78785a8a59a2484893e7ac394477}} 
+\#define {\bfseries D3\+S\+\_\+440}~155.\+56
+\item 
+\mbox{\Hypertarget{group__SSG_gac64a8a4d9b37382505f8c29b4c7812c2}\label{group__SSG_gac64a8a4d9b37382505f8c29b4c7812c2}} 
+\#define {\bfseries E3\+\_\+440}~164.\+81
+\item 
+\mbox{\Hypertarget{group__SSG_ga64d72190250a82dd6e69b9f4f9c17da1}\label{group__SSG_ga64d72190250a82dd6e69b9f4f9c17da1}} 
+\#define {\bfseries F3\+\_\+440}~174.\+61
+\item 
+\mbox{\Hypertarget{group__SSG_ga61ab21aed8aca1ff3a364a0c84d78f4f}\label{group__SSG_ga61ab21aed8aca1ff3a364a0c84d78f4f}} 
+\#define {\bfseries F3\+S\+\_\+440}~185.\+00
+\item 
+\mbox{\Hypertarget{group__SSG_ga012de1c398e54864186e2851f6dc0e68}\label{group__SSG_ga012de1c398e54864186e2851f6dc0e68}} 
+\#define {\bfseries G3\+\_\+440}~196.\+00
+\item 
+\mbox{\Hypertarget{group__SSG_ga0da84c181502b2cbda44e1fab1f5b69e}\label{group__SSG_ga0da84c181502b2cbda44e1fab1f5b69e}} 
+\#define {\bfseries G3\+S\+\_\+440}~207.\+65
+\item 
+\mbox{\Hypertarget{group__SSG_ga803945121cce471fbe76b1cbdbc018c1}\label{group__SSG_ga803945121cce471fbe76b1cbdbc018c1}} 
+\#define {\bfseries A3\+\_\+440}~220.\+00
+\item 
+\mbox{\Hypertarget{group__SSG_gac255461afd60b6fa2c6ac6eee060adf5}\label{group__SSG_gac255461afd60b6fa2c6ac6eee060adf5}} 
+\#define {\bfseries A3\+S\+\_\+440}~233.\+08
+\item 
+\mbox{\Hypertarget{group__SSG_ga2ed908c17ab8f7f4d868ed1f80abe865}\label{group__SSG_ga2ed908c17ab8f7f4d868ed1f80abe865}} 
+\#define {\bfseries B3\+\_\+440}~246.\+94
+\item 
+\mbox{\Hypertarget{group__SSG_ga6fee98d3aeb1cdfdcaee9be7a4ed517e}\label{group__SSG_ga6fee98d3aeb1cdfdcaee9be7a4ed517e}} 
+\#define {\bfseries C4\+\_\+440}~261.\+63
+\item 
+\mbox{\Hypertarget{group__SSG_ga881ee2d485a474252553d697752fe2b1}\label{group__SSG_ga881ee2d485a474252553d697752fe2b1}} 
+\#define {\bfseries FMC4\+\_\+440}~9892
+\item 
+\mbox{\Hypertarget{group__SSG_ga01ce7112dbc11cc679b246809211a5cc}\label{group__SSG_ga01ce7112dbc11cc679b246809211a5cc}} 
+\#define {\bfseries C4\+S\+\_\+440}~277.\+18
+\item 
+\mbox{\Hypertarget{group__SSG_ga1944f2ace029a20acb361ad1d451b63a}\label{group__SSG_ga1944f2ace029a20acb361ad1d451b63a}} 
+\#define {\bfseries FMC4\+S\+\_\+440}~10480
+\item 
+\mbox{\Hypertarget{group__SSG_gae8fddec94e62f1b4763290add0d102ec}\label{group__SSG_gae8fddec94e62f1b4763290add0d102ec}} 
+\#define {\bfseries D4\+\_\+440}~293.\+66
+\item 
+\mbox{\Hypertarget{group__SSG_ga9284b22074e9b1ddcb32e0146a1dd90c}\label{group__SSG_ga9284b22074e9b1ddcb32e0146a1dd90c}} 
+\#define {\bfseries FMD4\+\_\+440}~11103
+\item 
+\mbox{\Hypertarget{group__SSG_gaa9c6393c80dd503b7ecec37c4a18e276}\label{group__SSG_gaa9c6393c80dd503b7ecec37c4a18e276}} 
+\#define {\bfseries D4\+S\+\_\+440}~311.\+13
+\item 
+\mbox{\Hypertarget{group__SSG_gafa8e69b08fa95aff14ddd8aba0689042}\label{group__SSG_gafa8e69b08fa95aff14ddd8aba0689042}} 
+\#define {\bfseries FMD4\+S\+\_\+440}~11764
+\item 
+\mbox{\Hypertarget{group__SSG_ga18c9e0f4e5c5d076a4198413b5be1d1f}\label{group__SSG_ga18c9e0f4e5c5d076a4198413b5be1d1f}} 
+\#define {\bfseries E4\+\_\+440}~329.\+63
+\item 
+\mbox{\Hypertarget{group__SSG_ga00296cde4a2ffe1da5b85f208c85325b}\label{group__SSG_ga00296cde4a2ffe1da5b85f208c85325b}} 
+\#define {\bfseries FME4\+\_\+440}~12463
+\item 
+\mbox{\Hypertarget{group__SSG_gab810618fb2f5549a09aaa84343f41ad8}\label{group__SSG_gab810618fb2f5549a09aaa84343f41ad8}} 
+\#define {\bfseries F4\+\_\+440}~349.\+23
+\item 
+\mbox{\Hypertarget{group__SSG_ga4b3157733d46d6d789a45187d88e5e1c}\label{group__SSG_ga4b3157733d46d6d789a45187d88e5e1c}} 
+\#define {\bfseries FMF4\+\_\+440}~13204
+\item 
+\mbox{\Hypertarget{group__SSG_gaf355be7b97a36bdd3f9ed3898b044f2c}\label{group__SSG_gaf355be7b97a36bdd3f9ed3898b044f2c}} 
+\#define {\bfseries F4\+S\+\_\+440}~369.\+99
+\item 
+\mbox{\Hypertarget{group__SSG_ga1efe87c2992fb9bc763e3aa71c30dd24}\label{group__SSG_ga1efe87c2992fb9bc763e3aa71c30dd24}} 
+\#define {\bfseries FMF4\+S\+\_\+440}~13989
+\item 
+\mbox{\Hypertarget{group__SSG_ga28639ac41f10356ed8473f888a4f924a}\label{group__SSG_ga28639ac41f10356ed8473f888a4f924a}} 
+\#define {\bfseries G4\+\_\+440}~392
+\item 
+\mbox{\Hypertarget{group__SSG_gac5b892e124a9d75f5ea9e7c014e1bec8}\label{group__SSG_gac5b892e124a9d75f5ea9e7c014e1bec8}} 
+\#define {\bfseries FMG4\+\_\+440}~14822
+\item 
+\mbox{\Hypertarget{group__SSG_ga1ecbd26c4ec5f2d8d0c8cf0dbc0a573d}\label{group__SSG_ga1ecbd26c4ec5f2d8d0c8cf0dbc0a573d}} 
+\#define {\bfseries G4\+S\+\_\+440}~415.\+30
+\item 
+\mbox{\Hypertarget{group__SSG_ga103862c61945946635c90486383f6add}\label{group__SSG_ga103862c61945946635c90486383f6add}} 
+\#define {\bfseries FMG4\+S\+\_\+440}~15702
+\item 
+\mbox{\Hypertarget{group__SSG_ga71304edf36364244b21e9340a37a118f}\label{group__SSG_ga71304edf36364244b21e9340a37a118f}} 
+\#define {\bfseries A4\+\_\+440}~440
+\item 
+\mbox{\Hypertarget{group__SSG_ga45a9c211ca479fc38a6cffc85ff2e4a6}\label{group__SSG_ga45a9c211ca479fc38a6cffc85ff2e4a6}} 
+\#define {\bfseries FMA4\+\_\+440}~16636
+\item 
+\mbox{\Hypertarget{group__SSG_ga74802347fb8cd6c99580896d1692e0af}\label{group__SSG_ga74802347fb8cd6c99580896d1692e0af}} 
+\#define {\bfseries A4\+S\+\_\+440}~466.\+16
+\item 
+\mbox{\Hypertarget{group__SSG_gaa83b84262e77827e56c7e4aa5fd3d905}\label{group__SSG_gaa83b84262e77827e56c7e4aa5fd3d905}} 
+\#define {\bfseries FMA4\+S\+\_\+440}~17626
+\item 
+\mbox{\Hypertarget{group__SSG_gaddd24df73788534411e010eb206d9fe6}\label{group__SSG_gaddd24df73788534411e010eb206d9fe6}} 
+\#define {\bfseries B4\+\_\+440}~493.\+88
+\item 
+\mbox{\Hypertarget{group__SSG_ga12d748b0bacc0514b6b4f088f33d262d}\label{group__SSG_ga12d748b0bacc0514b6b4f088f33d262d}} 
+\#define {\bfseries FMB4\+\_\+440}~18674
+\item 
+\mbox{\Hypertarget{group__SSG_gaa108d3b00a4ba15d4432f0eba96a4cec}\label{group__SSG_gaa108d3b00a4ba15d4432f0eba96a4cec}} 
+\#define {\bfseries C5\+\_\+440}~523.\+25
+\item 
+\mbox{\Hypertarget{group__SSG_ga29afa9866d26fd82621b9c5a21540938}\label{group__SSG_ga29afa9866d26fd82621b9c5a21540938}} 
+\#define {\bfseries C5\+S\+\_\+440}~554.\+37
+\item 
+\mbox{\Hypertarget{group__SSG_gaf67a13157516a2de21853fdfb6647867}\label{group__SSG_gaf67a13157516a2de21853fdfb6647867}} 
+\#define {\bfseries D5\+\_\+440}~587.\+33
+\item 
+\mbox{\Hypertarget{group__SSG_gaf7cf914a022d9a5b6e35b884f3f59af5}\label{group__SSG_gaf7cf914a022d9a5b6e35b884f3f59af5}} 
+\#define {\bfseries D5\+S\+\_\+440}~622.\+25
+\item 
+\mbox{\Hypertarget{group__SSG_ga92ed7e79321924a41d1667576d64aafb}\label{group__SSG_ga92ed7e79321924a41d1667576d64aafb}} 
+\#define {\bfseries E5\+\_\+440}~659.\+25
+\item 
+\mbox{\Hypertarget{group__SSG_gaa4a957c56953e685a04aecbef0d75e12}\label{group__SSG_gaa4a957c56953e685a04aecbef0d75e12}} 
+\#define {\bfseries F5\+\_\+440}~698.\+46
+\item 
+\mbox{\Hypertarget{group__SSG_ga6e842844c84537856b7d9d9f7a3f8b7d}\label{group__SSG_ga6e842844c84537856b7d9d9f7a3f8b7d}} 
+\#define {\bfseries F5\+S\+\_\+440}~739.\+99
+\item 
+\mbox{\Hypertarget{group__SSG_gaf81943bebe76eacee08283ec8d532ee7}\label{group__SSG_gaf81943bebe76eacee08283ec8d532ee7}} 
+\#define {\bfseries G5\+\_\+440}~783.\+99
+\item 
+\mbox{\Hypertarget{group__SSG_ga0b8b29605562ead382b67463027755cc}\label{group__SSG_ga0b8b29605562ead382b67463027755cc}} 
+\#define {\bfseries G5\+S\+\_\+440}~830.\+61
+\item 
+\mbox{\Hypertarget{group__SSG_ga6fc10aa4296b6d893710f3e86b70476c}\label{group__SSG_ga6fc10aa4296b6d893710f3e86b70476c}} 
+\#define {\bfseries A5\+\_\+440}~880.\+00
+\item 
+\mbox{\Hypertarget{group__SSG_gacd5d3c349e9a6c01b082415ef694036e}\label{group__SSG_gacd5d3c349e9a6c01b082415ef694036e}} 
+\#define {\bfseries A5\+S\+\_\+440}~932.\+33
+\item 
+\mbox{\Hypertarget{group__SSG_ga4b13475e0fb2e94785cfc5a017dd07ce}\label{group__SSG_ga4b13475e0fb2e94785cfc5a017dd07ce}} 
+\#define {\bfseries B5\+\_\+440}~987.\+77
+\item 
+\mbox{\Hypertarget{group__SSG_gaf4893a792afc6cb990c5b2f74c3217e4}\label{group__SSG_gaf4893a792afc6cb990c5b2f74c3217e4}} 
+\#define {\bfseries C6\+\_\+440}~1046.\+50
+\item 
+\mbox{\Hypertarget{group__SSG_gaaf27cf931a35b8bb5c7baafe3e53daec}\label{group__SSG_gaaf27cf931a35b8bb5c7baafe3e53daec}} 
+\#define {\bfseries C6\+S\+\_\+440}~1108.\+73
+\item 
+\mbox{\Hypertarget{group__SSG_ga63a030f227bfd23d5d6247b9eb524990}\label{group__SSG_ga63a030f227bfd23d5d6247b9eb524990}} 
+\#define {\bfseries D6\+\_\+440}~1174.\+66
+\item 
+\mbox{\Hypertarget{group__SSG_ga9dd6c88b5cb9bd27c0398577abaae24e}\label{group__SSG_ga9dd6c88b5cb9bd27c0398577abaae24e}} 
+\#define {\bfseries D6\+S\+\_\+440}~1244.\+51
+\item 
+\mbox{\Hypertarget{group__SSG_gaf3f7e7a7916ba27dee97368b4a063c1e}\label{group__SSG_gaf3f7e7a7916ba27dee97368b4a063c1e}} 
+\#define {\bfseries E6\+\_\+440}~1318.\+51
+\item 
+\mbox{\Hypertarget{group__SSG_gaacdcb2f37f2c7b8e85bd5195cc80557f}\label{group__SSG_gaacdcb2f37f2c7b8e85bd5195cc80557f}} 
+\#define {\bfseries F6\+\_\+440}~1396.\+91
+\item 
+\mbox{\Hypertarget{group__SSG_ga40ad8c0178e86367897e82fe2b145e0f}\label{group__SSG_ga40ad8c0178e86367897e82fe2b145e0f}} 
+\#define {\bfseries F6\+S\+\_\+440}~1479.\+98
+\item 
+\mbox{\Hypertarget{group__SSG_gaeaf4b68a0946d97c1af08c96455514cc}\label{group__SSG_gaeaf4b68a0946d97c1af08c96455514cc}} 
+\#define {\bfseries G6\+\_\+440}~1567.\+98
+\item 
+\mbox{\Hypertarget{group__SSG_gabaa18393b236e2b790dcdcce2aaddc30}\label{group__SSG_gabaa18393b236e2b790dcdcce2aaddc30}} 
+\#define {\bfseries G6\+S\+\_\+440}~1661.\+22
+\item 
+\mbox{\Hypertarget{group__SSG_ga995e0703a603120ff7781fc0fbb0fffb}\label{group__SSG_ga995e0703a603120ff7781fc0fbb0fffb}} 
+\#define {\bfseries A6\+\_\+440}~1760.\+00
+\item 
+\mbox{\Hypertarget{group__SSG_gaddd190ee0153310b32be17b344103016}\label{group__SSG_gaddd190ee0153310b32be17b344103016}} 
+\#define {\bfseries A6\+S\+\_\+440}~1864.\+66
+\item 
+\mbox{\Hypertarget{group__SSG_gade8c77f82a951ab9e973b7623b6a16f0}\label{group__SSG_gade8c77f82a951ab9e973b7623b6a16f0}} 
+\#define {\bfseries B6\+\_\+440}~1975.\+53
+\item 
+\mbox{\Hypertarget{group__SSG_gac8d7ac6ca21efd1390c638b21c2f1428}\label{group__SSG_gac8d7ac6ca21efd1390c638b21c2f1428}} 
+\#define {\bfseries SSGTONE\+\_\+\+C2}~(const u16)(1908)
+\item 
+\mbox{\Hypertarget{group__SSG_ga398edee26fefda6815d0e0b849bec04c}\label{group__SSG_ga398edee26fefda6815d0e0b849bec04c}} 
+\#define {\bfseries SSGTONE\+\_\+\+C2S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (C2\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gaa606ee10bd3c430fb40d218f7dce6022}\label{group__SSG_gaa606ee10bd3c430fb40d218f7dce6022}} 
+\#define {\bfseries SSGTONE\+\_\+\+D2}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (D2\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga02e2dd527487195de535d060811bc695}\label{group__SSG_ga02e2dd527487195de535d060811bc695}} 
+\#define {\bfseries SSGTONE\+\_\+\+D2S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (D2\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga5b62480d23d3f1771423e31a61da7587}\label{group__SSG_ga5b62480d23d3f1771423e31a61da7587}} 
+\#define {\bfseries SSGTONE\+\_\+\+E2}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (E2\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gac6c180111fef74b5df8e2c0628d668dc}\label{group__SSG_gac6c180111fef74b5df8e2c0628d668dc}} 
+\#define {\bfseries SSGTONE\+\_\+\+F2}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (F2\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gac4788fb22fa5300a9e4866105d8decc5}\label{group__SSG_gac4788fb22fa5300a9e4866105d8decc5}} 
+\#define {\bfseries SSGTONE\+\_\+\+F2S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (F2\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga7549c6a204ccebe63e7e811b6fa3217e}\label{group__SSG_ga7549c6a204ccebe63e7e811b6fa3217e}} 
+\#define {\bfseries SSGTONE\+\_\+\+G2}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (G2\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gae56bd7ed2c5618d034b519855d4ddd59}\label{group__SSG_gae56bd7ed2c5618d034b519855d4ddd59}} 
+\#define {\bfseries SSGTONE\+\_\+\+G2S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (G2\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga9c6fe2bf66965c9b6392e7f8de431900}\label{group__SSG_ga9c6fe2bf66965c9b6392e7f8de431900}} 
+\#define {\bfseries SSGTONE\+\_\+\+A2}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (A2\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga695f93d364922fd5d3ebfe22b7e785eb}\label{group__SSG_ga695f93d364922fd5d3ebfe22b7e785eb}} 
+\#define {\bfseries SSGTONE\+\_\+\+A2S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (A2\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga6d57784280099c6c347a3955b0c62751}\label{group__SSG_ga6d57784280099c6c347a3955b0c62751}} 
+\#define {\bfseries SSGTONE\+\_\+\+B2}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (B2\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga6bcd36a98161fff2dd73dabb76f6fa5c}\label{group__SSG_ga6bcd36a98161fff2dd73dabb76f6fa5c}} 
+\#define {\bfseries SSGTONE\+\_\+\+C3}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (C3\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gafc93ba62d4e005431efa925684522b20}\label{group__SSG_gafc93ba62d4e005431efa925684522b20}} 
+\#define {\bfseries SSGTONE\+\_\+\+C3S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (C3\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gaeaf1adb083be43a58ce5b80bf5dff769}\label{group__SSG_gaeaf1adb083be43a58ce5b80bf5dff769}} 
+\#define {\bfseries SSGTONE\+\_\+\+D3}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (D3\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga433faed8d6d0fa44ebfd9ee2cf234161}\label{group__SSG_ga433faed8d6d0fa44ebfd9ee2cf234161}} 
+\#define {\bfseries SSGTONE\+\_\+\+D3S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (D3\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga71cfb1c3810d0e64aef90ca8eae872ba}\label{group__SSG_ga71cfb1c3810d0e64aef90ca8eae872ba}} 
+\#define {\bfseries SSGTONE\+\_\+\+E3}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (E3\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga7ff473c6991be3604a5868dc8ed7327b}\label{group__SSG_ga7ff473c6991be3604a5868dc8ed7327b}} 
+\#define {\bfseries SSGTONE\+\_\+\+F3}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (F3\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gae49fa3625d15af104a3f935555eb92d8}\label{group__SSG_gae49fa3625d15af104a3f935555eb92d8}} 
+\#define {\bfseries SSGTONE\+\_\+\+F3S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (F3\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga44af7c88a79677a55136813cbdcded5a}\label{group__SSG_ga44af7c88a79677a55136813cbdcded5a}} 
+\#define {\bfseries SSGTONE\+\_\+\+G3}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (G3\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga9277cef17b8772a6f928f91142ca93f6}\label{group__SSG_ga9277cef17b8772a6f928f91142ca93f6}} 
+\#define {\bfseries SSGTONE\+\_\+\+G3S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (G3\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga79dbef7c497311941b18ab4b71c3468d}\label{group__SSG_ga79dbef7c497311941b18ab4b71c3468d}} 
+\#define {\bfseries SSGTONE\+\_\+\+A3}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (A3\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gaf48ca91ee4c1ec1deb39409dccbfcc68}\label{group__SSG_gaf48ca91ee4c1ec1deb39409dccbfcc68}} 
+\#define {\bfseries SSGTONE\+\_\+\+A3S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (A3\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gaaa85e147e016cd18539d9736ac2db2f2}\label{group__SSG_gaaa85e147e016cd18539d9736ac2db2f2}} 
+\#define {\bfseries SSGTONE\+\_\+\+B3}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (B3\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga430ac8373c9a2f87573f77680c6a18dd}\label{group__SSG_ga430ac8373c9a2f87573f77680c6a18dd}} 
+\#define {\bfseries SSGTONE\+\_\+\+C4}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (C4\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga8bd021fc59341faceffae8779f110762}\label{group__SSG_ga8bd021fc59341faceffae8779f110762}} 
+\#define {\bfseries SSGTONE\+\_\+\+C4S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (C4\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gab545e0daca2bf1b8c10855fa905a5181}\label{group__SSG_gab545e0daca2bf1b8c10855fa905a5181}} 
+\#define {\bfseries SSGTONE\+\_\+\+D4}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (D4\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga9cb75d89174a564587982bad7ff317dd}\label{group__SSG_ga9cb75d89174a564587982bad7ff317dd}} 
+\#define {\bfseries SSGTONE\+\_\+\+D4S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (D4\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gaea59bb5e6d51ae2d2903845858ef33a4}\label{group__SSG_gaea59bb5e6d51ae2d2903845858ef33a4}} 
+\#define {\bfseries SSGTONE\+\_\+\+E4}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (E4\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga5691deb145f315c1789b765943d6e300}\label{group__SSG_ga5691deb145f315c1789b765943d6e300}} 
+\#define {\bfseries SSGTONE\+\_\+\+F4}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (F4\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga2c3c6e33daf2a07140a4c30deb528554}\label{group__SSG_ga2c3c6e33daf2a07140a4c30deb528554}} 
+\#define {\bfseries SSGTONE\+\_\+\+F4S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (F4\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga4ccab72564d4f8c37d903cc1bf67d99b}\label{group__SSG_ga4ccab72564d4f8c37d903cc1bf67d99b}} 
+\#define {\bfseries SSGTONE\+\_\+\+G4}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (G4\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gaf5902595654be76eccb5265007440356}\label{group__SSG_gaf5902595654be76eccb5265007440356}} 
+\#define {\bfseries SSGTONE\+\_\+\+G4S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (G4\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga271cbf51d70fde51c3d6d6aa200aa206}\label{group__SSG_ga271cbf51d70fde51c3d6d6aa200aa206}} 
+\#define {\bfseries SSGTONE\+\_\+\+A4}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (A4\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga3a210632f1f6f34a7a8e4641195b31b9}\label{group__SSG_ga3a210632f1f6f34a7a8e4641195b31b9}} 
+\#define {\bfseries SSGTONE\+\_\+\+A4S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (A4\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga5d65c0f1784eb19613238477745ef740}\label{group__SSG_ga5d65c0f1784eb19613238477745ef740}} 
+\#define {\bfseries SSGTONE\+\_\+\+B4}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (B4\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga5108f29857cb9a7103dac9355662f07a}\label{group__SSG_ga5108f29857cb9a7103dac9355662f07a}} 
+\#define {\bfseries SSGTONE\+\_\+\+C5}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (C5\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gad76b548f4467143188f5028df9b55edf}\label{group__SSG_gad76b548f4467143188f5028df9b55edf}} 
+\#define {\bfseries SSGTONE\+\_\+\+C5S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (C5\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gaabe5bbf698ea1add4750e14aa0180798}\label{group__SSG_gaabe5bbf698ea1add4750e14aa0180798}} 
+\#define {\bfseries SSGTONE\+\_\+\+D5}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (D5\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gaf21b9e8907da853d2f24014d8a5d365a}\label{group__SSG_gaf21b9e8907da853d2f24014d8a5d365a}} 
+\#define {\bfseries SSGTONE\+\_\+\+D5S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (D5\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gae38900d28f92acb4a18dd56dcb641de6}\label{group__SSG_gae38900d28f92acb4a18dd56dcb641de6}} 
+\#define {\bfseries SSGTONE\+\_\+\+E5}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (E5\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gad6ccef0e396454b6871927ff7f32b532}\label{group__SSG_gad6ccef0e396454b6871927ff7f32b532}} 
+\#define {\bfseries SSGTONE\+\_\+\+F5}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (F5\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga582859862f3857ff679de69ac0059482}\label{group__SSG_ga582859862f3857ff679de69ac0059482}} 
+\#define {\bfseries SSGTONE\+\_\+\+F5S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (F5\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga676746c4caca843e8295a24667fe2a6e}\label{group__SSG_ga676746c4caca843e8295a24667fe2a6e}} 
+\#define {\bfseries SSGTONE\+\_\+\+G5}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (G5\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gadfa5b35b01517b56c71195340541b6cb}\label{group__SSG_gadfa5b35b01517b56c71195340541b6cb}} 
+\#define {\bfseries SSGTONE\+\_\+\+G5S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (G5\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga0a2dfc53f797a7c1f0fc9b3845d55ed5}\label{group__SSG_ga0a2dfc53f797a7c1f0fc9b3845d55ed5}} 
+\#define {\bfseries SSGTONE\+\_\+\+A5}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (A5\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gad09ab0741ce573ba63ea2fca257bd657}\label{group__SSG_gad09ab0741ce573ba63ea2fca257bd657}} 
+\#define {\bfseries SSGTONE\+\_\+\+A5S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (A5\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga60fbce3e87f0421e50e28238b642d582}\label{group__SSG_ga60fbce3e87f0421e50e28238b642d582}} 
+\#define {\bfseries SSGTONE\+\_\+\+B5}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (B5\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gafb13264774a486296f51319a9d88c430}\label{group__SSG_gafb13264774a486296f51319a9d88c430}} 
+\#define {\bfseries SSGTONE\+\_\+\+C6}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (C6\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gaf2bb0bd0da9e829b475e1d45d05fac5a}\label{group__SSG_gaf2bb0bd0da9e829b475e1d45d05fac5a}} 
+\#define {\bfseries SSGTONE\+\_\+\+C6S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (C6\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gae0a4b59865ff3ab7228d923d1289f69e}\label{group__SSG_gae0a4b59865ff3ab7228d923d1289f69e}} 
+\#define {\bfseries SSGTONE\+\_\+\+D6}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (D6\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gab7c8e5ddf799c7460f4e6b6d71b710f4}\label{group__SSG_gab7c8e5ddf799c7460f4e6b6d71b710f4}} 
+\#define {\bfseries SSGTONE\+\_\+\+D6S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (D6\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gafd2686c28496d09ea1329bdc2af70045}\label{group__SSG_gafd2686c28496d09ea1329bdc2af70045}} 
+\#define {\bfseries SSGTONE\+\_\+\+E6}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (E6\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga2a000f02892476a8a3a44d8e491127eb}\label{group__SSG_ga2a000f02892476a8a3a44d8e491127eb}} 
+\#define {\bfseries SSGTONE\+\_\+\+F6}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (F6\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga282596cef40cb3bcb2da6a895d7bcbb6}\label{group__SSG_ga282596cef40cb3bcb2da6a895d7bcbb6}} 
+\#define {\bfseries SSGTONE\+\_\+\+F6S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (F6\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga0ad9b7c70c9c47976880b2dff80aa91b}\label{group__SSG_ga0ad9b7c70c9c47976880b2dff80aa91b}} 
+\#define {\bfseries SSGTONE\+\_\+\+G6}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (G6\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gac322453715f688b6680211f82b33f334}\label{group__SSG_gac322453715f688b6680211f82b33f334}} 
+\#define {\bfseries SSGTONE\+\_\+\+G6S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (G6\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga28f6554138bb33717490bf302b727d32}\label{group__SSG_ga28f6554138bb33717490bf302b727d32}} 
+\#define {\bfseries SSGTONE\+\_\+\+A6}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (A6\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_gaeb911d942bcc78e36b0190860060154e}\label{group__SSG_gaeb911d942bcc78e36b0190860060154e}} 
+\#define {\bfseries SSGTONE\+\_\+\+A6S}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (A6\+S\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga152df675e3e564fe45eed9ffd83cc714}\label{group__SSG_ga152df675e3e564fe45eed9ffd83cc714}} 
+\#define {\bfseries SSGTONE\+\_\+\+B6}~(const u16)(\mbox{\hyperlink{group__SSG_gad9414214d4461ba20da018e0df8468b1}{CPU4\+MHZ}} / (B6\+\_\+440 $\ast$ 32))
+\item 
+\mbox{\Hypertarget{group__SSG_ga5243de237b6880eb1b5bf0cacf9cf4d7}\label{group__SSG_ga5243de237b6880eb1b5bf0cacf9cf4d7}} 
+\#define {\bfseries FM\+\_\+\+GS\+\_\+5}(o)~(u16)((1960$>$$>$(5-\/o))$\vert$((o-\/1)$<$$<$11))
+\item 
+\mbox{\Hypertarget{group__SSG_gae118bea99b2ad007fa63c6332222f191}\label{group__SSG_gae118bea99b2ad007fa63c6332222f191}} 
+\#define {\bfseries FM\+\_\+\+G\+\_\+5}(o)~(u16)((1850$>$$>$(5-\/o))$\vert$((o-\/1)$<$$<$11))
+\item 
+\mbox{\Hypertarget{group__SSG_gaf02174b018324862033ee20bd2419aac}\label{group__SSG_gaf02174b018324862033ee20bd2419aac}} 
+\#define {\bfseries FM\+\_\+\+FS\+\_\+5}(o)~(u16)((1746$>$$>$(5-\/o))$\vert$((o-\/1)$<$$<$11))
+\item 
+\mbox{\Hypertarget{group__SSG_ga745c690a64522ed86453af5bb338683f}\label{group__SSG_ga745c690a64522ed86453af5bb338683f}} 
+\#define {\bfseries FM\+\_\+\+F\+\_\+5}(o)~(u16)((1648$>$$>$(5-\/o))$\vert$((o-\/1)$<$$<$11))
+\item 
+\mbox{\Hypertarget{group__SSG_gaaa25c7b3cca8b729d9186483d369fa7b}\label{group__SSG_gaaa25c7b3cca8b729d9186483d369fa7b}} 
+\#define {\bfseries FM\+\_\+\+E\+\_\+5}(o)~(u16)((1556$>$$>$(5-\/o))$\vert$((o-\/1)$<$$<$11))
+\item 
+\mbox{\Hypertarget{group__SSG_ga4ca09081f45d7ab1f6d293d6be8fe4ed}\label{group__SSG_ga4ca09081f45d7ab1f6d293d6be8fe4ed}} 
+\#define {\bfseries FM\+\_\+\+DS\+\_\+5}(o)~(u16)((1468$>$$>$(5-\/o))$\vert$((o-\/1)$<$$<$11))
+\item 
+\mbox{\Hypertarget{group__SSG_gabcae72f8c33ef74dddc3c454835d50a9}\label{group__SSG_gabcae72f8c33ef74dddc3c454835d50a9}} 
+\#define {\bfseries FM\+\_\+\+D\+\_\+5}(o)~(u16)((1386$>$$>$(5-\/o))$\vert$((o-\/1)$<$$<$11))
+\item 
+\mbox{\Hypertarget{group__SSG_ga239daf110d2e6b364d2cfc94bbed7a17}\label{group__SSG_ga239daf110d2e6b364d2cfc94bbed7a17}} 
+\#define {\bfseries FM\+\_\+\+CS\+\_\+5}(o)~(u16)((1308$>$$>$(5-\/o))$\vert$((o-\/1)$<$$<$11))
+\item 
+\mbox{\Hypertarget{group__SSG_ga1d8d315597bdeccb4722f30b68b4c220}\label{group__SSG_ga1d8d315597bdeccb4722f30b68b4c220}} 
+\#define {\bfseries FM\+\_\+\+C\+\_\+5}(o)~(u16)((1235$>$$>$(5-\/o))$\vert$((o-\/1)$<$$<$11))
+\item 
+\mbox{\Hypertarget{group__SSG_ga4dfd73de5fbe51d9c155cdf955331c28}\label{group__SSG_ga4dfd73de5fbe51d9c155cdf955331c28}} 
+\#define {\bfseries FM\+\_\+\+B\+\_\+4}(o)~(u16)((1165$>$$>$(4-\/o))$\vert$(o$<$$<$11))
+\item 
+\mbox{\Hypertarget{group__SSG_gac54dbd0ead99d9e3aa04ecbc714b65e3}\label{group__SSG_gac54dbd0ead99d9e3aa04ecbc714b65e3}} 
+\#define {\bfseries FM\+\_\+\+AS\+\_\+4}(o)~(u16)((1100$>$$>$(4-\/o))$\vert$(o$<$$<$11))
+\item 
+\mbox{\Hypertarget{group__SSG_ga549a9e510398717edf9d56424f27c7bf}\label{group__SSG_ga549a9e510398717edf9d56424f27c7bf}} 
+\#define {\bfseries FM\+\_\+\+A\+\_\+4}(o)~(u16)((1038$>$$>$(4-\/o))$\vert$(o$<$$<$11))
+\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{group__SSG_gac7578c9db7543bc78678dfd51aa3b8e4}\label{group__SSG_gac7578c9db7543bc78678dfd51aa3b8e4}} 
+typedef struct \mbox{\hyperlink{structm88data}{m88data}} {\bfseries M88\+Data}
+\item 
+\mbox{\Hypertarget{group__SSG_gae58f93a8f5be56737c84bea860b394d8}\label{group__SSG_gae58f93a8f5be56737c84bea860b394d8}} 
+typedef struct \mbox{\hyperlink{structinstrument__lite}{instrument\+\_\+lite}} {\bfseries Instrument}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{group__SSG_gafc9e8854b813dbab8abeabfba5943796}\label{group__SSG_gafc9e8854b813dbab8abeabfba5943796}} 
+void {\bfseries FMNote\+Off} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} chn)
+\item 
+\mbox{\Hypertarget{group__SSG_gaeca055cbe83a6c3dfd57a9f0c969ad83}\label{group__SSG_gaeca055cbe83a6c3dfd57a9f0c969ad83}} 
+void {\bfseries FMNote\+On} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} chn, u16 tone)
+\item 
+\mbox{\Hypertarget{group__SSG_ga8cf4b95317f0e947e9a59dfcf37041d6}\label{group__SSG_ga8cf4b95317f0e947e9a59dfcf37041d6}} 
+void {\bfseries Play\+Song} ()
+\item 
+\mbox{\Hypertarget{group__SSG_ga6e061c3746f684631cb4dfd435159744}\label{group__SSG_ga6e061c3746f684631cb4dfd435159744}} 
+void {\bfseries Load\+Song} (const \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$song)
+\item 
+\mbox{\Hypertarget{group__SSG_gae9858a89b6850b9e21bf3e0bc80aae73}\label{group__SSG_gae9858a89b6850b9e21bf3e0bc80aae73}} 
+\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$ {\bfseries Process\+FM} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} chn, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$songby\+\_\+ptr)
+\item 
+\mbox{\Hypertarget{group__SSG_gab9c8c18f34902e9dd37bdd2ead90e8b3}\label{group__SSG_gab9c8c18f34902e9dd37bdd2ead90e8b3}} 
+\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$ {\bfseries MSet\+Flag} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} chn, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$songby\+\_\+ptr)
+\item 
+\mbox{\Hypertarget{group__SSG_ga5fba8b4f7a171bf7beab309202db25b8}\label{group__SSG_ga5fba8b4f7a171bf7beab309202db25b8}} 
+void {\bfseries Set\+SSGInstrument} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} chn, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} instr)
+\item 
+\mbox{\Hypertarget{group__SSG_gac9c30986b63c94830a14ceab7cfb216d}\label{group__SSG_gac9c30986b63c94830a14ceab7cfb216d}} 
+void {\bfseries Set\+OPNBatch} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} nextreg, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$regby)
+\item 
+\mbox{\Hypertarget{group__SSG_gaf49621e313cae013ee4423519ccc1ca5}\label{group__SSG_gaf49621e313cae013ee4423519ccc1ca5}} 
+void {\bfseries Set\+FMInstrument} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} chn, \mbox{\hyperlink{structinstrument__lite}{Instrument}} $\ast$ins)
+\item 
+\mbox{\Hypertarget{group__SSG_ga72064dbadf2f922938354108cce69e5d}\label{group__SSG_ga72064dbadf2f922938354108cce69e5d}} 
+\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$ {\bfseries MStart\+Loop} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} chn, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$songby\+\_\+ptr)
+\item 
+\mbox{\Hypertarget{group__SSG_gaea8287f5bba0d10514c7a08129de2b5b}\label{group__SSG_gaea8287f5bba0d10514c7a08129de2b5b}} 
+\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$ {\bfseries MEnd\+Loop} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} chn, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$songby\+\_\+ptr)
+\item 
+\mbox{\Hypertarget{group__SSG_gad9d32e1e4e203718caaca3019b0e0e5a}\label{group__SSG_gad9d32e1e4e203718caaca3019b0e0e5a}} 
+\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$ {\bfseries SSGSet\+Volume} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} chn, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$sb)
+\item 
+\mbox{\Hypertarget{group__SSG_ga059d48c267d12925f34a835c946d2556}\label{group__SSG_ga059d48c267d12925f34a835c946d2556}} 
+\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$ {\bfseries SSGPlay\+Note} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} chn, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$sb)
+\item 
+\mbox{\Hypertarget{group__SSG_gaa1efc00bd64b349f0c531337ba3801c0}\label{group__SSG_gaa1efc00bd64b349f0c531337ba3801c0}} 
+\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$ {\bfseries FMSet\+Volume} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} chn, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$sb)
+\item 
+\mbox{\Hypertarget{group__SSG_ga0135744230c817c431c46f74db34cd0f}\label{group__SSG_ga0135744230c817c431c46f74db34cd0f}} 
+\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$ {\bfseries FMPlay\+Note} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} chn, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$sb)
+\item 
+\mbox{\Hypertarget{group__SSG_ga586744b4d49b001e233dc51f9ac83032}\label{group__SSG_ga586744b4d49b001e233dc51f9ac83032}} 
+void {\bfseries Load\+FMInstruments} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} num\+\_\+ins, \mbox{\hyperlink{structinstrument__lite}{Instrument}} $\ast$instrument\+\_\+start)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{group__SSG_ga352c21c8d2450cbbeeef990737d402c8}\label{group__SSG_ga352c21c8d2450cbbeeef990737d402c8}} 
+\index{SSG@{SSG}!C2\_440@{C2\_440}}
+\index{C2\_440@{C2\_440}!SSG@{SSG}}
+\doxysubsubsection{\texorpdfstring{C2\_440}{C2\_440}}
+{\footnotesize\ttfamily \#define C2\+\_\+440~65.\+41}
+
+
+
+SSG Period inputs\+: 
+
+440 Tunings\+: \mbox{\Hypertarget{group__SSG_gad9414214d4461ba20da018e0df8468b1}\label{group__SSG_gad9414214d4461ba20da018e0df8468b1}} 
+\index{SSG@{SSG}!CPU4MHZ@{CPU4MHZ}}
+\index{CPU4MHZ@{CPU4MHZ}!SSG@{SSG}}
+\doxysubsubsection{\texorpdfstring{CPU4MHZ}{CPU4MHZ}}
+{\footnotesize\ttfamily \#define CPU4\+MHZ~3993600}
+
+
+
+Z80 actual speed\+: 
+
+\mbox{[}7\mbox{]} = 0b00111110~\newline
+derivative\+:~\newline
+TONE = CLOCK / (16 $\ast$ PERIOD)~\newline
+PERIOD = 256$\ast$\+COARSE + FINE~\newline
+relational\+:~\newline
+PERIOD = CLOCK / (TONE $\ast$ 16)~\newline
+COARSE + (FINE / 256) = TONE / 256~\newline
+\href{https://pages.mtu.edu/~suits/notefreqs.html}{\texttt{ https\+://pages.\+mtu.\+edu/$\sim$suits/notefreqs.\+html}}~\newline
+\mbox{\Hypertarget{group__SSG_gadac93bbfe720c5e7ad0c200fcab65b49}\label{group__SSG_gadac93bbfe720c5e7ad0c200fcab65b49}} 
+\index{SSG@{SSG}!OPN\_REG@{OPN\_REG}}
+\index{OPN\_REG@{OPN\_REG}!SSG@{SSG}}
+\doxysubsubsection{\texorpdfstring{OPN\_REG}{OPN\_REG}}
+{\footnotesize\ttfamily \#define OPN\+\_\+\+REG~0x44}
+
+R0, R1 (b0-\/3) \+: 12 bit period for Ch. A~\newline
+R2, R3 (b0-\/3) \+: 12 bit period for Ch. B~\newline
+R4, R5 (b0-\/3) \+: 12 bit period for Ch. C~\newline
+R6 \+: 5 bit noise period~\newline
+R7 \+: Output ctl\+: $\sim$\+BANNNTTT~\newline
+ BA\+: Input enable on IO port A/B~\newline
+ NNN\+: Noise enable on Ch. CBA~\newline
+ TTT\+: Tone enable on Ch. CBA~\newline
+R8,R9,RA \+: b0-\/3 amplitude (if b4=0)~\newline
+ b4 enable/disable envelope~\newline
+RB,RC \+: 16-\/bit envelope period~\newline
+RD \+: 4 bit envelope shape~\newline
+RE/\+RF \+: I/O Ports A/B~\newline

@@ -280,7 +280,7 @@ class disk():
         ct = 0
         ## By default, Format will format 256(+16)x16x80.
         # Afterwards you can pop and change the disk format  
-        gap = 4352 # TODO
+        gap = 4352 # TODO:
         while ct < 80:#i < 0x2b0:
             self.bytes[i] = (ofs & 0xff)
             self.bytes[i+1] = (ofs & 0xff00) >> 8
@@ -303,7 +303,7 @@ class disk():
                     self.bytes[i] = c 
                     self.bytes[i+1] = h 
                     self.bytes[i+2] = r 
-                    self.bytes[i+3] = 1 # TODO n
+                    self.bytes[i+3] = 1 # TODO: n
                     self.bytes[i+4] = 0x10 
                     self.bytes[i+5] = 0
                     self.bytes[i+6] = 0
@@ -315,7 +315,7 @@ class disk():
                     self.bytes[i+0xc] = 0
                     self.bytes[i+0xd] = 0
                     self.bytes[i+0xe] = 0 
-                    self.bytes[i+0xf] = 1 #TODO bytes
+                    self.bytes[i+0xf] = 1 #TODO: bytes
                     r += 1
                     i += (256+16)
                 h += 1
@@ -457,8 +457,8 @@ class disk():
             newfn = fn[:9]
         
         # ^ why is string manipulation such a pita?
-        #TODO better file replace search
-        # start at 0x277b0 #FIXME for other offsets 
+        #TODO: better file replace search
+        # start at 0x277b0 #FIXME: for other offsets 
         # 0x277c9 is the first status byte in the directory sector
         i = 0x277c9
         while(self.bytes[i] != 0xff):
