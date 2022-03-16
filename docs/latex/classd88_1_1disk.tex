@@ -1,0 +1,112 @@
+\hypertarget{classd88_1_1disk}{}\doxysection{d88.\+disk Class Reference}
+\label{classd88_1_1disk}\index{d88.disk@{d88.disk}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_aab7d1b8711438c6e75c8ba022204203a}\label{classd88_1_1disk_aab7d1b8711438c6e75c8ba022204203a}} 
+def {\bfseries \+\_\+\+\_\+init\+\_\+\+\_\+} (self, fn=-\/1, sz=0x55eb0)
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_aec7b6082350f1fa740c01deeb28e0a18}\label{classd88_1_1disk_aec7b6082350f1fa740c01deeb28e0a18}} 
+def {\bfseries Populate\+Sectors} (self)
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_a4522100a301b49171de58c4420bc12b2}\label{classd88_1_1disk_a4522100a301b49171de58c4420bc12b2}} 
+def {\bfseries Get\+Disk\+Info} (self)
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_a6a9e467c1f175641843f9363e416157a}\label{classd88_1_1disk_a6a9e467c1f175641843f9363e416157a}} 
+def {\bfseries Get\+Track\+Info} (self)
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_ae0105c9551d5c2a54a97ff163772c7d6}\label{classd88_1_1disk_ae0105c9551d5c2a54a97ff163772c7d6}} 
+def {\bfseries Update\+Master\+Bytes} (self)
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_a638cd0e3ee7de4faa459eec9ea2a59b7}\label{classd88_1_1disk_a638cd0e3ee7de4faa459eec9ea2a59b7}} 
+def {\bfseries copy} (self, cop=-\/1)
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_a0092470f5892347931d2211bc3408d81}\label{classd88_1_1disk_a0092470f5892347931d2211bc3408d81}} 
+def {\bfseries Format} (self, name=\textquotesingle{}\textquotesingle{})
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_ace982e67813998133c435e5fe93223b6}\label{classd88_1_1disk_ace982e67813998133c435e5fe93223b6}} 
+def {\bfseries Write\+Bytes} (self, fn)
+\item 
+def \mbox{\hyperlink{classd88_1_1disk_a93a3a89b9cb874bbf703b86f5d11b227}{Add\+Dir\+Entry}} (self, fn, ofs, sz, filetype=\textquotesingle{}ASCII\textquotesingle{})
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_ab569c667e0883bcfb8d379853cc75e71}\label{classd88_1_1disk_ab569c667e0883bcfb8d379853cc75e71}} 
+def {\bfseries Add\+File} (self, fn, c, h, r, respect\+BAM=False, ascii=False, loadaddr=-\/1, endaddr=0)
+\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_a1c0743962e69a0db1ab3def50592e2a9}\label{classd88_1_1disk_a1c0743962e69a0db1ab3def50592e2a9}} 
+{\bfseries bytes}
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_aede0796176bf68cc70cc5eb3cd26a552}\label{classd88_1_1disk_aede0796176bf68cc70cc5eb3cd26a552}} 
+{\bfseries diskname}
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_aa4b7f49a3b5731a63cfa0b6768efc6d5}\label{classd88_1_1disk_aa4b7f49a3b5731a63cfa0b6768efc6d5}} 
+{\bfseries pointer}
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_a2a721b4c89a5b4ccd1e41bf6a140fbf9}\label{classd88_1_1disk_a2a721b4c89a5b4ccd1e41bf6a140fbf9}} 
+{\bfseries writeprotect}
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_a8caf06bde05c089c0a6ae8dec458a406}\label{classd88_1_1disk_a8caf06bde05c089c0a6ae8dec458a406}} 
+{\bfseries mediatype}
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_ab96612de3d9fe87d0b6cb701a97e7ea3}\label{classd88_1_1disk_ab96612de3d9fe87d0b6cb701a97e7ea3}} 
+{\bfseries disksize}
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_a3f2774c94a59eec78dfda0fe08449f3b}\label{classd88_1_1disk_a3f2774c94a59eec78dfda0fe08449f3b}} 
+{\bfseries tracktable}
+\item 
+\mbox{\Hypertarget{classd88_1_1disk_af344adafdb150effb873827ed9f84935}\label{classd88_1_1disk_af344adafdb150effb873827ed9f84935}} 
+{\bfseries tracks}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classd88_1_1disk_a93a3a89b9cb874bbf703b86f5d11b227}\label{classd88_1_1disk_a93a3a89b9cb874bbf703b86f5d11b227}} 
+\index{d88.disk@{d88.disk}!AddDirEntry@{AddDirEntry}}
+\index{AddDirEntry@{AddDirEntry}!d88.disk@{d88.disk}}
+\doxysubsubsection{\texorpdfstring{AddDirEntry()}{AddDirEntry()}}
+{\footnotesize\ttfamily def d88.\+disk.\+Add\+Dir\+Entry (\begin{DoxyParamCaption}\item[{}]{self,  }\item[{}]{fn,  }\item[{}]{ofs,  }\item[{}]{sz,  }\item[{}]{filetype = {\ttfamily \textquotesingle{}ASCII\textquotesingle{}} }\end{DoxyParamCaption})}
+
+\begin{DoxyVerb}N88 BASIC DISK FORMAT
+Files listing
+d88 offset @ 0x277b0
+CHR 12-01-01
+
+x0 - x8 : 9 letter name, padded with 0x20
+x9      : file status byte: typically 0x80, 0x01
+xA      : data pointer; multiply by 8 to find sector
+        or: ptr * (2048 + 128)+688 = offset into disk image 
+            [0xa] * (0x800 + 0x80)+0x2b0
+xB - xF : generally FF
+
+PC88 BAM
+********
+12-1-13 to 12-1-16
+
+12-1-13: filled with 00 
+[ n88 basic autorun sector - explained below]
+
+12-1-14/15/16: (all 3 are duplicated)
+
+!ONE BLOCK IS 8 SECTORS ON DISK.!
+:0 - 159 (0-af) byte format:
+0 ~ af: Sector in this space is full. The byte value is the next sector 
+        in this file.
+C1 ~ C8: 1 block of normal data, which takes up 1-8 sectors of the block.
+FE : System area (e.g. BAM)
+FF : Empty sector.
+
+:160+: ae f0 eb 00 [ls] [ls] ... ???
+This may be scratch area used by N88 Disk BASIC. The only consistency
+I've seen is that addresses ~0xb0 - 0xb3 are always [ae f0 eb 00]. 
+The rest of the area is filled with 0s.
+
+BASIC AUTORUN STUB:
+par example, for mucom:
+\00 \01 run"mlf88"\00 \00 \00\end{DoxyVerb}
+ 
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+tools/d88.\+py\end{DoxyCompactItemize}

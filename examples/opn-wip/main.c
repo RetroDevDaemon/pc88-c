@@ -1,6 +1,6 @@
 #include <pc88-c.h>
 
-#include "song.h"
+#include "song_b.h"
 
 inline void SetIRQs()
 {
@@ -17,6 +17,7 @@ u8 ctr;
 
 void main()
 {
+    
     IRQ_OFF; 
     ctr = 0;
     idleCount = 0;
@@ -58,6 +59,8 @@ void Vblank() __critical __interrupt
     
     if(playingSong)
         PlaySong();
+    else 
+        print("OVER");
     
     SetCursorPos(15, 1);
     u8* d = byToHex((u8)(idleCount >> 8)); 

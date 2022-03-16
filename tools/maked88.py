@@ -111,7 +111,7 @@ elif(len(sys.argv) > 2):
             ftype = 'ASCII'
             if(len(sys.argv) >= 6):
                 if (sys.argv[5].upper() == 'BASIC'):
-                    #TODO Add compiler
+                    #TODO: Add compiler
                     ftype = 'BASIC'
                     print("No BASIC compiler support yet... use binary.")
                     sys.exit()

@@ -1,0 +1,414 @@
+\hypertarget{group__PC88-C}{}\doxysection{PC88-\/C}
+\label{group__PC88-C}\index{PC88-\/C@{PC88-\/C}}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structplanarBitmap}{planar\+Bitmap}}
+\begin{DoxyCompactList}\small\item\em pb \end{DoxyCompactList}\item 
+struct \mbox{\hyperlink{structxypos}{xypos}}
+\begin{DoxyCompactList}\small\item\em 4 bytes \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga41f9c5fb8b08eb5dc3edce4dcb37fee7}\label{group__PC88-C_ga41f9c5fb8b08eb5dc3edce4dcb37fee7}} 
+\#define {\bfseries true}~1
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga65e9886d74aaee76545e83dd09011727}\label{group__PC88-C_ga65e9886d74aaee76545e83dd09011727}} 
+\#define {\bfseries false}~0
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga62fe4f31d7cd6087317744dd800a86c3}\label{group__PC88-C_ga62fe4f31d7cd6087317744dd800a86c3}} 
+\#define {\bfseries bit}(n)~(1 $<$$<$ n)
+\item 
+\mbox{\Hypertarget{group__PC88-C_gac97b8ee753e4405397a42ad5799b0f9e}\label{group__PC88-C_gac97b8ee753e4405397a42ad5799b0f9e}} 
+\#define {\bfseries null}~0
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga070d2ce7b6bb7e5c05602aa8c308d0c4}\label{group__PC88-C_ga070d2ce7b6bb7e5c05602aa8c308d0c4}} 
+\#define {\bfseries NULL}~null
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga872b79cb6602ecfdcea83e624f41b2a0}\label{group__PC88-C_ga872b79cb6602ecfdcea83e624f41b2a0}} 
+\#define {\bfseries FIXED16}(n)~((fix\+\_\+16s)((n) $<$$<$ 8))
+\item 
+\mbox{\Hypertarget{group__PC88-C_gacb499797d3d425b9d2891701ade4b267}\label{group__PC88-C_gacb499797d3d425b9d2891701ade4b267}} 
+\#define \mbox{\hyperlink{group__PC88-C_gacb499797d3d425b9d2891701ade4b267}{SCREEN\+\_\+\+TXT\+\_\+\+BASE}}~0xf3c8
+\begin{DoxyCompactList}\small\item\em What. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{group__PC88-C_ga0011dab607d54a7f6a6894663b3a1f97}\label{group__PC88-C_ga0011dab607d54a7f6a6894663b3a1f97}} 
+\#define {\bfseries SCREEN\+\_\+\+ATTR\+\_\+\+BASE}~\mbox{\hyperlink{group__PC88-C_gacb499797d3d425b9d2891701ade4b267}{SCREEN\+\_\+\+TXT\+\_\+\+BASE}} + 80
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga3fc1ee0e28038c7b988e3e0a50ce9398}\label{group__PC88-C_ga3fc1ee0e28038c7b988e3e0a50ce9398}} 
+\#define {\bfseries Get\+VRAMPos}(x,  y)~(vu8$\ast$)(((y)$\ast$80)+0xc000 + (x))
+\item 
+\mbox{\Hypertarget{group__PC88-C_gafe076292bd86341a60a0fbcd4f7aa1c4}\label{group__PC88-C_gafe076292bd86341a60a0fbcd4f7aa1c4}} 
+\#define {\bfseries RS232\+\_\+\+IRQ}~0xf300
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga2b9af19905399bc2501bdc21d1a2cea6}\label{group__PC88-C_ga2b9af19905399bc2501bdc21d1a2cea6}} 
+\#define {\bfseries CRTC\+\_\+\+IRQ}~0xf302
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga7dde2192ae8ad381984797d6ea11c1c6}\label{group__PC88-C_ga7dde2192ae8ad381984797d6ea11c1c6}} 
+\#define {\bfseries CLOCK\+\_\+\+IRQ}~0xf304
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga6581e5942e15b30c2a4301983a9b2301}\label{group__PC88-C_ga6581e5942e15b30c2a4301983a9b2301}} 
+\#define {\bfseries USR\+\_\+\+IRQ4}~0xf306
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga58c60350ae067d5adcf2ad50a8b847a5}\label{group__PC88-C_ga58c60350ae067d5adcf2ad50a8b847a5}} 
+\#define {\bfseries USR\+\_\+\+IRQ3}~0xf308
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga01f0b4ac0231c85d9095fa2140b03715}\label{group__PC88-C_ga01f0b4ac0231c85d9095fa2140b03715}} 
+\#define {\bfseries USR\+\_\+\+IRQ2}~0xf30a
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga98cd34e732735efb78db0acdc3f6d557}\label{group__PC88-C_ga98cd34e732735efb78db0acdc3f6d557}} 
+\#define {\bfseries FM\+\_\+\+IRQ1}~USR\+\_\+\+IRQ4
+\item 
+\mbox{\Hypertarget{group__PC88-C_gae7fd33989f205b6344e8b6407e390eae}\label{group__PC88-C_gae7fd33989f205b6344e8b6407e390eae}} 
+\#define {\bfseries FM\+\_\+\+IRQ2}~USR\+\_\+\+IRQ3
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga942f28951749f76144f7d597099001cc}\label{group__PC88-C_ga942f28951749f76144f7d597099001cc}} 
+\#define {\bfseries VBLANK\+\_\+\+SIGNAL}~0b100000
+\item 
+\mbox{\Hypertarget{group__PC88-C_gac5d927270b77f8a96c87f1210872e6d2}\label{group__PC88-C_gac5d927270b77f8a96c87f1210872e6d2}} 
+\#define {\bfseries TMODE\+\_\+\+BIT}~0b10000
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga844f84accbd334012eb3a330c4465ae8}\label{group__PC88-C_ga844f84accbd334012eb3a330c4465ae8}} 
+\#define {\bfseries TEXT\+\_\+\+BWMODE\+\_\+\+BIT}~0b10
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga8c99a305b4e9bd9fe492a2b6a4ce9f23}\label{group__PC88-C_ga8c99a305b4e9bd9fe492a2b6a4ce9f23}} 
+\#define {\bfseries TEXT\+\_\+80\+COL\+\_\+\+BIT}~0b1
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga0a77e6441e7f3c8e166e43a930348386}\label{group__PC88-C_ga0a77e6441e7f3c8e166e43a930348386}} 
+\#define {\bfseries TXT\+\_\+\+COLOR\+\_\+\+SET}~0b1000
+\item 
+\mbox{\Hypertarget{group__PC88-C_gac2cbcf0c02f5afc3802c7e71a435bad9}\label{group__PC88-C_gac2cbcf0c02f5afc3802c7e71a435bad9}} 
+\#define {\bfseries TXT\+\_\+\+ATTR\+\_\+\+SET}~0
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga200fd50f64e8a7777954547ef30798a1}\label{group__PC88-C_ga200fd50f64e8a7777954547ef30798a1}} 
+\#define {\bfseries CLR\+\_\+\+WHITE}~7
+\item 
+\mbox{\Hypertarget{group__PC88-C_gae0a5a80f5e963a782350b12e9cfcc9f3}\label{group__PC88-C_gae0a5a80f5e963a782350b12e9cfcc9f3}} 
+\#define {\bfseries CLR\+\_\+\+YELLOW}~6
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga59d8c7d9960773718d8dac44a99bcac4}\label{group__PC88-C_ga59d8c7d9960773718d8dac44a99bcac4}} 
+\#define {\bfseries CLR\+\_\+\+CYAN}~5
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga0c8c42824dd44b52d4289558804a128a}\label{group__PC88-C_ga0c8c42824dd44b52d4289558804a128a}} 
+\#define {\bfseries CLR\+\_\+\+GREEN}~4
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga3870f318b8ed33f94ccf96fd515e9377}\label{group__PC88-C_ga3870f318b8ed33f94ccf96fd515e9377}} 
+\#define {\bfseries CLR\+\_\+\+FUSCHIA}~3
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga440726f8973da46eba779f170566b4cc}\label{group__PC88-C_ga440726f8973da46eba779f170566b4cc}} 
+\#define {\bfseries CLR\+\_\+\+RED}~2
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga0dab0df401c468a1012750cc6331dbe4}\label{group__PC88-C_ga0dab0df401c468a1012750cc6331dbe4}} 
+\#define {\bfseries CLR\+\_\+\+BLUE}~1
+\item 
+\mbox{\Hypertarget{group__PC88-C_gad8fc23ac0b5f8e6292135c5647486d5a}\label{group__PC88-C_gad8fc23ac0b5f8e6292135c5647486d5a}} 
+\#define {\bfseries CLR\+\_\+\+BLACK}~0
+\item 
+\mbox{\Hypertarget{group__PC88-C_gacd404953004ffa4e7e5552903a339c47}\label{group__PC88-C_gacd404953004ffa4e7e5552903a339c47}} 
+\#define {\bfseries PLANE\+\_\+\+RED}~1
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga2b9d3bcd6201ca2eecf6646a5984eade}\label{group__PC88-C_ga2b9d3bcd6201ca2eecf6646a5984eade}} 
+\#define {\bfseries PLANE\+\_\+\+BLUE}~0
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga19e7923bb37ce2ff2b7f50f08976fba9}\label{group__PC88-C_ga19e7923bb37ce2ff2b7f50f08976fba9}} 
+\#define {\bfseries PLANE\+\_\+\+GREEN}~2
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga126d0ccbe8208ccb9a89afa573b0345d}\label{group__PC88-C_ga126d0ccbe8208ccb9a89afa573b0345d}} 
+\#define {\bfseries DRIVE\+\_\+1}~0
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga823d2b0548e5c9ccb004037fad290e60}\label{group__PC88-C_ga823d2b0548e5c9ccb004037fad290e60}} 
+\#define {\bfseries DRIVE\+\_\+2}~1
+\item 
+\#define \mbox{\hyperlink{group__PC88-C_gae787d0097eff0ccb7fed1800e5223b95}{V1\+S\+\_\+\+MODE\+\_\+\+FLAG}}~(2$<$$<$14)
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga2bd17bfeb1cc3d28b5825fbda5626f8c}\label{group__PC88-C_ga2bd17bfeb1cc3d28b5825fbda5626f8c}} 
+\#define {\bfseries V2\+\_\+\+MODE\+\_\+\+FLAG}~(1$<$$<$14)
+\item 
+\mbox{\Hypertarget{group__PC88-C_gada87f118d5eb96687560536da20a9f00}\label{group__PC88-C_gada87f118d5eb96687560536da20a9f00}} 
+\#define {\bfseries V1\+H\+\_\+\+MODE\+\_\+\+FLAG}~(3$<$$<$14)
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga588beae95ea383e54aa08dbe02cb3332}\label{group__PC88-C_ga588beae95ea383e54aa08dbe02cb3332}} 
+\#define {\bfseries FOURMHZ\+\_\+\+FLAG}~(0x80)
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga0b56de97a9e9851e53dc76ae39948dc2}\label{group__PC88-C_ga0b56de97a9e9851e53dc76ae39948dc2}} 
+\#define {\bfseries Set\+BGColor}(c)~Set\+IOReg(0x52, c $<$$<$ 4);
+\item 
+\mbox{\Hypertarget{group__PC88-C_gac82086aae79b61dd357b61017c8f4592}\label{group__PC88-C_gac82086aae79b61dd357b61017c8f4592}} 
+\#define {\bfseries Set\+Border\+Color}(c)~Set\+IOReg(0x52, c);
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga3650f7e9b965a47311bdaad5764c837a}\label{group__PC88-C_ga3650f7e9b965a47311bdaad5764c837a}} 
+\#define {\bfseries SETBANK\+\_\+\+BLUE}()~Set\+IOReg(0x5c, 0xff);
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga11648c1aaf7dcc096bf0a992fd36109e}\label{group__PC88-C_ga11648c1aaf7dcc096bf0a992fd36109e}} 
+\#define {\bfseries SETBANK\+\_\+\+RED}()~Set\+IOReg(0x5d, 0xff);
+\item 
+\mbox{\Hypertarget{group__PC88-C_gaf21b3cc6ac3a1ae37bc91d8e2211bc6b}\label{group__PC88-C_gaf21b3cc6ac3a1ae37bc91d8e2211bc6b}} 
+\#define {\bfseries SETBANK\+\_\+\+GREEN}()~Set\+IOReg(0x5e, 0xff);
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga434d202d83678587098668427f84ea6e}\label{group__PC88-C_ga434d202d83678587098668427f84ea6e}} 
+\#define {\bfseries SETBANK\+\_\+\+MAINRAM}()~Set\+IOReg(0x5f, 0xff);
+\item 
+\#define {\bfseries Draw\+Planar\+Bitmap}(pb,  x,  y)
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga08832b6a3cffc96d0170dfc5af7a48d0}\label{group__PC88-C_ga08832b6a3cffc96d0170dfc5af7a48d0}} 
+\#define \mbox{\hyperlink{group__PC88-C_ga08832b6a3cffc96d0170dfc5af7a48d0}{COLORMODE\+\_\+\+SET}}(color,  semigraphic)~    (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}})((color$<$$<$5)$\vert$(semigraphic$<$$<$4)$\vert$0b1000)
+\begin{DoxyCompactList}\small\item\em Used in COLOR TEXT mode. Defines color and semigraphic toggle. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{group__PC88-C_ga93248bf7e9492a0423eead2864f31596}\label{group__PC88-C_ga93248bf7e9492a0423eead2864f31596}} 
+\#define \mbox{\hyperlink{group__PC88-C_ga93248bf7e9492a0423eead2864f31596}{COLORMODE\+\_\+\+ATTR}}(underline,  upperline,  reverse,  blink,  hidden)~    (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}})((underline$<$$<$5)$\vert$(upperline$<$$<$4)$\vert$(reverse$<$$<$2)$\vert$(blink$<$$<$1)$\vert$(hidden))
+\begin{DoxyCompactList}\small\item\em Used in COLOR TEXT mode. Defines text attributes. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{group__PC88-C_ga70050c9b0247b8310489a8fdd7d40a63}\label{group__PC88-C_ga70050c9b0247b8310489a8fdd7d40a63}} 
+\#define \mbox{\hyperlink{group__PC88-C_ga70050c9b0247b8310489a8fdd7d40a63}{BWMODE\+\_\+\+ATTR}}(underline,  upperline,  reverse,  blink,  hidden)~    (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}})((underline$<$$<$5)$\vert$(upperline$<$$<$4)$\vert$(reverse$<$$<$2)$\vert$(blink$<$$<$1)$\vert$(hidden))
+\begin{DoxyCompactList}\small\item\em Used in B\&W TEXT mode. Bits 7, 5 and 4 must all be set for BW semigraphic mode. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{group__PC88-C_gac63d73fb6d0a13ffc498da16293dc5af}\label{group__PC88-C_gac63d73fb6d0a13ffc498da16293dc5af}} 
+\#define {\bfseries ATTR\+\_\+\+BW\+\_\+\+SEMIGRAPHIC}~0b10011000
+\item 
+\mbox{\Hypertarget{group__PC88-C_gadba4fd4d272574848350a7e66637aa6f}\label{group__PC88-C_gadba4fd4d272574848350a7e66637aa6f}} 
+\#define {\bfseries IRQ\+\_\+\+OFF}~\+\_\+\+\_\+asm di \+\_\+\+\_\+endasm;
+\item 
+\mbox{\Hypertarget{group__PC88-C_gaed64048f7b497dd75fb0afbd2906ac6d}\label{group__PC88-C_gaed64048f7b497dd75fb0afbd2906ac6d}} 
+\#define {\bfseries IRQ\+\_\+\+ON}~\+\_\+\+\_\+asm ei \+\_\+\+\_\+endasm;
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga0de250395e6a7c0c32a34b50a6254c7d}\label{group__PC88-C_ga0de250395e6a7c0c32a34b50a6254c7d}} 
+\#define {\bfseries HALT}~\+\_\+\+\_\+asm halt \+\_\+\+\_\+endasm;
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga0409e98ff9aade482fcfc9e67e762a86}\label{group__PC88-C_ga0409e98ff9aade482fcfc9e67e762a86}} 
+\#define {\bfseries BREAKPOINT}~print(\char`\"{}BRK\char`\"{});HALT;
+\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}\label{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}} 
+typedef unsigned char \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}}
+\begin{DoxyCompactList}\small\item\em A brief C framework for PC-\/88 development. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{group__PC88-C_ga50b0d1c7a54fa09a64a3ac111c778520}\label{group__PC88-C_ga50b0d1c7a54fa09a64a3ac111c778520}} 
+typedef unsigned int {\bfseries u16}
+\item 
+\mbox{\Hypertarget{group__PC88-C_gaecf7c4189e2bd5ee7ac61f5639b1327a}\label{group__PC88-C_gaecf7c4189e2bd5ee7ac61f5639b1327a}} 
+typedef volatile unsigned char {\bfseries vu8}
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga9b1a7deaafed0fcb2218d91536be0e11}\label{group__PC88-C_ga9b1a7deaafed0fcb2218d91536be0e11}} 
+typedef volatile unsigned int {\bfseries vu16}
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga151f780fb455885061d3b77ec1c90c03}\label{group__PC88-C_ga151f780fb455885061d3b77ec1c90c03}} 
+typedef signed char {\bfseries s8}
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga1577627170030bcc083b3d31d68d3ab6}\label{group__PC88-C_ga1577627170030bcc083b3d31d68d3ab6}} 
+typedef signed int {\bfseries s16}
+\item 
+\mbox{\Hypertarget{group__PC88-C_gaa61122134519ad19a7af1d514b605c1c}\label{group__PC88-C_gaa61122134519ad19a7af1d514b605c1c}} 
+typedef volatile signed char {\bfseries vs8}
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga7fe8ec262cc92f115f45633051398cdf}\label{group__PC88-C_ga7fe8ec262cc92f115f45633051398cdf}} 
+typedef volatile unsigned int {\bfseries vs16}
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga96ba9ddf895d3ea443ab818e669610d0}\label{group__PC88-C_ga96ba9ddf895d3ea443ab818e669610d0}} 
+typedef const \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} {\bfseries String}\mbox{[}$\,$\mbox{]}
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga97a80ca1602ebf2303258971a2c938e2}\label{group__PC88-C_ga97a80ca1602ebf2303258971a2c938e2}} 
+typedef unsigned char {\bfseries bool}
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga2caf5cd7bcdbe1eefa727f44ffb10bac}\label{group__PC88-C_ga2caf5cd7bcdbe1eefa727f44ffb10bac}} 
+typedef unsigned long {\bfseries u32}
+\item 
+\mbox{\Hypertarget{group__PC88-C_gadafe97a8e4be18b0198f234819016582}\label{group__PC88-C_gadafe97a8e4be18b0198f234819016582}} 
+typedef signed long {\bfseries s32}
+\item 
+\mbox{\Hypertarget{group__PC88-C_gad758b7a5c3f18ed79d2fcd23d9f16357}\label{group__PC88-C_gad758b7a5c3f18ed79d2fcd23d9f16357}} 
+typedef unsigned long long {\bfseries u64}
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga4258bfb2c3a440d06c4aaa3c2b450dde}\label{group__PC88-C_ga4258bfb2c3a440d06c4aaa3c2b450dde}} 
+typedef signed long long {\bfseries s64}
+\item 
+\mbox{\Hypertarget{group__PC88-C_gaa6c41715f49ae238ef4ed4ac3abae2f4}\label{group__PC88-C_gaa6c41715f49ae238ef4ed4ac3abae2f4}} 
+typedef signed int {\bfseries fix\+\_\+16s}
+\item 
+typedef const struct \mbox{\hyperlink{structplanarBitmap}{planar\+Bitmap}} \mbox{\hyperlink{group__PC88-C_gacbace83afdd343ade9e406b52ad3498c}{Planar\+Bitmap}}
+\begin{DoxyCompactList}\small\item\em pb \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{group__PC88-C_gad4d9365b4ccd0ccbd1ddbc35f8019051}\label{group__PC88-C_gad4d9365b4ccd0ccbd1ddbc35f8019051}} 
+typedef const struct \mbox{\hyperlink{structplanarBitmap}{planar\+Bitmap}} {\bfseries Sprite}
+\item 
+\mbox{\Hypertarget{group__PC88-C_gae5c1dd528ee66f6adc587f3f9563c426}\label{group__PC88-C_gae5c1dd528ee66f6adc587f3f9563c426}} 
+typedef struct \mbox{\hyperlink{structxypos}{xypos}} \mbox{\hyperlink{group__PC88-C_gae5c1dd528ee66f6adc587f3f9563c426}{XYpos}}
+\begin{DoxyCompactList}\small\item\em 4 bytes \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga51cc46f1e50f9e25d5d667d9fb80c74b}\label{group__PC88-C_ga51cc46f1e50f9e25d5d667d9fb80c74b}} 
+void {\bfseries \+\_\+\+\_\+init} ()
+\item 
+\mbox{\Hypertarget{group__PC88-C_gacdef7a1fd863a6d3770c1268cb06add3}\label{group__PC88-C_gacdef7a1fd863a6d3770c1268cb06add3}} 
+void {\bfseries main} ()
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga2b16ac324ab141785a0b37abb76cf557}\label{group__PC88-C_ga2b16ac324ab141785a0b37abb76cf557}} 
+void {\bfseries putchr} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} c)
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga51029902ecc8d603d1150f1c6ab25274}\label{group__PC88-C_ga51029902ecc8d603d1150f1c6ab25274}} 
+void {\bfseries putchr40} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} c)
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga7adc51ad19cf0558c62244ec66946c12}\label{group__PC88-C_ga7adc51ad19cf0558c62244ec66946c12}} 
+void {\bfseries print} (String str)
+\item 
+\mbox{\Hypertarget{group__PC88-C_gad01c003ec60eaf8f216eca108ec837a1}\label{group__PC88-C_gad01c003ec60eaf8f216eca108ec837a1}} 
+void {\bfseries print40} (String str)
+\item 
+void \mbox{\hyperlink{group__PC88-C_gaac08d0135426d4a917aa7038d243c599}{Set\+Text\+Attribute}} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} x, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} y, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} attr)
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga006345ca4b1b6452b1c376a27daaea62}\label{group__PC88-C_ga006345ca4b1b6452b1c376a27daaea62}} 
+void \mbox{\hyperlink{group__PC88-C_ga006345ca4b1b6452b1c376a27daaea62}{Clear\+Attribute\+Ram}} ()
+\begin{DoxyCompactList}\small\item\em Resets to the bios defaults. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{group__PC88-C_gae6a260fe3da3ee72a21eb2af7323d7a9}\label{group__PC88-C_gae6a260fe3da3ee72a21eb2af7323d7a9}} 
+void {\bfseries Set\+Cursor\+Pos} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} x, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} y)
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga0cbfb57257160f18d294dad741b4b130}\label{group__PC88-C_ga0cbfb57257160f18d294dad741b4b130}} 
+void {\bfseries Set\+Cursor\+Pos40} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} x, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} y)
+\item 
+\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$ \mbox{\hyperlink{group__PC88-C_gab22a38f6e5ef7c4b83be823315c9959f}{by\+To\+Hex}} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} by)
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga6534e0b2d3c679fba3918cbcfe7102b2}\label{group__PC88-C_ga6534e0b2d3c679fba3918cbcfe7102b2}} 
+\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} {\bfseries Read\+IOReg} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} r)
+\item 
+\mbox{\Hypertarget{group__PC88-C_gaf257ce8fa1e5ee32335fdeb5a9642740}\label{group__PC88-C_gaf257ce8fa1e5ee32335fdeb5a9642740}} 
+void {\bfseries Set\+IOReg} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} r, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} v)
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga4cbc632272cee73bee1eee14243abe90}\label{group__PC88-C_ga4cbc632272cee73bee1eee14243abe90}} 
+void {\bfseries Set\+OPNReg} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} r, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} v) \+\_\+\+\_\+naked
+\item 
+\mbox{\Hypertarget{group__PC88-C_gaaf4101ff1adcf9c4d21d03a6c4215b56}\label{group__PC88-C_gaaf4101ff1adcf9c4d21d03a6c4215b56}} 
+void {\bfseries Vblank} () \+\_\+\+\_\+critical \+\_\+\+\_\+interrupt
+\item 
+\mbox{\Hypertarget{group__PC88-C_gab21cd6e99ab443110217e6c25e3f7573}\label{group__PC88-C_gab21cd6e99ab443110217e6c25e3f7573}} 
+void {\bfseries Clock\+Interrupt} () \+\_\+\+\_\+critical \+\_\+\+\_\+interrupt
+\item 
+\mbox{\Hypertarget{group__PC88-C_gaffbd39832b8e34720eac971501a0bc16}\label{group__PC88-C_gaffbd39832b8e34720eac971501a0bc16}} 
+void {\bfseries Wait\+\_\+\+VBLANK} ()
+\item 
+bool \mbox{\hyperlink{group__PC88-C_gae9cc2f60db0d9ca017b994fe93624b88}{Get\+Key\+Down}} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} SCANCODE)
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga21d2fd2b71d6228e3acb7ab8271ad084}\label{group__PC88-C_ga21d2fd2b71d6228e3acb7ab8271ad084}} 
+void {\bfseries Draw\+Plane\+BMP} (const \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$img, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} plane, u16 x, u16 y, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} w, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} h)
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga2cc8d7f017be49ee955fe7f8065fdf26}\label{group__PC88-C_ga2cc8d7f017be49ee955fe7f8065fdf26}} 
+void {\bfseries Set\+Pixel} (u16 x, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} y, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} c)
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga2398e3152f4a66dcd7b8e40fbdf03931}\label{group__PC88-C_ga2398e3152f4a66dcd7b8e40fbdf03931}} 
+void {\bfseries Enable\+ALU} ()
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga151e4ed735ee68953afcc5d35f7374a4}\label{group__PC88-C_ga151e4ed735ee68953afcc5d35f7374a4}} 
+void {\bfseries Disable\+ALU} ()
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga2035eb5ae3a9359cdcc19bf5775a5025}\label{group__PC88-C_ga2035eb5ae3a9359cdcc19bf5775a5025}} 
+void {\bfseries Expanded\+GVRAM\+\_\+\+On} ()
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga14041d5eac975a1524640084159f3faf}\label{group__PC88-C_ga14041d5eac975a1524640084159f3faf}} 
+void {\bfseries Expanded\+GVRAM\+\_\+\+Off} ()
+\item 
+void \mbox{\hyperlink{group__PC88-C_ga67441595bfa22b97a3428c1883bac17f}{Disk\+Load}} (\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$dst, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} track, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} sector, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} num\+Secs, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} drive)
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga170db0f677180f869048199b7a6d3ddf}\label{group__PC88-C_ga170db0f677180f869048199b7a6d3ddf}} 
+void {\bfseries beep} (u16 tone, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} length)
+\item 
+\mbox{\Hypertarget{group__PC88-C_gafb3f96d3e4c3f3df791f0ab7a6cf72a5}\label{group__PC88-C_gafb3f96d3e4c3f3df791f0ab7a6cf72a5}} 
+void {\bfseries Erase\+VRAMArea} (\mbox{\hyperlink{group__PC88-C_gae5c1dd528ee66f6adc587f3f9563c426}{XYpos}} $\ast$xy, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} w, \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} h)
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga9b9a64319a07c4f8fc475b8aee49505c}\label{group__PC88-C_ga9b9a64319a07c4f8fc475b8aee49505c}} 
+\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} {\bfseries Get\+N88\+Rom} ()
+\item 
+\mbox{\Hypertarget{group__PC88-C_gaceabe442c1ba8ea752baea6d1de6be25}\label{group__PC88-C_gaceabe442c1ba8ea752baea6d1de6be25}} 
+u16 {\bfseries Get\+Sys\+Mode} ()
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga25c99a37e1d54e86651d59625bd49076}\label{group__PC88-C_ga25c99a37e1d54e86651d59625bd49076}} 
+\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} {\bfseries abs} (s8 n)
+\item 
+\mbox{\Hypertarget{group__PC88-C_ga7a2949c565ecec9e3aec49bcaca2f530}\label{group__PC88-C_ga7a2949c565ecec9e3aec49bcaca2f530}} 
+u16 {\bfseries abs16} (s16 n)
+\item 
+\mbox{\Hypertarget{group__PC88-C_gae3c3656ac5e8acecdd4374d1e3eed604}\label{group__PC88-C_gae3c3656ac5e8acecdd4374d1e3eed604}} 
+\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} {\bfseries rand} ()
+\item 
+\mbox{\Hypertarget{group__PC88-C_gafbf3bdf454cf33006b5750628ac7cb7f}\label{group__PC88-C_gafbf3bdf454cf33006b5750628ac7cb7f}} 
+u16 {\bfseries rand16} ()
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{group__PC88-C_gad9a8133f72fc686d0b71187ccbb47b0f}\label{group__PC88-C_gad9a8133f72fc686d0b71187ccbb47b0f}} 
+\index{PC88-\/C@{PC88-\/C}!DrawPlanarBitmap@{DrawPlanarBitmap}}
+\index{DrawPlanarBitmap@{DrawPlanarBitmap}!PC88-\/C@{PC88-\/C}}
+\doxysubsubsection{\texorpdfstring{DrawPlanarBitmap}{DrawPlanarBitmap}}
+{\footnotesize\ttfamily \#define Draw\+Planar\+Bitmap(\begin{DoxyParamCaption}\item[{}]{pb,  }\item[{}]{x,  }\item[{}]{y }\end{DoxyParamCaption})}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{        DrawPlaneBMP(pb-\/>r, PLANE\_RED, x, y, pb-\/>w, pb-\/>h); \(\backslash\)}
+\DoxyCodeLine{        DrawPlaneBMP(pb-\/>g, PLANE\_GREEN, x, y, pb-\/>w, pb-\/>h); \(\backslash\)}
+\DoxyCodeLine{        DrawPlaneBMP(pb-\/>b, PLANE\_BLUE, x, y, pb-\/>w, pb-\/>h);}
+
+\end{DoxyCode}
+\mbox{\Hypertarget{group__PC88-C_gae787d0097eff0ccb7fed1800e5223b95}\label{group__PC88-C_gae787d0097eff0ccb7fed1800e5223b95}} 
+\index{PC88-\/C@{PC88-\/C}!V1S\_MODE\_FLAG@{V1S\_MODE\_FLAG}}
+\index{V1S\_MODE\_FLAG@{V1S\_MODE\_FLAG}!PC88-\/C@{PC88-\/C}}
+\doxysubsubsection{\texorpdfstring{V1S\_MODE\_FLAG}{V1S\_MODE\_FLAG}}
+{\footnotesize\ttfamily \#define V1\+S\+\_\+\+MODE\+\_\+\+FLAG~(2$<$$<$14)}
+
+SYS ;bit7\+:0=8MHz 1=4MHz (FH以降) ;bit76.\+w\+:10=V1S 11=V1H 01=V2 
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{group__PC88-C_gacbace83afdd343ade9e406b52ad3498c}\label{group__PC88-C_gacbace83afdd343ade9e406b52ad3498c}} 
+\index{PC88-\/C@{PC88-\/C}!PlanarBitmap@{PlanarBitmap}}
+\index{PlanarBitmap@{PlanarBitmap}!PC88-\/C@{PC88-\/C}}
+\doxysubsubsection{\texorpdfstring{PlanarBitmap}{PlanarBitmap}}
+{\footnotesize\ttfamily typedef const struct \mbox{\hyperlink{structplanarBitmap}{planar\+Bitmap}} \mbox{\hyperlink{group__PC88-C_gacbace83afdd343ade9e406b52ad3498c}{Planar\+Bitmap}}}
+
+
+
+pb 
+
+Planar\+Bitmap Consists of three pointers to the three RGB plane data, uncompressed and a width (divided by 8) and height. 
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{group__PC88-C_gab22a38f6e5ef7c4b83be823315c9959f}\label{group__PC88-C_gab22a38f6e5ef7c4b83be823315c9959f}} 
+\index{PC88-\/C@{PC88-\/C}!byToHex@{byToHex}}
+\index{byToHex@{byToHex}!PC88-\/C@{PC88-\/C}}
+\doxysubsubsection{\texorpdfstring{byToHex()}{byToHex()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}}$\ast$ by\+To\+Hex (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}}}]{by }\end{DoxyParamCaption})}
+
+Converts a single byte to ASCII numeric form \mbox{\Hypertarget{group__PC88-C_ga67441595bfa22b97a3428c1883bac17f}\label{group__PC88-C_ga67441595bfa22b97a3428c1883bac17f}} 
+\index{PC88-\/C@{PC88-\/C}!DiskLoad@{DiskLoad}}
+\index{DiskLoad@{DiskLoad}!PC88-\/C@{PC88-\/C}}
+\doxysubsubsection{\texorpdfstring{DiskLoad()}{DiskLoad()}}
+{\footnotesize\ttfamily void Disk\+Load (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}} $\ast$}]{dest,  }\item[{\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}}}]{src\+Track,  }\item[{\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}}}]{src\+Sector,  }\item[{\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}}}]{num\+Secs,  }\item[{\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}}}]{drive }\end{DoxyParamCaption})}
+
+
+\begin{DoxyParams}{Parameters}
+{\em dest} & -\/ Destination to load data in RAM \\
+\hline
+{\em src\+Track} & -\/ Source track on disk \\
+\hline
+{\em src\+Sector} & -\/ Source sector on disk \\
+\hline
+{\em num\+Secs} & -\/ Number of sectors to copy (bytes$\ast$256) \\
+\hline
+{\em drive} & -\/ Drive number (default 0) \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{group__PC88-C_gae9cc2f60db0d9ca017b994fe93624b88}\label{group__PC88-C_gae9cc2f60db0d9ca017b994fe93624b88}} 
+\index{PC88-\/C@{PC88-\/C}!GetKeyDown@{GetKeyDown}}
+\index{GetKeyDown@{GetKeyDown}!PC88-\/C@{PC88-\/C}}
+\doxysubsubsection{\texorpdfstring{GetKeyDown()}{GetKeyDown()}}
+{\footnotesize\ttfamily bool Get\+Key\+Down (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}}}]{SCANCODE }\end{DoxyParamCaption})}
+
+Takes specific scancode value defined above. \begin{DoxyReturn}{Returns}
+true if pressed, otherwise false. 
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+Only reads one key at a time. 
+\end{DoxyNote}
+\mbox{\Hypertarget{group__PC88-C_gaac08d0135426d4a917aa7038d243c599}\label{group__PC88-C_gaac08d0135426d4a917aa7038d243c599}} 
+\index{PC88-\/C@{PC88-\/C}!SetTextAttribute@{SetTextAttribute}}
+\index{SetTextAttribute@{SetTextAttribute}!PC88-\/C@{PC88-\/C}}
+\doxysubsubsection{\texorpdfstring{SetTextAttribute()}{SetTextAttribute()}}
+{\footnotesize\ttfamily void Set\+Text\+Attribute (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}}}]{x,  }\item[{\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}}}]{y,  }\item[{\mbox{\hyperlink{group__PC88-C_gaed742c436da53c1080638ce6ef7d13de}{u8}}}]{attr }\end{DoxyParamCaption})}
+
+Attributes must be set in ascending X order on each row. Attribute \#0 on each row is ALWAYS read as X=0, regardless of its actual value. 

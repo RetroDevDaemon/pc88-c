@@ -10,7 +10,7 @@ OPTIMIZE=0
 ifeq ($(OPTIMIZE), 1) 
 CMDFLAGS=--cyclomatic --max-allocs-per-node100000 --opt-code-speed
 else
-CMDFLAGS=#--cyclomatic --max-allocs-per-node2000 --fomit-frame-pointer
+CMDFLAGS=--cyclomatic#--max-allocs-per-node2000 --fomit-frame-pointer
 endif
 PY=python3 -B
 DEL=rm -rf
@@ -63,7 +63,7 @@ PC88CFILES=out/crt0.rel \
 	out/draw.rel \
 	out/textmode.rel \
 	out/beep.rel \
-	out/ssg.rel \
+	out/opn.rel \
 	out/vram_util.rel \
 	out/sys.rel
 #PC88CFILES=out/crt0.rel out/ioreg.rel out/textmode.rel out/sys.rel
@@ -82,14 +82,14 @@ default: clean $(PROJECT) $(PC88CFILES)
 	$(PY) tools/hex2bin.py out/main.ihx main.bin
 	$(PY) tools/maked88.py $(APPNAME) src/ipl.bin 0 0 1
 	$(PY) tools/maked88.py $(APPNAME) main.bin 0 0 2	
-	
+
 run:
 	$(EMUEXE)
 
 xdisk:
 	$(XDISK)
 
-#m88bin: 
+#m88bin:
 #	$(AS) -los out/music2.rel src/music2.z80
 #	$(LD) -i out/music2.ihx out/music2.rel
 #	$(PY) tools/hex2bin.py out/music2.ihx music2.bin
@@ -102,14 +102,14 @@ binary: $(PROJECT) $(PC88FILES)
 	$(PY) tools/bin2bas.py main.bin
 
 
-IPL: src/ipl.z80 src/disk.z80 
-	sdasz80 -o ipl.rel src/ipl.z80 
-	sdldz80 -b _CODE=0xC000 -i ipl.ihx ipl.rel 
-	$(PY) tools/hex2bin.py ipl.ihx ipl.bin 
-	@$(DEL) *.ihx 
-	@$(DEL) *.rel 
+IPL: src/ipl.z80 src/disk.z80
+	sdasz80 -o ipl.rel src/ipl.z80
+	sdldz80 -b _CODE=0xC000 -i ipl.ihx ipl.rel
+	$(PY) tools/hex2bin.py ipl.ihx ipl.bin
+	@$(DEL) *.ihx
+	@$(DEL) *.rel
 	@cp ipl.bin src/
-	@$(DEL) ipl.bin 
+	@$(DEL) ipl.bin
 
 clean:
 	@$(DEL) out
