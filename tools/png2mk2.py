@@ -78,7 +78,7 @@ def RLEEncode(oba):
 				obb.append(j)
 			obb.append(oba[i][0])
 		i += 1
-	print(len(obb))
+	#print(len(obb))
 	return obb
 
 def WriteCHeader(bn, obb):
@@ -101,7 +101,8 @@ basen, uncompr = InitImgOutput(sys.argv[1], imgsize, pix)
 rles = ToRLETuple(uncompr)
 out = RLEEncode(rles)
 WriteCHeader(basen, out)
-
+print(imgsize[0]*imgsize[1], 'pixels to',len(uncompr), 'bytes compressed to', len(out))
+print(basen + '.h written.')
 #8px to 3by
 # 11122233 | 34445556 | 66777888
 #2px to 1by (8>4)
