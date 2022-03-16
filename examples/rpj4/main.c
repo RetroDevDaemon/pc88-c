@@ -37,32 +37,27 @@ void main()
     
     SetIRQs();        // And enable the VBL interrupt!
     
-    SetCursorPos(0, 1);
-    print("Idle cycles : ");
-
     IRQ_ON 
     while(1)
     { 
+        // Main Loop
         idleCount++;
     }
 }
-
-// cycle counts:
-// 367h when song is over
-// 284h when 1 SSG (270 223
-// 256h when 3 SSG (240 286
 
 
 void Vblank() __critical __interrupt
 {
     IRQ_OFF; 
     
+    // MUSIC?
     if(playingSong)
         PlaySong();
     else 
         print("OVER");
     
-    SetCursorPos(15, 1);
+    // PRINT IDLE COUNTS
+    SetCursorPos(0, 0);
     u8* d = byToHex((u8)(idleCount >> 8)); 
     print(d);
     u8* d2 = byToHex((u8)(idleCount & 0xff));

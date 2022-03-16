@@ -100,6 +100,7 @@ typedef struct m88data {
 } M88Data;
 
 typedef struct instrument_lite { //25 bytes
+// This is the instrument format stored in compiled M88 files
     u8 dt_mult[4];  //30
     u8 totallv[4];  //40
     u8 ks_atkr[4];  //50
@@ -148,6 +149,7 @@ struct Song {
 
 /*
 typedef struct instrument_full { //32 bytes
+// this is expanded instrument type as stored in non-m88 files
     u8 fb_alg;
     u8 dt_mult[4];
     u8 totallv[4];
