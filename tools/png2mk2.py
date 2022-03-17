@@ -98,10 +98,10 @@ def WriteCHeader(bn, obb):
 ''' Script '''
 imgsize, pix = LoadImg(sys.argv[1])
 basen, uncompr = InitImgOutput(sys.argv[1], imgsize, pix)	
-rles = ToRLETuple(uncompr)
-out = RLEEncode(rles)
-WriteCHeader(basen, out)
-print(imgsize[0]*imgsize[1], 'pixels to',len(uncompr), 'bytes compressed to', len(out))
+#rles = ToRLETuple(uncompr)
+#out = RLEEncode(rles)
+WriteCHeader(basen, uncompr)
+#print(imgsize[0]*imgsize[1], 'pixels to',len(uncompr), 'bytes compressed to', len(out))
 print(basen + '.h written.')
 #8px to 3by
 # 11122233 | 34445556 | 66777888

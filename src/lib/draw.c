@@ -87,9 +87,227 @@ void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y)
     }
 }
 */
-inline void EnableALU(){ SetIOReg(ALU_MODE_CTRL, 0xC9); }
-inline void DisableALU(){ SetIOReg(ALU_MODE_CTRL, 0x89); }
-inline void ExpandedGVRAM_On() { SetIOReg(EXPANDED_GVRAM_CTRL, 0x80); }
-inline void ExpandedGVRAM_Off() { SetIOReg(EXPANDED_GVRAM_CTRL, 0); } 
+
+inline void EnableALU(u8 fastmem)
+{ 
+    SetIOReg(ALU_MODE_CTRL, 0xC9|(fastmem<<4)); 
+}
+//11001001
+inline void DisableALU(u8 fastmem)
+{ 
+    SetIOReg(ALU_MODE_CTRL, 0x89|(fastmem<<4)); 
+}
+//11001001
+
+inline void ExpandedGVRAM_On() 
+{ 
+    SetIOReg(EXPANDED_GVRAM_CTRL, 0x80); 
+}
+inline void ExpandedGVRAM_Off() 
+{ 
+    SetIOReg(EXPANDED_GVRAM_CTRL, 0); 
+} 
+
+
+
+inline void CRT_OFF() {
+    __asm 
+        xor a,a
+        out (0x51),a 
+    __endasm;
+}
+inline void CRT_ON() {
+    __asm 
+        ld a,#0x20 
+        out (0x51),a 
+    __endasm;
+}
+
+
+void SetMonitor(u8 khz, u8 rows)
+{
+    CRT_OFF();
+    
+    __asm 
+        ld a,#((1 << 7) | 78)
+        out (0x50),a
+    __endasm;
+    
+    if(khz == 24)
+    {
+        if(rows == 20)
+        {
+            __asm 
+                ld a,#((2 << 6) | 24)
+                out (0x50),a
+                ld a,#((2 << 5) | 15)
+                out (0x50),a
+                ld a,#((2 << 5) | 25)
+                out (0x50),a
+            __endasm;
+        }
+        else { // 25 rows 
+            __asm
+                ld a,#((2 << 6) | 24)
+                out (0x50),a
+                ld a,#((2 << 5) | 7)
+                out (0x50),a
+                ld a,#((6 << 5) | 31)
+                out (0x50),a
+            __endasm;
+        }
+    }
+    else // khz 15
+    {
+        if(rows==20)
+        {
+            __asm
+                ld a,#((2 << 6) | 19)
+                out (0x50),a
+                ld a,#((2 << 5) | 9)
+                out (0x50),a
+                ld a,#((5 << 5) | 31)
+                out (0x50),a
+            __endasm;
+        }else{ // 15khz 25 rows
+            __asm
+                ld a,#((2 << 6) | 24)
+                out (0x50),a
+                ld a,#((2 << 5) | 15)
+                out (0x50),a
+                ld a,#((2 << 5) | 25)
+                out (0x50),a
+            __endasm;
+        }
+    }
+    
+    __asm 
+        ld a,#((0b010 << 5) | 19)
+        out (0x50),a 
+    __endasm;
+    
+    CRT_ON();
+}
+
+
+void DrawTransparentImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h)
+{
+    u8 tran = img[0] >> 4; //first pixel is always transparent
+    u8 lastColor = 99;
+    vu8* dst = (vu8*)(0xc000 + (y*80) + x); // start at x,y
+    while(h > 0)    // at the top
+    {
+        s8 bytePxLoc = 7;   // left most pixel
+        u8 uw = w;          // current width loop
+        while(uw > 0)
+        {
+            u8 p = *img++;  // get the image byte, 4bpp
+            
+            if (p != (tran << 4)|tran)
+            {            
+
+                u8 p2 = p & 0xf;
+                p = p >> 4;
+                
+                if(lastColor != p)
+                {
+                    SetIOReg(EXPANDED_ALU_CTRL, p);
+                    //lastColor = p;
+                } 
+                    
+                if(p != p2) // different colors
+                {
+                    if(p != tran)
+                        *dst = (1 << bytePxLoc);
+                    bytePxLoc--;
+                    if(p2 != tran){
+                        SetIOReg(EXPANDED_ALU_CTRL, p2);
+                        *dst = (1 << bytePxLoc);
+                    }
+                    bytePxLoc--;
+                    lastColor = p2;
+                }
+                else 
+                {   // the next two pixels are the same
+                    bytePxLoc--;    
+                    if(p != tran)
+                        *dst = (0b11 << bytePxLoc);
+                    bytePxLoc--;
+                    lastColor = p;
+                }
+            }
+            else 
+                bytePxLoc -= 2;
+            
+            if(bytePxLoc < 0){   // reset pixel bit loc
+                bytePxLoc = 7;
+                dst++;
+                uw--;               // decrement width
+            }
+        }
+
+        h--;        //decrement height
+        dst += (80-w);  // go to next pixel row
+        
+    }
+}
+
+void DrawImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h)
+{
+    u8 lastColor = 99;
+    vu8* dst = (vu8*)(0xc000 + (y*80) + x); // start at x,y
+    while(h > 0)    // at the top
+    {
+        s8 bytePxLoc = 7;   // left most pixel
+        u8 uw = w;          // current width loop
+        while(uw > 0)
+        {
+            u8 p = *img++;  // get the image byte, 4bpp
+            
+            if (p > 0)
+            {            
+
+                u8 p2 = p & 0xf;
+                p = p >> 4;
+                
+                if(lastColor != p)
+                {
+                    SetIOReg(EXPANDED_ALU_CTRL, p);
+                    //lastColor = p;
+                } 
+                    
+                if(p != p2) // different colors
+                {
+                    *dst = (1 << bytePxLoc);
+                    bytePxLoc--;
+                    SetIOReg(EXPANDED_ALU_CTRL, p2);
+                    *dst = (1 << bytePxLoc);
+                    bytePxLoc--;
+                    lastColor = p2;
+                }
+                else 
+                {   // the next two pixels are the same
+                    bytePxLoc--;    
+                    *dst = (0b11 << bytePxLoc);
+                    bytePxLoc--;
+                    lastColor = p;
+                }
+            }
+            else 
+                bytePxLoc -= 2;
+            
+            if(bytePxLoc < 0){   // reset pixel bit loc
+                bytePxLoc = 7;
+                dst++;
+                uw--;               // decrement width
+            }
+        }
+
+        h--;        //decrement height
+        dst += (80-w);  // go to next pixel row
+        
+    }
+}
+
 
 /*! @} */

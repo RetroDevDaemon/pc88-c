@@ -37,7 +37,7 @@ COLOR Text screen color mode: 0-Color 1-B&W
 /* SYSTEM CONTROL REGISTER B //
 <pre>
 ** WRITE: System Control Port
-Bit	76	5	4	3	2	    1	    0
+Bit	76	5		4		3		2	    1	    0
 	--	25LINE	HCOLOR	GRAPH	RMODE	MMODE	200LINE
 25LINE Hi-res 25 row mode: 0-All other modes 1-ON
 HCOLOR Graphic color mode: 0-B&W 1-Color
@@ -46,7 +46,7 @@ RMODE ROM mode: 0-N88-BASIC 1-N-BASIC
 MMODE RAM mode: 0-ROM/RAM 1-64K RAM
 200LINE	Hi-res CRT mode: 0-640×400 1-640x200
   To check n88 rom temporarily: 0b00111001 (enable ROM and N-Basic if available)
-  Recommended value: 0b00011011
+  Recommended value: 0b00111011
 					  0b00010011 
 ** READ: Dipswitch status
 Bit	7	    6	    5	    4	    3	    2	    1	    0
@@ -93,6 +93,7 @@ EXPANDED mode (SR+ only) lets you access all planes simultaneously.
 *NOTE: When VRAM is selected, overall processing speed is decreased.
   Remember to page in Main RAM!\n
 Default values: xxxx1001
+        01001001
 */
 #define ALU_MODE_CTRL 0x32
 /*! Write only
@@ -172,7 +173,103 @@ ld ($c0002),a   ; operation commands a vram 'copy'.
 #define FM_REG_2 0x46     /*! FH/MH - OPNA ADPCM/FM4-6 */
 #define FM_REG_3 0x47     /*! FH/MH - OPNA ADPCM/FM4-6 */
 
+/*!CRTC Control Register A
+
+To write to the uPD3301, you must first send the disable command byte to 0x51 (0x00)
+ and follow it with 5 parameter bytes to 0x50. ,
+ then re-enable display.
+               7   6   5   4  3   2    1   0
+パラメータ1	W	C/B	H6	H5	H4	H3	H2	H1	H0	パラメータ*5 -> I/Oポート$50
+パラメータ2	W	B1	B0	L5	L4	L3	L2	L1	L0
+パラメータ3	W	S	C1	C0	R4	R3	R2	R1	R0
+パラメータ4	W	V2	V1	V0	Z4	Z3	Z2	Z1	Z0
+パラメータ5	W	AT1	AT0	SC	A4	A3	A2	A1	A0
+
+C/B: 0 is DMA Burst, 1 is DMA Character.
+If this is set to 0, the text screen will not display.
+
+H0-H6: Set this to total number of columns - 2. (e.g. 38 or 78)
+
+B0-B1: Cursor/attribute blink speed (default 2, 0 fastest)
+
+L5-L0: Total num of rows - 1 (e.g. 19 or 24)
+
+S: 0 is standard display, 1 is line-by-line. Recommended 0...?
+
+C1-C0: Cursor type
+00=Non-blinking underline 
+01=Blinking underline
+10=Non-blinking block
+11=Blinking block
+
+R4-R0: Pixels-per-line - 1
+Can be 3-32.
+This is different when your monitor is 15 vs 24 khz, and 20 vs 25 lines.
+25r x 15khz = 7, 24khz = 15
+20r x 15khz = 9, 24khz = 19
+
+V2-V0: VBlank interval - 1
+Can be 1-8 chars
+Depends on 15khz vs 24khz, and 20 vs 25 rows:
+25r x 15khz = 6, 24khz = 2
+20r x 15khz = 5, 24khz = 1
+
+Z4-Z0: H-Blank interval - 2
+Ranges from 6-33.
+Depends on 15khz vs 24khz monitor.
+15khz=31, 24KHz=25.
+
+AT1-AT0,SC:
+Use only these values:
+00,0=Transparent BW, enable special control chars < default for bw mode
+00,1=Attributes off, disable special control chars
+01,0=Transparent color < default for color mode
+10,0=Non-transparent BW, enable special control chars
+10,1=Non-transparent BW, disable special control chars
+
+A4-A0: Max attributes per line - 1
+Can be 1-20. Default 19. 
+
+SHORTCUT COMMAND:
+Write 0 singularly to 0x51 to STOP DISPLAY
+
+Write $20 singularly to 0x51 to START DISPLAY
+
+MORE:
+
+コマンド名	R/W	ビット	備考
+7	6	5	4	3	2	1	0
+SET INTERRUPT MASKコマンド	W	0	1	0	0	0	0	ME	MN	I/Oポート$51
+
+MN	0=画面終了時割り込み要求有効
+1=画面終了時割り込み要求無効
+ME	0=特殊制御文字による割り込み有効
+1=特殊制御文字による割り込み無効
+]
+
+RESET INTERRUPTコマンド	W	1	0	1	0	0	0	0	0	コマンド $A0 -> I/Oポート$51
+
+DMA 要求を有効にするらしい。
+リセットコマンドでパラメータを設定した後にこのコマンドを発行します。
+
+RESET COUNTERSコマンド	W	1	1	0	0	0	0	0	0	コマンド $C0 -> I/Oポート$51
+
+内部カウンタをすべてクリアするらしい。
+
+READ STATUSコマンド	R	0	0	0	VE	U	N	E	LP	I/Oポート$51を読む
+
+VE	画面表示が有効。
+U	DMAアンダーラン(1行分の転送を完了できなかった)発生。発生した場合は画面表示は停止。
+N	特殊制御文字による割り込み発生。割り込み要求がアクティブになった。
+E	表示終了時の割り込み発生。割り込み要求がアクティブになった。
+LP	ライトペン入力あり。座標がラッチされたことを示す。
+
+何もコマンドを書き込まずに I/O ポート $51 を読むとステータスが読み込めます。
+*/
 #define CRTC_CTLREG_A 0x50     /*! pd3301AC control ports  */
+/*!CRTC Control Register B
+
+*/
 #define CRTC_CTLREG_B 0x51
 /*! W - bits 4-6 only.
 <pre>

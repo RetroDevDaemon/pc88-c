@@ -1,4 +1,4 @@
-# PC88-C (0.1.2)
+# PC88-C (0.1.3)
 
 # Overview 
 A very minimal framework for PC88 development using C. <br> 
@@ -12,10 +12,9 @@ Consider joining the RetroDev Discord to discuss, ask questions, and contribute:
 https://discord.gg/Js3uUrc
 <br>
 ## To-Dos
--V2 ALU optimizations<br>
--OPN/A FM<br>
+-OPNA FM<br>
 -Joystick<br>
--Disk saving<br>
+-Saving files to disk<br>
 -Kanji ROM, nado<br>
 <br>
 ## Documentation
@@ -26,6 +25,17 @@ Manual part 1, overview: https://barelyconsciousgames.blogspot.com/2021/02/pc-88
 Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/pc88-c-frame-for-nec-pc-8801-part-2.html <br> 
 
 ## What's new
+0.1.4<br>
+- Added CRT controls with SetMonitor()<br>
+- Added limited channel A,B,C M88 support<br>
+- Added DrawImage_V2() and DrawTransparentImage_V2() methods<br>
+- Changed Enable_ALU() and Disable_ALU() to require FASTMEM param<br>
+- Various tweaks and fixes<br>
+
+0.1.3<br>
+- Added limited VGM player and YM conversion tool<br>
+- Various tweaks and fixes<br>
+
 0.1.2<br>
 - Added Disk BASIC support to the d88 tool, and static makefile.<br>
 

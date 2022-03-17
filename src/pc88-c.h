@@ -144,10 +144,17 @@ void Wait_VBLANK();
 // GETKEYDOWN
 bool GetKeyDown(u8 SCANCODE);
 // DRAW
+#define FASTMEM_ON 1 
+#define FASTMEM_OFF false 
+inline void CRT_OFF() ;
+inline void CRT_ON() ;
+void SetMonitor(u8 khz, u8 rows);
+void DrawTransparentImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h);
+void DrawImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h);
 void DrawPlaneBMP(const u8* img, u8 plane, u16 x, u16 y, u8 w, u8 h);
 void SetPixel(u16 x, u8 y, u8 c);
-inline void EnableALU();
-inline void DisableALU();
+inline void EnableALU(u8 fastmem);
+inline void DisableALU(u8 fastmem);
 inline void ExpandedGVRAM_On();
 inline void ExpandedGVRAM_Off();
 // DISKLOAD

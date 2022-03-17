@@ -6,7 +6,7 @@ void main()
     
     // ALU on
     ExpandedGVRAM_On();                 // Expanded mode GVRAM on, comp data off 
-    EnableALU();                        // ALU on - must be performed AFTER GVRAM on!
+    EnableALU(true);                        // ALU on - must be performed AFTER GVRAM on!
     
     // ALU draw (V2) - CYAN
     SetIOReg(EXPANDED_ALU_CTRL, CLR_CYAN); 
@@ -28,7 +28,7 @@ void main()
     SetIOReg(EXPANDED_GVRAM_CTRL, (u8)(0x80 | CLR_CYAN ) ); // comp data - is cyan?
     *(vp + 4) = *(vp + 2);  // c104 = c102 - will write 0xff in cyan
 
-    DisableALU();           // don't forget!
+    DisableALU(FASTMEM_OFF);           // don't forget!
     ExpandedGVRAM_Off();    // required after V2 draw
 
     SetPixel(200, 100, CLR_WHITE); // single pixel - V1 mode

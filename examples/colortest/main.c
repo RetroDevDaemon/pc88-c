@@ -34,7 +34,7 @@ void main()
     // Rest of init code:
     // ALU on
     ExpandedGVRAM_On();
-    EnableALU();
+    EnableALU(true);
     // Draw rectanglez
     
     // Fill w colors
@@ -87,7 +87,7 @@ void main()
         }
     }
     // Done:
-    DisableALU();           // don't forget!
+    DisableALU(FASTMEM_OFF);           // don't forget!
     ExpandedGVRAM_Off();    // required after V2 draw
     SETBANK_MAINRAM()
     SetCursorPos(15, 1);
