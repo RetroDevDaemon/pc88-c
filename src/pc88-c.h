@@ -141,8 +141,10 @@ void ClockInterrupt() __critical __interrupt;
 
 // WAITVBLANK
 void Wait_VBLANK();
+
 // GETKEYDOWN
 bool GetKeyDown(u8 SCANCODE);
+
 // DRAW
 #define FASTMEM_ON 1 
 #define FASTMEM_OFF false 
@@ -157,15 +159,22 @@ inline void EnableALU(u8 fastmem);
 inline void DisableALU(u8 fastmem);
 inline void ExpandedGVRAM_On();
 inline void ExpandedGVRAM_Off();
+
 // DISKLOAD
 #define DRIVE_1 0
 #define DRIVE_2 1
 void DiskLoad(u8* dst, u8 track, u8 sector, u8 numSecs, u8 drive); 
+
 // BEEP
 void beep(u16 tone, u8 length);
+
 // VRAM_UTIL
+#define VRAMAddrByTile(x,y) (0xc000 + (y*80) + x)
 void EraseVRAMArea(XYpos* xy, u8 w, u8 h);
 
+void ALUCopy(vu8* src,vu8* dst, u8 w, u16 h);
+void ALUCopyOut(vu8* src, vu8* dst, u8 w, u16 h);
+void ALUCopyIn(vu8* src, vu8* dst, u8 w, u16 h);
 // OPN
 #include "opn.h"
 

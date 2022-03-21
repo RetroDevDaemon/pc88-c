@@ -31,6 +31,9 @@ PROJECT=examples/helloworld
 default: STACK=0xff
 default: DATA=0xb000
 default: CODE=0x100
+dirty: STACK=0xff
+dirty: DATA=0xb000
+dirty: CODE=0x100
 binary: STACK=0xc000
 binary: DATA=0xd800
 binary: CODE=0xc000
@@ -82,6 +85,8 @@ default: clean $(PROJECT) $(PC88CFILES)
 	$(PY) tools/hex2bin.py out/main.ihx main.bin
 	$(PY) tools/maked88.py $(APPNAME) src/ipl.bin 0 0 1
 	$(PY) tools/maked88.py $(APPNAME) main.bin 0 0 2	
+	
+
 
 run:
 	$(EMUEXE)

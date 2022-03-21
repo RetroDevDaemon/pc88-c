@@ -23,7 +23,6 @@ void DrawPlaneBMP(const u8* img, u8 plane, u16 x, u16 y, u8 w, u8 h)
     } 
 }
 
-
 void SetPixel(u16 x, u8 y, u8 c)
 {
     u8 po = 7 - ((x & 0xff) % 8);
@@ -109,56 +108,81 @@ inline void ExpandedGVRAM_Off()
 } 
 
 
-
 inline void CRT_OFF() {
+    __asm
+        ld			a,#0b00011001
+	    out			(0x40),a
+    __endasm;
+    Wait_VBLANK();
     __asm 
         xor a,a
         out (0x51),a 
     __endasm;
 }
+
 inline void CRT_ON() {
+    Wait_VBLANK();
+    __asm
+        ld			a,#0b00010001
+	    out			(0x40),a
+    __endasm;
     __asm 
         ld a,#0x20 
         out (0x51),a 
     __endasm;
+    
 }
 
 
 void SetMonitor(u8 khz, u8 rows)
 {
+
     CRT_OFF();
-    
+    //パラメータ1	W	C/B	H6	H5	H4	H3	H2	H1	H0
     __asm 
         ld a,#((1 << 7) | 78)
         out (0x50),a
     __endasm;
     
+    //パラメータ2	W	B1	B0	L5	L4	L3	L2	L1	L0
+   // パラメータ3	W	S	C1	C0	R4	R3	R2	R1	R0
+    //パラメータ4	W	V2	V1	V0	Z4	Z3	Z2	Z1	Z0
     if(khz == 24)
     {
+
         if(rows == 20)
         {
             __asm 
-                ld a,#((2 << 6) | 24)
+                ld a,#((2 << 6) | 19) // line #
                 out (0x50),a
-                ld a,#((2 << 5) | 15)
+                ld a,#((2 << 5) | 19) //lines per char 
                 out (0x50),a
-                ld a,#((2 << 5) | 25)
+                ld a,#((1 << 5) | 25) //vbl interval, hbl interval
                 out (0x50),a
             __endasm;
         }
         else { // 25 rows 
+                // b is 2
+                // c is 24
             __asm
                 ld a,#((2 << 6) | 24)
                 out (0x50),a
-                ld a,#((2 << 5) | 7)
+                ld a,#((2 << 5) | 15)
                 out (0x50),a
-                ld a,#((6 << 5) | 31)
+                ld a,#((2 << 5) | 24)
                 out (0x50),a
             __endasm;
         }
     }
     else // khz 15
     {
+    //25 R: 7 for 15khz, 15 for 24khz
+    //20 R: 9 for 15khz, 19 for 24khz
+    
+    //25 V: 6 for 15khz, 2 for 24khz
+    //20 V: 5 for 15khz, 1 for 24khz
+    //Z 15khz: 31, 24khz: 25
+
         if(rows==20)
         {
             __asm
@@ -173,9 +197,9 @@ void SetMonitor(u8 khz, u8 rows)
             __asm
                 ld a,#((2 << 6) | 24)
                 out (0x50),a
-                ld a,#((2 << 5) | 15)
+                ld a,#((2 << 5) | 7)
                 out (0x50),a
-                ld a,#((2 << 5) | 25)
+                ld a,#((6 << 5) | 31)
                 out (0x50),a
             __endasm;
         }
@@ -184,9 +208,12 @@ void SetMonitor(u8 khz, u8 rows)
     __asm 
         ld a,#((0b010 << 5) | 19)
         out (0x50),a 
+        ld a,#0x41
+        out (0x51),a
     __endasm;
     
     CRT_ON();
+
 }
 
 

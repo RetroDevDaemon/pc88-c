@@ -1,0 +1,39 @@
+3/18 - map mockup and tiles
+3/19 - render map as tiles <-- complete by storing loaded tiles in array 
+3/20 - move around map, add enemy? <--
+3/21 - expose map bit by bit <---
+
+3/22 - add stats and UI
+3/23 - add encounter window
+3/24 - encounter "hex" statue
+3/25 - encounter code/struct
+3/26 - example encounters
+3/27 - music A
+3/28 - intro
+3/29 - title
+3/30 - save/load??
+4/1  - polish map 1
+4/2 - map 2
+4/3 - map 3
+4/4 - map 4
+4/5 - polish map 2
+4/6 - polish map 3
+4/7 - polish map 4
+4/9 - music B 
+4/10 - final polish
+
+
+DEATH TRAP eh
+HYDLIDE 
+ABYSS 2
+HYLDLIDE 2
+DEATH TRAP 2 eh
+ULTIMA 2
+SHANGHAI 
+TRITONE
+PALADIN
+EGGY?
+XYLOS
+GEGEGE NO GETARO]
+MIRAI 
+cubey panic

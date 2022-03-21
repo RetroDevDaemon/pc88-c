@@ -16,8 +16,8 @@ Main:
     call    0x5F0E          ; txt screen area 
     ld      a,#1            ; color/80c text mode
     out     (0x30),a 
-    ld      a,#0b00111011   ; disable basic rom for 64kb
-    out     (0x31),a        ; hi-res 25row/color
+    ld      a,#0b00011011   ; disable basic rom for 64kb (bit 5 for 20/25)
+    out     (0x31),a        ; hi-res 20row/color
     ld      a,#0b10001001
     out     (0x32),a        ; sound irq off/digital rgb
     xor     a 

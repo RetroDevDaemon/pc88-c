@@ -1,4 +1,4 @@
-# PC88-C (0.1.3)
+# PC88-C (0.1.4)
 
 # Overview 
 A very minimal framework for PC88 development using C. <br> 
@@ -26,7 +26,7 @@ Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/
 
 ## What's new
 0.1.4<br>
-- Added CRT controls with SetMonitor()<br>
+- Added CRT controls with SetMonitor() [bugged - careful!]<br>
 - Added limited channel A,B,C M88 support<br>
 - Added DrawImage_V2() and DrawTransparentImage_V2() methods<br>
 - Changed Enable_ALU() and Disable_ALU() to require FASTMEM param<br>

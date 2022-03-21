@@ -110,6 +110,7 @@ GV2 - ALU mode for GVRAM bank 2
 10: Bit invert
 11: No op 
 <pre>
+
 */
 #define EXPANDED_ALU_CTRL 0x34 
 /*! 

@@ -103,8 +103,8 @@ u8* byToHex(u8 by)
     u8 b = (by & 0xf0) >> 4;
     if (a > 9) a += 7;
     if (b > 9) b += 7;
-    a |= 0x30;
-    b |= 0x30;
+    a += 0x30;
+    b += 0x30;
     BYTOHEXWORK[0] = b; BYTOHEXWORK[1] = a; BYTOHEXWORK[2] = 0;
     return &BYTOHEXWORK[0];
 }

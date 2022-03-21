@@ -82,7 +82,7 @@ def RLEEncode(oba):
 	return obb
 
 def WriteCHeader(bn, obb):
-	outcstr = 'unsigned char ' + bn + '[' + str(len(obb)) + '] = { \n\t'
+	outcstr = 'const unsigned char ' + bn + '[' + str(len(obb)) + '] = { \n\t'
 	i = 0
 	while i < len(obb):
 		outcstr += str(obb[i]) + ','
@@ -95,14 +95,21 @@ def WriteCHeader(bn, obb):
 	f.close()
 
 
+MAKERLE = 0
+
 ''' Script '''
-imgsize, pix = LoadImg(sys.argv[1])
-basen, uncompr = InitImgOutput(sys.argv[1], imgsize, pix)	
-#rles = ToRLETuple(uncompr)
-#out = RLEEncode(rles)
-WriteCHeader(basen, uncompr)
-#print(imgsize[0]*imgsize[1], 'pixels to',len(uncompr), 'bytes compressed to', len(out))
-print(basen + '.h written.')
+if(MAKERLE==0):
+	imgsize, pix = LoadImg(sys.argv[1])
+	basen, uncompr = InitImgOutput(sys.argv[1], imgsize, pix)	
+	WriteCHeader(basen, uncompr)
+	print(basen + '.h written.')
+else:
+	imgsize, pix = LoadImg(sys.argv[1])
+	basen, uncompr = InitImgOutput(sys.argv[1], imgsize, pix)	
+	rles = ToRLETuple(uncompr)
+	out = RLEEncode(rles)
+	WriteCHeader(basen, uncompr)
+	print(imgsize[0]*imgsize[1], 'pixels to',len(uncompr), 'bytes compressed to', len(out))
 #8px to 3by
 # 11122233 | 34445556 | 66777888
 #2px to 1by (8>4)
