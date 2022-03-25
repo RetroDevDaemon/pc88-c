@@ -13,11 +13,11 @@ const unsigned char sprite[] = {
 
 enum directions { UP, DOWN, LEFT, RIGHT };
 enum directions playerDir;
-XYpos spritepos;
-XYpos oldpos;
+XYPos spritepos;
+XYPos oldpos;
 bool moved;
 
-void DrawSprite(XYpos* xy, u8 w, u8 h);
+void DrawSprite(XYPos* xy, u8 w, u8 h);
 
 void main()
 {
@@ -70,7 +70,7 @@ void main()
     }
 }
 
-void DrawSprite(XYpos* xy, u8 w, u8 h)
+void DrawSprite(XYPos* xy, u8 w, u8 h)
 {   
     u8 xt = (u8)(xy->x);// / 8);
     vu8* vp = (vu8*)(0xc000 + xt + (xy->y * 80));

@@ -19,10 +19,10 @@ extern u16 RANDOMSEED;
 enum directions playerDir;
 
 u8 levelMaxScore;
-XYpos ball_pos;
-XYpos ball_oldpos;
-XYpos bar_pos;
-XYpos bar_oldpos;
+XYPos ball_pos;
+XYPos ball_oldpos;
+XYPos bar_pos;
+XYPos bar_oldpos;
 s8 by_speed;
 s8 bx_speed;
 u8 bar_speed;
@@ -31,8 +31,8 @@ bool edgeBounce;
 u8 edgeCtr;
 bool ballFlash;
 bool firing;
-XYpos bullet_pos;
-XYpos bullet_oldpos;
+XYPos bullet_pos;
+XYPos bullet_oldpos;
 bool starting;
 s8 lastMoved;
 const String fs = "THE SQUADRONS OF BLOXX APPROACH";
@@ -61,7 +61,7 @@ u16 pScore;
 u8 currentLevel;
 bool cln;
 
-void DrawSpritePlane(const u8* dat, XYpos* xy, u8 w, u8 h);
+void DrawSpritePlane(const u8* dat, XYPos* xy, u8 w, u8 h);
 void DrawSprite(Sprite* spr, signed int x, signed int y);
 //void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y);
 void InitGUI();
@@ -134,7 +134,7 @@ inline void InitGUI()
 
 void ClearAllVRAM()
 {
-    XYpos p;
+    XYPos p;
     p.x = 0;
     p.y = 0;
     SETBANK_BLUE()
@@ -176,7 +176,7 @@ void LoadLevel(u8* lvl)
 
 inline void GetTitleInput()
 {
-    XYpos lvpos; lvpos.x = 62; lvpos.y = 80;
+    XYPos lvpos; lvpos.x = 62; lvpos.y = 80;
         if(GetKeyDown(KB_0)) { 
             currentLevel = 10;
             EraseVRAMArea(&lvpos, 4, 16);
@@ -634,7 +634,7 @@ inline void GAME_INPUT()
             {
                 firing = true;
                 edgeCtr = 0;
-                XYpos p; p.x = 41; p.y = 180;   // Edge UI position
+                XYPos p; p.x = 41; p.y = 180;   // Edge UI position
                 EraseVRAMArea(&p, 5, 8);        // erase and redraw
                 for(u8 e = 0; e < 5; e++) DrawSprite(&edgeGem_0, 41 + e, 180); // the whole section
                 DrawSprite(&fire_no, 46, 176);  // and turn off the fire button
@@ -698,7 +698,7 @@ inline void GAME_DRAW()
 }
 
 
-void DrawSpritePlane(const u8* dat, XYpos* xy, u8 w, u8 h)
+void DrawSpritePlane(const u8* dat, XYPos* xy, u8 w, u8 h)
 {   
     u8 xt = (u8)(xy->x);
     vu8* vp = (vu8*)(0xc000 + xt + (xy->y * 80));
@@ -712,7 +712,7 @@ void DrawSpritePlane(const u8* dat, XYpos* xy, u8 w, u8 h)
 
 void DrawSprite(Sprite* spr, signed int x, signed int y)
 {
-    XYpos xy = { x, y };
+    XYPos xy = { x, y };
     if(spr->r != null) { 
         SETBANK_RED();
         DrawSpritePlane(spr->r, &xy, spr->w, spr->h);
@@ -746,7 +746,7 @@ void AddScore()
 
 void EraseBlock(LevelBlock* b)
 {
-    XYpos t = { b->x, b->y };
+    XYPos t = { b->x, b->y };
     SETBANK_BLUE()
     EraseVRAMArea(&t, 3, 8);
     SETBANK_GREEN()

@@ -4,7 +4,7 @@
 * @{ 
 */
 
-void EraseVRAMArea(XYpos* xy, u8 w, u8 h)
+void EraseVRAMArea(XYPos* xy, u8 w, u8 h)
 {
     //u8 xo = xy->x % 8;
     u8 xt = (u8)(xy->x);
@@ -144,4 +144,14 @@ void ALUCopyIn(vu8* src, vu8* dst, u8 w, u16 h)
         jr nz,00108$
     __endasm;
 }
+
+inline void SetCRTC_IRQ(void* func)
+{
+    local_a = (u16)func;
+    __asm 
+        ld hl,(_local_a) ; _Vblank
+        ld (CRTC_IRQ),hl
+    __endasm;
+}
+
 /*! @} */

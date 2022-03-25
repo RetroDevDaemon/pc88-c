@@ -1,11 +1,8 @@
-3/18 - map mockup and tiles
-3/19 - render map as tiles <-- complete by storing loaded tiles in array 
 3/20 - move around map, add enemy? <--
 3/21 - expose map bit by bit <---
+3/23 - add encounter window <--
+3/24 - encounter "hex" statue <--
 
-3/22 - add stats and UI
-3/23 - add encounter window
-3/24 - encounter "hex" statue
 3/25 - encounter code/struct
 3/26 - example encounters
 3/27 - music A
@@ -23,17 +20,18 @@
 4/10 - final polish
 
 
-DEATH TRAP eh
-HYDLIDE 
+MIRAI 
 ABYSS 2
 HYLDLIDE 2
-DEATH TRAP 2 eh
+DEATH TRAP 1/2 eh
+
 ULTIMA 2
+SCREAMER
+FANTASIAN 
 SHANGHAI 
 TRITONE
 PALADIN
 EGGY?
 XYLOS
 GEGEGE NO GETARO]
-MIRAI 
 cubey panic

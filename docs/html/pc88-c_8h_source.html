@@ -116,7 +116,7 @@ $(function() {
 <div class="line"><a name="l00055"></a><span class="lineno"><a class="line" href="structxypos.html">   55</a></span>&#160;<span class="keyword">typedef</span> <span class="keyword">struct </span><a class="code" href="structxypos.html">xypos</a> { </div>
 <div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;    <span class="keywordtype">signed</span> <span class="keywordtype">int</span> x;</div>
 <div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;    <span class="keywordtype">signed</span> <span class="keywordtype">int</span> y;</div>
-<div class="line"><a name="l00058"></a><span class="lineno"><a class="line" href="group__PC88-C.html#gae5c1dd528ee66f6adc587f3f9563c426">   58</a></span>&#160;} <a class="code" href="group__PC88-C.html#gae5c1dd528ee66f6adc587f3f9563c426">XYpos</a>;</div>
+<div class="line"><a name="l00058"></a><span class="lineno"><a class="line" href="group__PC88-C.html#gae5c1dd528ee66f6adc587f3f9563c426">   58</a></span>&#160;} <a class="code" href="group__PC88-C.html#gae5c1dd528ee66f6adc587f3f9563c426">XYPos</a>;</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; </div>
 <div class="line"><a name="l00061"></a><span class="lineno"><a class="line" href="group__PC88-C.html#gacb499797d3d425b9d2891701ade4b267">   61</a></span>&#160;<span class="preprocessor">#define SCREEN_TXT_BASE 0xf3c8</span></div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;<span class="preprocessor">#define SCREEN_ATTR_BASE SCREEN_TXT_BASE + 80</span></div>
@@ -206,7 +206,7 @@ $(function() {
 <div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160;<span class="comment">// BEEP</span></div>
 <div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;<span class="keywordtype">void</span> beep(u16 tone, u8 length);</div>
 <div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;<span class="comment">// VRAM_UTIL</span></div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="keywordtype">void</span> EraseVRAMArea(<a class="code" href="structxypos.html">XYpos</a>* xy, u8 w, u8 h);</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;<span class="keywordtype">void</span> EraseVRAMArea(<a class="code" href="structxypos.html">XYPos</a>* xy, u8 w, u8 h);</div>
 <div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160; </div>
 <div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;<span class="comment">// OPN</span></div>
 <div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;<span class="preprocessor">#include &quot;opn.h&quot;</span></div>
@@ -255,7 +255,7 @@ $(function() {
 <div class="ttc" id="agroup__PC88-C_html_gaac08d0135426d4a917aa7038d243c599"><div class="ttname"><a href="group__PC88-C.html#gaac08d0135426d4a917aa7038d243c599">SetTextAttribute</a></div><div class="ttdeci">void SetTextAttribute(u8 x, u8 y, u8 attr)</div><div class="ttdef"><b>Definition:</b> textmode.c:88</div></div>
 <div class="ttc" id="agroup__PC88-C_html_gab22a38f6e5ef7c4b83be823315c9959f"><div class="ttname"><a href="group__PC88-C.html#gab22a38f6e5ef7c4b83be823315c9959f">byToHex</a></div><div class="ttdeci">u8 * byToHex(u8 by)</div><div class="ttdef"><b>Definition:</b> textmode.c:100</div></div>
 <div class="ttc" id="agroup__PC88-C_html_gacbace83afdd343ade9e406b52ad3498c"><div class="ttname"><a href="group__PC88-C.html#gacbace83afdd343ade9e406b52ad3498c">PlanarBitmap</a></div><div class="ttdeci">const struct planarBitmap PlanarBitmap</div><div class="ttdoc">pb</div></div>
-<div class="ttc" id="agroup__PC88-C_html_gae5c1dd528ee66f6adc587f3f9563c426"><div class="ttname"><a href="group__PC88-C.html#gae5c1dd528ee66f6adc587f3f9563c426">XYpos</a></div><div class="ttdeci">struct xypos XYpos</div><div class="ttdoc">4 bytes</div></div>
+<div class="ttc" id="agroup__PC88-C_html_gae5c1dd528ee66f6adc587f3f9563c426"><div class="ttname"><a href="group__PC88-C.html#gae5c1dd528ee66f6adc587f3f9563c426">XYPos</a></div><div class="ttdeci">struct xypos XYPos</div><div class="ttdoc">4 bytes</div></div>
 <div class="ttc" id="agroup__PC88-C_html_gae9cc2f60db0d9ca017b994fe93624b88"><div class="ttname"><a href="group__PC88-C.html#gae9cc2f60db0d9ca017b994fe93624b88">GetKeyDown</a></div><div class="ttdeci">bool GetKeyDown(u8 SCANCODE)</div><div class="ttdef"><b>Definition:</b> getkeydown.c:11</div></div>
 <div class="ttc" id="agroup__PC88-C_html_gaed742c436da53c1080638ce6ef7d13de"><div class="ttname"><a href="group__PC88-C.html#gaed742c436da53c1080638ce6ef7d13de">u8</a></div><div class="ttdeci">unsigned char u8</div><div class="ttdoc">A brief C framework for PC-88 development.</div><div class="ttdef"><b>Definition:</b> pc88-c.h:18</div></div>
 <div class="ttc" id="astructplanarBitmap_html"><div class="ttname"><a href="structplanarBitmap.html">planarBitmap</a></div><div class="ttdoc">pb</div><div class="ttdef"><b>Definition:</b> pc88-c.h:46</div></div>

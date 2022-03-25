@@ -55,13 +55,13 @@ typedef const struct planarBitmap {
 typedef struct xypos { 
     signed int x;
     signed int y;
-} XYpos;
+} XYPos;
 
 /// What
 #define SCREEN_TXT_BASE 0xf3c8
 #define SCREEN_ATTR_BASE SCREEN_TXT_BASE + 80
 #define GetVRAMPos(x,y) (vu8*)(((y)*80)+0xc000 + (x))
-
+#define GVRAM_BASE 0xc000
 //////////////////////////
 // KEYBOARD MATRIX  
 #include "lib/kb-matrix.h" 
@@ -170,8 +170,9 @@ void beep(u16 tone, u8 length);
 
 // VRAM_UTIL
 #define VRAMAddrByTile(x,y) (0xc000 + (y*80) + x)
-void EraseVRAMArea(XYpos* xy, u8 w, u8 h);
-
+void EraseVRAMArea(XYPos* xy, u8 w, u8 h);
+#define ExpandedGVRAM_Copy_On() SetIOReg(EXPANDED_GVRAM_CTRL, (u8)(0x80 | bit(4) ));
+inline void SetCRTC_IRQ(void* func);
 void ALUCopy(vu8* src,vu8* dst, u8 w, u16 h);
 void ALUCopyOut(vu8* src, vu8* dst, u8 w, u16 h);
 void ALUCopyIn(vu8* src, vu8* dst, u8 w, u16 h);
