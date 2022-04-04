@@ -87,7 +87,7 @@ struct m88header {
     u16 binSize;
 };
 typedef struct m88data { 
-    fix_16s tempo; 
+    u8 tempo_t; 
     u8* partOffsets[11];
     // FM1 FM2 FM3
     // SSG1 SSG2 SSG3
@@ -119,7 +119,7 @@ struct Song {
     s16 partLengths[11]; // TODO: fill these in - at the moment not used.
     
     s8 fm_vol[6];
-    s8 fm_tone_len[6];
+    s16 fm_tone_len[6];
     u8 fm_oct[6];
     u8 fm_tone[6]; // a0-a6
 
@@ -161,7 +161,7 @@ typedef struct instrument_full { //32 bytes
 } Instrument;
 */
 void FMNoteOff(u8 chn);
-void FMNoteOn(u8 chn, u16 tone);
+void FMNoteOn(u8 chn, u16 tone, u8 oct);
 
 void PlaySong();
 void LoadSong(const u8* song);
@@ -210,29 +210,17 @@ void LoadFMInstruments(u8 num_ins, Instrument* instrument_start);
 #define B3_440 246.94
 
 #define C4_440  261.63
-#define FMC4_440 9892
 #define C4S_440 277.18	
-#define FMC4S_440 10480
 #define D4_440  293.66
-#define FMD4_440 11103
 #define D4S_440 311.13
-#define FMD4S_440 11764
 #define E4_440  329.63
-#define FME4_440 12463
 #define F4_440  349.23
-#define FMF4_440 13204
 #define F4S_440 369.99
-#define FMF4S_440 13989
 #define G4_440  392
-#define FMG4_440 14822
 #define G4S_440 415.30
-#define FMG4S_440 15702
 #define A4_440  440
-#define FMA4_440 16636
 #define A4S_440 466.16
-#define FMA4S_440 17626
 #define B4_440  493.88
-#define FMB4_440 18674
 
 #define C5_440  523.25
 #define C5S_440 554.37	
@@ -326,21 +314,36 @@ void LoadFMInstruments(u8 num_ins, Instrument* instrument_start);
 #define SSGTONE_A6S (const u16)(CPU4MHZ / (A6S_440 * 32))
 #define SSGTONE_B6 (const u16)(CPU4MHZ / (B6_440 * 32))
 
+#define FMTONE_A3 2079/2
+#define FMTONE_A3S 2203/2
+#define FMTONE_B3 2334/2
 
-#define FM_GS_5(o) (u16)((1960>>(5-o))|((o-1)<<11))
-#define FM_G_5(o) (u16)((1850>>(5-o))|((o-1)<<11))
-#define FM_FS_5(o) (u16)((1746>>(5-o))|((o-1)<<11))
-#define FM_F_5(o) (u16)((1648>>(5-o))|((o-1)<<11))
-#define FM_E_5(o) (u16)((1556>>(5-o))|((o-1)<<11))
-#define FM_DS_5(o) (u16)((1468>>(5-o))|((o-1)<<11))
-#define FM_D_5(o) (u16)((1386>>(5-o))|((o-1)<<11))
-#define FM_CS_5(o) (u16)((1308>>(5-o))|((o-1)<<11))
-#define FM_C_5(o) (u16)((1235>>(5-o))|((o-1)<<11))
+#define FMTONE_C4 1236
+#define FMTONE_C4S 1309
+#define FMTONE_D4 1387
+#define FMTONE_D4S 1470
+#define FMTONE_E4 1557
+#define FMTONE_F4 1650
+#define FMTONE_F4S 1748
+#define FMTONE_G4 1852
+#define FMTONE_G4S 1962
+#define FMTONE_A4 2079
+#define FMTONE_A4S 2203
+#define FMTONE_B4 2334
 
-#define FM_B_4(o) (u16)((1165>>(4-o))|(o<<11))
-#define FM_AS_4(o) (u16)((1100>>(4-o))|(o<<11))
-#define FM_A_4(o) (u16)((1038>>(4-o))|(o<<11))
+// formula:
+// (144 * TUNE) << 20  /  CPU   /  (1<<(OCT-1))
 
+
+static const u16 fm_octavefour[12] = {
+    FMTONE_C4, FMTONE_C4S,
+    FMTONE_D4, FMTONE_D4S,
+    FMTONE_E4,
+    FMTONE_F4, FMTONE_F4S,
+    FMTONE_G4, FMTONE_G4S,
+    FMTONE_A3, FMTONE_A3S, 
+    FMTONE_B3
+};
 
 static const u16 octavetwo[12] = {
     SSGTONE_C2, SSGTONE_C2S,
@@ -360,7 +363,7 @@ static const u16 octavethree[12] = {
     SSGTONE_A3, SSGTONE_A3S,
     SSGTONE_B3
 };
-static const u16 octavefour[12] = {
+static const u16 octavefour[12] = { //c4 ~01dd
     SSGTONE_C4, SSGTONE_C4S,
     SSGTONE_D4, SSGTONE_D4S,
     SSGTONE_E4,

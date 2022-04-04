@@ -63,6 +63,7 @@ SW2-S1 Parity check: 0-Party 1-No parity
 </pre>
 //*/
 #define SYS_CTL_REGB    0x31
+#define V1MODE_FLAG 0x80
 #define LINES25 (1<<5)
 #define HCOLOR (1<<4)
 #define GRAPH (1<<3)

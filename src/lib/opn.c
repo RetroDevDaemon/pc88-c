@@ -51,7 +51,7 @@
 // (ADPCM)
 
 struct Song currentSong;
-int ticker;
+fix_16s ticker;
 bool playingSong;
 
 // TODO: Prolly wont implement this
@@ -75,6 +75,7 @@ void SetOPNBatch(u8 nextreg, u8* regby)
 
 void SetFMInstrument(u8 chn, Instrument* ins)
 {
+
     u8 nextreg;
     u8* regby;
 
@@ -86,18 +87,20 @@ void SetFMInstrument(u8 chn, Instrument* ins)
     SetOPNBatch(nextreg, regby);
     
     nextreg = 0x38+chn;
-    regby = (u16)ins + 3;
+    regby = (u16)ins + 2;
     SetOPNBatch(nextreg, regby);
     
     nextreg = 0x34+chn;
-    regby = (u16)ins + 2;
+    regby = (u16)ins + 1;
     SetOPNBatch(nextreg, regby);
 
     nextreg = 0x3c+chn;
-    regby = (u16)ins + 4;
+    regby = (u16)ins + 3;
     SetOPNBatch(nextreg, regby);
     
 }
+
+fix_16s realTempo;
 
 void LoadSong(const u8* song)
 {   // Load song header
@@ -113,7 +116,7 @@ void LoadSong(const u8* song)
     sh->binSize += (*sctr++*256);
     // Load song data 
     struct m88data* sd = (struct m88data*)&currentSong.songdata;
-    sd->tempo = FIXED16(*sctr++); // how many bpm (60 << 8) = 15360. each frame, add FIXED16(60) to a counter. 
+    realTempo = FIXED16(*sctr++); // how many bpm (60 << 8) = 15360. each frame, add FIXED16(60) to a counter. 
     // when that counter exceeds FIXED16(sd->tempo), decrement the TONE LENGTH of every note by 1. 
     for(i = 0; i < OPNA_MAX_CHANNELS; i++) // required for m88 compatibility
     {
@@ -126,7 +129,7 @@ void LoadSong(const u8* song)
     sd->dataEndLoc = *sctr++;
     sd->dataEndLoc += *sctr * 256;
     sd->dataEndLoc += (u16)song + 5;
-    sd->num_fm_instr = *sh->FMOfs;
+    sd->num_fm_instr = *(sh->FMOfs);
     sh->FMOfs++;
     // end loading in song "headers"
     sctr = &currentSong.partLengths[0];
@@ -195,7 +198,8 @@ u8* ProcessFM(u8 chn, u8* songby_ptr)//, M88Data* songdat)
         default:
             if(*songby_ptr > 0x7f)
             {   //rest 
-                currentSong.fm_tone_len[chn] = (*songby_ptr & 0x7f);
+                FMNoteOff(chn);
+                currentSong.fm_tone_len[chn] += (*songby_ptr & 0x7f);
                 
             }
             else 
@@ -227,13 +231,16 @@ u8* MStartLoop(u8 chn, u8* sb)
     return sb;
 }
 
+// WIP WIP WIP WIP
+//TODO 
 u8* MEndLoop(u8 chn, u8* sb)
 {
 //f6 98 99 21 00
     sb++; // decrement the workram byte
     (*sb)--; //
-    if(*sb == 0xff) 
+    if(*sb == 0) 
     {
+        sb+=3;
         currentSong.looping[chn] = false;
         currentSong.part_loc[chn] += 4;
     }
@@ -244,6 +251,9 @@ u8* MEndLoop(u8 chn, u8* sb)
         currentSong.part_loc[chn] -= (u16)(*sb);
         sb++;
         currentSong.part_loc[chn] -= (u16)(*sb * 256);
+        currentSong.part_loc[chn]+=2;
+        sb = currentSong.part_loc[chn];
+        //sb--; // FIXME!
     }
     return sb;
 }
@@ -285,33 +295,26 @@ void FMNoteOff(u8 chn)
     
 }
 
-void FMNoteOn(u8 chn, u16 tone)
+void FMNoteOn(u8 chn, u16 tone, u8 oct)
 {
-    SetOPNReg(0xa4|chn, tone >> 8);
-    SetOPNReg(0xa0|chn, tone & 0xff);
-    SetOPNReg(0x28, 0xf0|chn);
+    SetOPNReg(0xa4 + chn, tone >> 8 | oct << 3);
+    SetOPNReg(0xa0 + chn, tone & 0xff);
+    SetOPNReg(0x28, 0xf0+ chn);
 }
 
 u8* FMPlayNote(u8 chn, u8* sb)
 {
     
+    FMNoteOff(chn);
     currentSong.part_loc[chn]++;
-    currentSong.fm_tone_len[chn] = *sb;
+    currentSong.fm_tone_len[chn] += *sb;
     sb++;
-    currentSong.fm_oct[chn] = (*sb ) >> 4;
+    currentSong.fm_oct[chn] = ((*sb ) >> 4)-1;
     currentSong.fm_tone[chn] = (*sb & 0x0f);
     //currentSong.fm_vol[chn] = currentSong.fm_base_vol[chn];
     // octave << 11 + 26a
-    switch(currentSong.fm_tone[chn]) // needs to be picked from an array
-    {
-        case(0): // C
-            break;
-        case(11): // B
-        default:
-            break;
-    }
-    FMNoteOn(chn, FM_C_5(4));
-
+    FMNoteOn(chn, fm_octavefour[currentSong.fm_tone[chn]], currentSong.fm_oct[chn]);
+    
     return sb;
 }
 
@@ -483,9 +486,10 @@ void PlaySong()
     }
     // Use this for tempo-exact timing!
     ticker += FIXED16(60);
-    if(ticker >= currentSong.songdata.tempo)
+    if(ticker >= realTempo)
     {
-        ticker -= currentSong.songdata.tempo;
+        
+        ticker -= realTempo;
         
         // TIMING BASED STUFF - REQUIRED FOR TONE LENGTHS 
         for(j = 0; j < 3; j++) 
@@ -523,6 +527,7 @@ void PlaySong()
                 }
                 
             }
+            
         }
         // only one instrument.
     }

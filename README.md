@@ -1,8 +1,5 @@
 # PC88-C (0.1.4)
 
-## Warning - SDCC 4.2.0 changes the calling convention on z80, which will break all __naked functions. 
-## Please use SDCC 4.1.0 with PC88-C until further notice.
-
 # Overview 
 A very minimal framework for PC88 development using C. <br> 
 `src/pc88-c.h` has all the good stuff. <br> 

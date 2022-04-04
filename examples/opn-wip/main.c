@@ -25,7 +25,7 @@ void main()
     playingSong = false;
     
     // Set up currentSong pointers
-    LoadSong(&song[0]);
+    LoadSong(&song[0], 150);
     playingSong = true;
     ticker = 0;
 

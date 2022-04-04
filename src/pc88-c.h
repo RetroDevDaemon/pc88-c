@@ -128,6 +128,7 @@ void SetCursorPos(u8 x, u8 y);
 /**/void SetCursorPos40(u8 x, u8 y);
 /*! Converts a single byte to ASCII numeric form */
 u8* byToHex(u8 by); 
+inline void TextRowCopy(u8 src, u8 dst);
 
 // IOREGS
 //#define SetIOReg(r, v) r = v;//__asm__("ld a, %d", r) 

@@ -109,5 +109,47 @@ u8* byToHex(u8 by)
     return &BYTOHEXWORK[0];
 }
 
+// 3127 bytes, 0x78 per
+// 0xf3c8 + (120*6)
+extern u16 local_a;
+extern u16 local_b;
+inline void TextRowCopy(u8 src, u8 dst)
+{ // 0 to 20
+    local_a = 0xf3c8 + (0x78 * src);
+    local_b = 0xf3c8 + (0x78 * dst);
+    __asm 
+    
+    ; wipe the dst row, kinda slow
+        ld de,(_local_b)
+        ld bc,#80
+    $00177:
+        ld a,#0x20
+        ld (de),a 
+        inc de 
+        dec bc 
+        ld a,b 
+        or c 
+        jr nz,$00177
+    
+    ; fast copy 
+        ld hl,(_local_a)
+        ld de,(_local_b)
+        ld bc,#80
+        ldir 
+    
+    ; wipe the src row 
+        ld de,(_local_a)
+        ld bc,#80
+    $00178:
+        ld a,#0x20
+        ld (de),a 
+        inc de 
+        dec bc 
+        ld a,b 
+        or c 
+        jr nz,$00178
+    
+    __endasm;
 
+}
 /*! @} */

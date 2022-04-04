@@ -1,16 +1,13 @@
-3/20 - move around map, add enemy? <--
+3/20 - move around map  <--
 3/21 - expose map bit by bit <---
-3/23 - add encounter window <--
-3/24 - encounter "hex" statue <--
-
-3/25 - encounter code/struct
-3/26 - example encounters
-3/27 - music A
-3/28 - intro
-3/29 - title
+3/25 - encounter code/struct <--
+3/26 - example encounters <--
+3/27 - music A <--
+[[3/29 - title]]
 3/30 - save/load??
 4/1  - polish map 1
 4/2 - map 2
+
 4/3 - map 3
 4/4 - map 4
 4/5 - polish map 2
@@ -20,18 +17,95 @@
 4/10 - final polish
 
 
-MIRAI 
-ABYSS 2
-HYLDLIDE 2
-DEATH TRAP 1/2 eh
 
-ULTIMA 2
-SCREAMER
-FANTASIAN 
-SHANGHAI 
-TRITONE
-PALADIN
+
+
+
+
+XANADU - 2F
+MIRAI - planet 1(b)
+SCREAMER - 1F
+FANTASIAN - 2F
+DEATH TRAP 1/2 eh
+ABYSS 2
+HYLDLIDE 2 - lv1
+HYDLIDE 1 - lv8
+AXIOM
+LIZARD
+
+ULTIMA 4/1/2/3
+
 EGGY?
 XYLOS
 GEGEGE NO GETARO]
 cubey panic
+
+１９８６
+doesnt work? Kaleidoscope
+xFinal Zone Wolf
+xValis
+xWoody Poco
+Argo 
+Asteka 2
+Babylon 
+Alpha 
+Wibarm 
+Wingman 2
+Romancia 
+Blassty 
+zPhantasie 
+Soapland (Adult)
+Daiva 
+Riglas 
+Kyuryuto - Jamie Star 2 SR
+Mappy (arcade\)
+Nobunaga - zenkokuban 
+Aggres (?)
+Xanadu part 2 
+摩訶迦羅 (Mankala?)
+Lost Power 
+RoboWres 
+Daisenryaku 88 
+TRY: Zenon 2: Orbit 3 
+ARION 
+Murder Club 
+Re Birth 
+RELICS 
+Z Gundam 
+Mezon Ikkoku 1 
+Zenon 3: Gamma 5
+Crystal Prison(adv)
+Kaleidoscope 2 
+Boukenshatachi 
+?Gradius 
+Lunacity Pascal 2 
+mahoutukai no mago 
+Galuppo Club 
+Star Symphony 
+ShojoSentai Angel 
+?SF3D 
+Tenmakyou no densetsu (coveted mirror jp ver)
+GROBDA(arc)
+Super Pitfall 
+A Ressha De Iko 
+?Ultrastory 
+Gemstone Warrior 
+HangOn(arc)
+Boken Roman 
+Tears of the Nile 
+FotNS
+?Gyrodine 
+hercules 
+sen-nen oukoku 
+?elevator act
+topplezip 
+batten tanuki daibouken 
+maidum 
+Marvelous 
+Super Rambo 
+Bu u ma 
+?transylvania 2 
+Lefty Mouse 
+Formation Z(act)
+?mrbump 
+harryfox???
