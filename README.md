@@ -1,4 +1,4 @@
-# PC88-C (0.1.4)
+# PC88-C (0.1.5)
 
 # Overview 
 A very minimal framework for PC88 development using C. <br> 
@@ -16,15 +16,26 @@ https://discord.gg/Js3uUrc
 -Joystick<br>
 -Saving files to disk<br>
 -Kanji ROM, nado<br>
+-Fix CRTC code<br>
+-Finalize M88 player<br>
 <br>
 ## Documentation
-Doxygen:<br>
+Doxygen (0.1.3):<br>
 https://bferguson3.github.io/pc88-c/<br>
 (Tutorial, of out of date):<br>
 Manual part 1, overview: https://barelyconsciousgames.blogspot.com/2021/02/pc-88-c-framework-for-nec-pc8801.html <br> 
 Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/pc88-c-frame-for-nec-pc-8801-part-2.html <br> 
 
 ## What's new
+0.1.5<br>
+- Fixed ClearAttributeRam() not clearing all attributes
+- Added CLS() to clear text only
+- Clarified certain functions
+- Bugfixes for OPN channel 1-3 playback
+- Inter-VRAM copy functions (limited use)
+- Note: M88 player is using inaccurate tempo! (non-IRQ based)
+- Note: Check `examples/rpj4` for use of new functions
+
 0.1.4<br>
 - Added CRT controls with SetMonitor() [bugged - careful!]<br>
 - Added limited channel A,B,C M88 support<br>
@@ -32,35 +43,19 @@ Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/
 - Changed Enable_ALU() and Disable_ALU() to require FASTMEM param<br>
 - Various tweaks and fixes<br>
 
-0.1.3<br>
-- Added limited VGM player and YM conversion tool<br>
-- Various tweaks and fixes<br>
-
-0.1.2<br>
-- Added Disk BASIC support to the d88 tool, and static makefile.<br>
-
-Example:
-`$ make -f Makefile.n88 PROJECT=examples/helloworld-static`<br>
-Then, write the disk using xdisk, and on the PC88:<br>
-```
-bload"2:main.bin
-def usr1=&he123
-a=usr1(0)
-```
-Where main.bin is the output file existing on disk drive 2,<br>
-and $e123 is the resultant address of _main(), taken from `out/main.map`.<br>
-Ensure that code, data and stack locations are properly set! Double check the makefile.<br>
-- Refactored SSG player properly.<br>
 <hr>
 
 ## Important: requires SDCC to be on the path<br>
 If you have SDCC 4.1.0 and Python3, you should be able to build without issue.<br>
-(I use the latest build of SDCC to ensure I have the fewest issues.)<br>
+(Note the newest build of SDCC is not yet supported. Please use 4.1.0)<br>
 Recommended emulators:<br>
 M88x5 - Cycle accurate, excellent for debugging, slow (get from Illusion City, below)<br>
 XM8 - SDL2, fast, no debugging (http://retropc.net/pi/xm8/index.html) <br> 
 Illusion City, huge tools list, recent M88 builds: https://illusioncity.net/nec-pc-88-series-emulators-tools-lists/ <br>
 quasi88 - SDL1, builds on pretty much any nix (https://github.com/waitingmoon/quasi88/tree/master)<br>
+quasi88 - SDL2, for OSx (https://github.com/barbeque/quasi88-port)<br>
+When starting quasi88, use `-debug` to enable the Monitor option in the menu.<br>
+PC-8801 mkII FR BIOS (my own, content (C) NEC, right click + save) (http://barelyconsciousgames.com/pc8801mkiifr_bios.zip)<br>
 <br>
 Brief overview:<br>
 <br>
@@ -113,6 +108,26 @@ If properly made/installed, the normal make command should work :)<br>
 <br>
 
 ## Revision history
+
+0.1.3<br>
+- Added limited VGM player and YM conversion tool<br>
+- Various tweaks and fixes<br>
+
+0.1.2<br>
+- Added Disk BASIC support to the d88 tool, and static makefile.<br>
+Example:
+`$ make -f Makefile.n88 PROJECT=examples/helloworld-static`<br>
+Then, write the disk using xdisk, and on the PC88:<br>
+```
+bload"2:main.bin
+def usr1=&he123
+a=usr1(0)
+```
+Where main.bin is the output file existing on disk drive 2,<br>
+and $e123 is the resultant address of _main(), taken from `out/main.map`.<br>
+Ensure that code, data and stack locations are properly set! Double check the makefile.<br>
+- Refactored SSG player properly.<br>
+
 0.1.1<br>
 -Added minimal SSG support for MUCOM88 compiled files!<br>
 CURRENT SUPPORT:<br>

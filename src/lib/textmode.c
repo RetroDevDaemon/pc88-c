@@ -72,16 +72,18 @@ void SetCursorPos40(u8 x, u8 y)
     SCREEN_POINTER = (vu8*)(SCREEN_TXT_BASE + (u16)(120 * y) + (x * 2));
     LINE_POINTER = x * 2;
 }
+
+// Possibly still bugged
 void ClearAttributeRam()
 {
-    vu8* addr = (vu8*)(SCREEN_ATTR_BASE);
+    vu16* addr = (vu16*)(SCREEN_ATTR_BASE);
     u16 p = 0xe880;
-    for(u8 y = 0; y < 24; y++){
+    for(u8 y = 0; y < 25; y++){
         for(u8 x = 0; x < 20; x++){
             *addr = p;
-            addr += 2;   
+            addr ++;   
         }
-        addr += 80;
+        addr += 40; // because 16 bit?
     }
 }
 
@@ -151,5 +153,30 @@ inline void TextRowCopy(u8 src, u8 dst)
     
     __endasm;
 
+}
+
+// text only
+void CLS()
+{
+    __asm 
+        ld hl,#0xf3c8-40
+        ld c,#25    ; 25 rows of text
+    $00142:
+        ld de,#40   ; 40 bytes in between rows 
+        add hl,de 
+        ld b,#80    ; 80 chars per row 
+    $00143:
+        ld a,#' '
+        ld (hl),a 
+        inc hl 
+        dec b 
+        ld a,b 
+        cp #0
+        jr nz,$00143
+        dec c 
+        ld a,c 
+        cp #0 
+        jr nz,$00142
+    __endasm;
 }
 /*! @} */

@@ -12,30 +12,38 @@
 // what stats it targets, tgt val
 // how much damage it will do 
 
-const char desctest[256] = \
+//gs
+const char desc01[] = \
 "You rummage about for a bit, but find nothing useful.\n\
-Just then, a wild rampaging RoboBoar crashes through the brush! \n\
-Will you 1) try to pull your gun and shoot it, or 2) abscond while\n\
-you are still able?";
+Just then, a wild rampaging RoboBoar crashes through the brush!\n\
+Will you try to pull your [g]un and shoot it, or ab[s]cond\n\
+while you are still able?";
+
+const char desc02[] = \
+"You find a discarded bottle of MetaboStim, still\n\
+half-full. (You regain 3 HP!)";
+
+const char desc03[] = \
+"You ascend a steep hill only to be confronted with a\n\
+retinue of Combine soldiers on the other side! You manage\n\
+to evade pursuit by all but one. Do you take aim with your\n\
+[g]un, or read a heretical passage from your [b]ook?";
 
 typedef struct encounter { 
     const char* desc;
     u8 stats[2];    // 0 1 or 2 to identify stat
-    u8 difficulty;  // 3-18
-    u8 damage;      // always on fail 
+    u8 difficulty[2];  // 3-18
+    u8 damage[2];      // always on fail 
 } Encounter;
+
+//GUN SPEED BOOK
+
 
 // e.g. 
 
-// You encounter a raging pit bull!
-//  Do you:
-//  1. Try to shoot it 
-//  2. Run away 
-// Difficulty: 8
-
 // All stat checks are 2d6. 
 
-// Result: 4
+// Result(Gun/Speed/Book): 4
 // Failed!
 //  Use effort? (Remaining: n)
 // 1 Yes   2 No (Fail)
@@ -167,6 +175,7 @@ XYPos targetHex;
 s8 lastKey;
 u8 inputMode;
 Encounter test;
+Encounter map_encounters[15];
 
 #define EXPLORING 1
 #define WAITING 0
@@ -191,6 +200,21 @@ void CPUWAIT(u16 n);
 void RunIntro();
 
 #include "intro.h"
+
+void LoadMap1()
+{
+    
+    // load map 1 encounters  
+    map_encounters[0].desc= &desc01[0];
+    map_encounters[0].stats[0] = GUN;
+    map_encounters[0].stats[1] = SPEED;
+    map_encounters[0].difficulty[0] = 8;
+    map_encounters[0].difficulty[1] = 6;
+    map_encounters[0].damage[0] = 2;
+    map_encounters[0].damage[1] = 2;
+    
+}
+
 
 
 enum Inputs { 
@@ -230,9 +254,12 @@ void main()
     inputMode = INTRO;
     ConfigIntro();
     RunIntro();
-    
+
     IRQ_OFF;
 
+    CLS();
+    ClearAttributeRam();
+    LoadMap1();
     //
     // Load main game
     //

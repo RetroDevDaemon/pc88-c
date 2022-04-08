@@ -6,4 +6,4 @@ out
 tools/*.txt
 src/*.ben
 tools/stash
-
+*.pdf 

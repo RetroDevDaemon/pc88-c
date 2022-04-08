@@ -151,11 +151,6 @@ void GameInit()
     tilePtrs[1] = &grasstile[0];
     tilePtrs[2] = &treetile[0];
 
-    test.desc = (const char*)&desctest[0];
-    test.stats[0] = GUN;
-    test.stats[1] = SPEED;
-    test.difficulty = 8;
-    test.damage = 3;
 }
 
 void DrawFullUI()

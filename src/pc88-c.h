@@ -128,10 +128,14 @@ void SetCursorPos(u8 x, u8 y);
 /**/void SetCursorPos40(u8 x, u8 y);
 /*! Converts a single byte to ASCII numeric form */
 u8* byToHex(u8 by); 
+/*! Moves a row of text from row src to row dst (0-24)*/
 inline void TextRowCopy(u8 src, u8 dst);
+/*! Sets entire 80x25 text screen to 0x20 (' ')
+ *  Note - you will still need to ClearAttributeRam()
+ *  to get rid of color codes.*/
+void CLS();
 
 // IOREGS
-//#define SetIOReg(r, v) r = v;//__asm__("ld a, %d", r) 
 u8 ReadIOReg(u8 r);
 void SetIOReg(u8 r, u8 v);
 void SetOPNReg(u8 r, u8 v) __naked;
@@ -152,8 +156,18 @@ bool GetKeyDown(u8 SCANCODE);
 inline void CRT_OFF() ;
 inline void CRT_ON() ;
 void SetMonitor(u8 khz, u8 rows);
+/*! The first pixel in the given 4bpp bitmap array is read as
+ *  the transparent color. This color will not be written, thus
+ *  will be XORed with the background. 
+ */
 void DrawTransparentImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h);
+/*! Writes a 4bpp bitmap without transparent index.
+ *  slightly faster than transparent version.
+ */
 void DrawImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h);
+/*! Use this for one-plane images, otherwise use DrawPlanarBitmap()
+ *  For use in V1 mode. 1bpp planar bitmap.
+ */
 void DrawPlaneBMP(const u8* img, u8 plane, u16 x, u16 y, u8 w, u8 h);
 void SetPixel(u16 x, u8 y, u8 c);
 inline void EnableALU(u8 fastmem);
@@ -174,8 +188,22 @@ void beep(u16 tone, u8 length);
 void EraseVRAMArea(XYPos* xy, u8 w, u8 h);
 #define ExpandedGVRAM_Copy_On() SetIOReg(EXPANDED_GVRAM_CTRL, (u8)(0x80 | bit(4) ));
 inline void SetCRTC_IRQ(void* func);
+/*! Copies graphics from within GVRAM in V2 mode
+ *  to another location in GVRAM.
+ * Specifically to copy 8 bytes (64 pixels) from vram to vram.
+*/
 void ALUCopy(vu8* src,vu8* dst, u8 w, u16 h);
+/*! Copies graphics from within GVRAM in V2 mode
+ *  to another location in GVRAM.
+ * Specifically to copy 4 bytes (32 pixels) from vram to
+ * off-screen (non-visible) vram.
+*/
 void ALUCopyOut(vu8* src, vu8* dst, u8 w, u16 h);
+/*! Copies graphics from within GVRAM in V2 mode
+ *  to another location in GVRAM.
+ * Specifically to copy 4 bytes (32 pixels) from off-screen
+ * vram into screen-visible vram.
+*/
 void ALUCopyIn(vu8* src, vu8* dst, u8 w, u16 h);
 // OPN
 #include "opn.h"
