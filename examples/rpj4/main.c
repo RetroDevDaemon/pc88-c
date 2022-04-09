@@ -4,53 +4,6 @@
 #include "sprites.h"
 
 #include "graphics.h"
-#include "gfx/deck.h"
-#include "gfx/roboboar.h"
-
-// TRAP EXAMPLES
-// string descriptor 
-// what stats it targets, tgt val
-// how much damage it will do 
-
-//gs
-const char desc01[] = \
-"You rummage about for a bit, but find nothing useful.\n\
-Just then, a wild rampaging RoboBoar crashes through the brush!\n\
-Will you try to pull your [g]un and shoot it, or ab[s]cond\n\
-while you are still able?";
-
-const char desc02[] = \
-"You find a discarded bottle of MetaboStim, still\n\
-half-full. (You regain 3 HP!)";
-
-const char desc03[] = \
-"You ascend a steep hill only to be confronted with a\n\
-retinue of Combine soldiers on the other side! You manage\n\
-to evade pursuit by all but one. Do you take aim with your\n\
-[g]un, or read a heretical passage from your [b]ook?";
-
-typedef struct encounter { 
-    const char* desc;
-    u8 stats[2];    // 0 1 or 2 to identify stat
-    u8 difficulty[2];  // 3-18
-    u8 damage[2];      // always on fail 
-} Encounter;
-
-//GUN SPEED BOOK
-
-
-// e.g. 
-
-// All stat checks are 2d6. 
-
-// Result(Gun/Speed/Book): 4
-// Failed!
-//  Use effort? (Remaining: n)
-// 1 Yes   2 No (Fail)
-
-// NG! You take damage: 2 
-
-// OK! You got away safely. 
 
 
 const unsigned char introSong[] = {
@@ -119,13 +72,13 @@ const unsigned char introSong[] = {
 
 const u8 map1[] = { \
     2,2,2,1,1,1,2,1,
-    2,2,1,2,1,2,2,2,
+    2,2,1,2,3,2,2,2,
     1,2,1,1,1,1,1,1,
     2,2,1,2,1,2,1,2,
-    1,2,1,1,2,1,1,1,
-    1,2,1,1,1,1,1,1,
+    1,2,1,3,2,1,1,1,
+    1,2,1,1,1,3,3,1,
     1,2,2,1,2,2,1,1,
-    2,1,1,2,2,2,2,2
+    2,1,1,2,2,2,2,2,
 };
 
 
@@ -134,9 +87,9 @@ u8 revealedMap[] = { \
     0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,
-    1,1,0,0,0,0,0,0,
-    1,1,1,0,0,0,0,0,
-    1,1,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,
+    0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0,
     0,0,0,0,0,0,0,0
 };
@@ -155,6 +108,7 @@ extern u16 RANDOMSEED;
 
 u32 idleCount;
 u8 ctr;
+u8 currentMap;
 
 struct tileinfo { 
     XYPos pos;
@@ -174,8 +128,7 @@ XYPos targetHex;
 //struct xypos zeropos;
 s8 lastKey;
 u8 inputMode;
-Encounter test;
-Encounter map_encounters[15];
+u8 inputWait;
 
 #define EXPLORING 1
 #define WAITING 0
@@ -186,7 +139,7 @@ Encounter map_encounters[15];
 #define BOOK 2
 
 // F DEFS
-void DrawHexTile(u8 x, u8 y, u8 index);
+void DrawHexTile(s8 x, s8 y, u8 index);
 void DrawCleanGrid();
 s16 roll(u8 numDie, u8 sides, s8 mod);
 void GameInit();
@@ -198,29 +151,99 @@ inline void MovementKeys();
 void ConfigIntro();
 void CPUWAIT(u16 n);
 void RunIntro();
+void PrintExploreUI();
 
 #include "intro.h"
 
+
+
+#include "encounters.c"
+
+//enc type offsets are 012 map1  123 map2 345 map3
+// 3-18
+// 3-5 :heal
+// 6-8 :a
+// 9-11 :b
+// 12-14 :c
+// 15-18: miss
+// STUPID AND BAD AND UNOPTOMIZED.
 void LoadMap1()
 {
-    
-    // load map 1 encounters  
-    map_encounters[0].desc= &desc01[0];
-    map_encounters[0].stats[0] = GUN;
-    map_encounters[0].stats[1] = SPEED;
-    map_encounters[0].difficulty[0] = 8;
-    map_encounters[0].difficulty[1] = 6;
-    map_encounters[0].damage[0] = 2;
-    map_encounters[0].damage[1] = 2;
+    // roll 3d6
+    currentMap = 1;
     
 }
 
 
+#define GRASS 1
+#define TREE 2
+#define CITY 3
+#define TEMPGVR_SPRITE_0 0xfe80 
+#define TEMPGVR_SPRITE_1 0xfee0
+
+void BeginEncounter(u8 encNo)
+{
+    map1_encounters[encNo] = &bs_drone;
+    Encounter* enc = map1_encounters[encNo];
+    TextRowCopy(0, 15);
+    TextRowCopy(0, 16);
+    TextRowCopy(0, 17);
+    TextRowCopy(0, 18);
+    TextRowCopy(0, 19);
+    
+    SetCursorPos(33, 15);
+    print("--ENCOUNTER--");
+    
+    SetCursorPos(1, 16);
+    print(enc->desc);
+    print(map1_encounters[0]->desc);
+
+    ExpandedGVRAM_On();     
+    EnableALU(1);
+    // draw deck
+    DrawImage_V2(53, 162, &deck[0], 8, 38);
+    DrawImage_V2(67, 162, &deck[0], 8, 38);
+    // draw player/enemy
+    if(enc->encounterSpr != NULL)
+        DrawTransparentImage_V2(68, 150, enc->encounterSpr, 4, 24);
+    DrawTransparentImage_V2(55, 150, &librarianSprite[0], 4, 24);
+    // erase sprite
+    ExpandedGVRAM_Copy_On();
+    //ALUCopyIn(TEMPGVR_SPRITE_0, GVRAM_BASE+(150*80)+54, 4, 24); // tempgvr 0 = background of players tile
+    ALUCopyIn(TEMPGVR_SPRITE_0, GVRAM_BASE+(player_pos.y*80)+player_pos.x, 4, 24);
+    
+    ExpandedGVRAM_Off();     
+    DisableALU(0);
+    //print("OK");
+}
 
 enum Inputs { 
     UpRight=9, Right=6, DownRight=3, UpLeft=7, Left=4, DownLeft=1, Confirm=5, Cancel=0
 };
     
+void SetPlayerPosByGrid(u8 x, u8 y)
+{
+    if(y % 2 == 0)  // even?
+    {
+        player_pos.x = (x*8) + 2;
+        player_pos.y = ((y>>1)*32) + 8;
+    } else {        // odd
+        player_pos.x = (x*8) + 6;
+        player_pos.y = ((y>>1)*32) + 24;
+    }
+    player_pos.x += 2;
+    player_pos.y -= 8;
+ }
+
+inline void NoEnc()
+ {
+    SetCursorPos(35, 16);
+    print("Nothing!!");
+    CPUWAIT(400);
+    SetCursorPos(35, 16);
+    print("          ");
+    inputWait = 30;
+ }
 
 void main()
 {
@@ -259,7 +282,9 @@ void main()
 
     CLS();
     ClearAttributeRam();
+    
     LoadMap1();
+
     //
     // Load main game
     //
@@ -267,7 +292,6 @@ void main()
 
     SetCursorPos(10,5);
     print("                                                     ");
-
     SetCursorPos(30,16);
     print("Loading...");
 
@@ -286,7 +310,6 @@ void main()
     //else 
     //    SetMonitor(24, 25);
 
-
     // ALU drawing here
     ExpandedGVRAM_On();     
     EnableALU(FASTMEM_ON);
@@ -297,11 +320,6 @@ void main()
 
     DrawFullUI();
 
-#define GRASS 1
-#define TREE 2
-#define TEMPGVR_SPRITE_0 0xfe80 
-#define TEMPGVR_SPRITE_1 0xfee0
-
 // hero hex area ::
     player_hex_pos.x = 1;
     player_hex_pos.y = 4;
@@ -311,26 +329,19 @@ void main()
     // Remember, the sprites are 384 bytes of bitmap data, but they only take up
     //  96 bytes per plane. 
     // 0xfe80, 0xfee0, ff40, ffa0 room for 4
-    player_pos.x = 12;
-    player_pos.y = 64;
+    player_pos.x = 12; // 1
+    player_pos.y = 64; // 4
+    // grid starts (0,0) at 2,8 and (0,1) at 6,24
+    //   from there, +8x +32y per.
+    SetPlayerPosByGrid(player_hex_pos.x, player_hex_pos.y);
     
-    // deck test 
-    //DrawImage_V2(52, 162, &deck[0], 8, 38);
-    //DrawImage_V2(67, 162, &deck[0], 8, 38);
-    
-    // copy out mask
+    // copy out BACKGROUND
     ExpandedGVRAM_Copy_On();
-    ALUCopyOut(GVRAM_BASE+(player_pos.y*80)+player_pos.x, TEMPGVR_SPRITE_1, 4, 24);
+    ALUCopyOut(GVRAM_BASE+(player_pos.y*80)+player_pos.x, TEMPGVR_SPRITE_0, 4, 24);
     // draw sprite 
     ExpandedGVRAM_On();
     DrawTransparentImage_V2(player_pos.x, player_pos.y, &librarianSprite[0], 32/8, 24);
-    
-    // encounter area 
-    //DrawTransparentImage_V2(54, 152, &librarianSprite[0], 32/8, 24);
-    //DrawTransparentImage_V2(69, 152, &roboboar[0], 32/8, 24);
-    // return backup
-    //ExpandedGVRAM_Copy_On();
-    //ALUCopyIn(TEMPGVR_SPRITE_1, GVRAM_BASE+(player_pos.y*80)+player_pos.x, 4, 24);
+
     
     // ALU off
     DisableALU(FASTMEM_OFF);
@@ -343,7 +354,7 @@ void main()
     SetCursorPos(30,16);
     print("               ");
 
-    
+    inputWait = 60;    
 
     while(1)
     { 
@@ -356,14 +367,64 @@ void main()
         IRQ_OFF 
         frameDone = false;
             
-        if(lastKey != -1)
+        if((lastKey != -1) && (inputWait == 0))
         {
             if(inputMode == EXPLORING)
             {
                 if(lastKey == Confirm)
                 {
-                    // search this tile - 1 trap, 20 heal random
-                    // forest - 1-2 trap
+                    // search this tile - 10% grass, 20% forest event
+                    // city - RELIC or EXIT?
+                    s16 s = roll(1, 20, 0);
+                    u8 tt;
+                    if(currentMap == 1)
+                        tt = map1[(player_hex_pos.y*8)+player_hex_pos.x];
+                    else if(currentMap == 2)
+                        tt = map1[(player_hex_pos.y*8)+player_hex_pos.x];
+                    else if(currentMap == 3)
+                        tt = map1[(player_hex_pos.y*8)+player_hex_pos.x];
+                    
+                    if(tt == GRASS)
+                    {
+                        if(s <= 2) //1 or 2?
+                        {
+                            //FIXME
+                            s16 s = roll(3, 6, -3);
+                            if(currentMap == 1){
+                                SetCursorPos(1,14);
+                                print(byToHex(s & 0xff));
+                                BeginEncounter((u8)s);
+                            }
+                            //else if(currentMap == 2)
+                            //    BeginEncounter(map2_encounters[(u8)s]);
+                            //else if(currentMap == 3)
+                            //    BeginEncounter(map3_encounters[(u8)s]);
+                        }    
+                        else 
+                            NoEnc();
+                    }
+                    else if (tt == TREE)
+                    {
+                        if(s <= 4) //20%
+                        {
+                            s16 s = roll(3, 6, -3);
+                            if(currentMap == 1){
+                                SetCursorPos(1,14);
+                                print(byToHex(s & 0xff));
+                                BeginEncounter((u8)s);                         
+                            }
+                            //else if(currentMap == 2)
+                            //    BeginEncounter(map2_encounters[(u8)s]);
+                            //else if(currentMap == 3)
+                            //    BeginEncounter(map3_encounters[(u8)s]);
+                        }
+                        else { 
+                            NoEnc();
+                        }    
+                    }
+                    // every successful encounter gives you +1 HP
+                    // map 2 increases stats to 3/3
+                    // map 3 insreases to 4/4
                 }
                 else if (lastKey == Cancel)
                 {
@@ -376,7 +437,10 @@ void main()
                     if(targetHex.x >= 0 && targetHex.x < 8)
                         if(targetHex.y >= 0 && targetHex.y < 8) // make sure its on the map
                         {
-
+                            player_hex_pos.x = targetHex.x;
+                            player_hex_pos.y = targetHex.y;
+                            playerMoved = true;
+                            inputWait = 20;
                         }
                     ;
                     // if not valid tile, dont take a turn.
@@ -386,6 +450,8 @@ void main()
         
         // Main Loop
         // modify seed 
+        if(inputWait > 0)
+            inputWait--;
         lastKey = -1;
         RANDOMSEED += rand();
         randnum = (targetHex.x << 4) | targetHex.y;
@@ -409,15 +475,24 @@ void Vblank() __critical __interrupt
 
     if(playerMoved)
     {
-        //copy spr to buffer 
+        EnableALU(1);
+        ExpandedGVRAM_Copy_On();
+        //restore bg buffer
+        ALUCopyIn(TEMPGVR_SPRITE_0, GVRAM_BASE+(player_pos.y*80)+player_pos.x, 4, 24);
+        // adjust pos 
+        revealedMap[(player_hex_pos.y*8)+player_hex_pos.x] = 0;
+        player_hex_pos.x = targetHex.x;
+        player_hex_pos.y = targetHex.y;
+        SetPlayerPosByGrid(player_hex_pos.x, player_hex_pos.y);
+        // copy out new buffer 
+        ALUCopyOut(GVRAM_BASE+(player_pos.y*80)+player_pos.x, TEMPGVR_SPRITE_0, 4, 24);
+        // redraw player
+        ExpandedGVRAM_On();
+        DrawAreaAroundPlayer();
+        DrawTransparentImage_V2(player_pos.x, player_pos.y, &librarianSprite[0], 4, 24);
 
-        // copy in old bg 
-
-        //get hex of direction moving
-        
-        // copy out bg buffer 
-
-        // copy in spr 
+        ExpandedGVRAM_Off();
+        DisableALU(0);
 
         playerMoved = false;
     }
@@ -448,7 +523,7 @@ s16 roll(u8 numDie, u8 sides, s8 mod)
     s16 r = 0;
     for(u8 i = 0; i < numDie; i++)
         r += (u8)(1 + (rand() & (sides-1))); // 0-255
-    r += mod;
+    r += (u16)(mod & 0x00ff);
     return r;
 }
 

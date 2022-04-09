@@ -80,7 +80,7 @@ void ALUCopyOut(vu8* src, vu8* dst, u8 w, u16 h)
     local_a = (u16)src;
     local_h = h;
     local_b = (u16)dst;
-    local_x = 81-w;
+    local_x = 80-w;
     __asm 
         ld	bc,(_local_h)
         ld	hl,(_local_a)
@@ -91,8 +91,7 @@ void ALUCopyOut(vu8* src, vu8* dst, u8 w, u16 h)
          ALUCPY 
          ALUCPY 
          ALUCPY 
-         ld	a,(hl)
-         ld	(de),a
+         ALUCPY
          ld	b,#0 
          ld a,(_local_x)
          ld c,a
@@ -111,7 +110,7 @@ void ALUCopyIn(vu8* src, vu8* dst, u8 w, u16 h)
 {
     local_b = (u16)dst;
     local_h = h;
-    local_x = 81-w;
+    local_x = 80-w;
     local_a = (u16)src;
     __asm 
         ld	bc,(_local_h)
@@ -123,8 +122,7 @@ void ALUCopyIn(vu8* src, vu8* dst, u8 w, u16 h)
          ALUCPY 
          ALUCPY 
          ALUCPY 
-         ld	a,(hl)
-         ld	(de),a
+         ALUCPY
          ld	b,#0
          ld a,(_local_x)
          ld c,a

@@ -1,21 +1,31 @@
 //#include <pc88-c.h>
 
-void DrawHexTile(u8 x, u8 y, u8 index)
+//extern u8 revealedMap[64];
+
+void DrawHexTile(s8 x, s8 y, u8 index)
 {
-    
-    u8 z = y & 0b1;
-    y = y >> 1;
-    switch(z)
+    if(x < 0 || x > 7) return;
+    if(y < 0 || y > 7) return;
+    if (revealedMap[((y*8)+x)] == 1) return;
+    //if(revealedMap[(y*8)+x] == 0)
     {
-        case(0):
-            DrawImage_V2(2+(x*8), (y*32)+8, tilePtrs[index], 64/8, 24);
-            break;
-        case(1):
-            DrawImage_V2(6+(x*8), (y*32)+24, tilePtrs[index], 64/8, 24);
-            break;
-        default:
-            break;
-    }
+        revealedMap[(y*8)+x] = 1;
+        u8 z = y & 0b1;
+        y = y >> 1;
+        switch(z)
+        {
+            case(0):
+                DrawImage_V2(2+(x*8), (y*32)+8, tilePtrs[index], 64/8, 24);
+                break;
+            case(1):
+                DrawImage_V2(6+(x*8), (y*32)+24, tilePtrs[index], 64/8, 24);
+                break;
+            default:
+                break;
+        }
+    } //else { 
+        //return;
+    //}
 }
 
 inline void MovementKeys()
@@ -150,6 +160,7 @@ void GameInit()
     tilePtrs[0] = &hexa[0];
     tilePtrs[1] = &grasstile[0];
     tilePtrs[2] = &treetile[0];
+    tilePtrs[3] = &citytile[0];
 
 }
 
@@ -204,23 +215,32 @@ void DrawFullUI()
 
 void DrawAreaAroundPlayer()
 {
-    u8 i;
-    //TODO: double check that the tile is not already drawn
-    for(i = player_hex_pos.x-1; i <= player_hex_pos.x+1; i++)
-        DrawHexTile(i, player_hex_pos.y, map1[(player_hex_pos.y*8)+i]);
-    i -= 2;
+    s8 i;
+    i = player_hex_pos.x;
+    DrawHexTile(i-1, player_hex_pos.y, map1[(player_hex_pos.y*8)+i-1]);
+    DrawHexTile(i, player_hex_pos.y, map1[(player_hex_pos.y*8)+i]);
+    DrawHexTile(i+1, player_hex_pos.y, map1[(player_hex_pos.y*8)+i+1]);
+    i = player_hex_pos.x-1;
     if(player_hex_pos.y % 2 == 0) //even - go up and -1
     {
-        DrawHexTile(i-1, player_hex_pos.y-1, map1[(player_hex_pos.y*8)+i-9]);
         DrawHexTile(i, player_hex_pos.y-1, map1[(player_hex_pos.y*8)+i-8]);
-        // down and -1
-        DrawHexTile(i, player_hex_pos.y+1, map1[(player_hex_pos.y*8)+i-8]);
-        DrawHexTile(i-1, player_hex_pos.y+1, map1[(player_hex_pos.y*8)+i-7]);
+        i++;
+        DrawHexTile(i, player_hex_pos.y-1, map1[(player_hex_pos.y*8)+i-8]);
+        i = player_hex_pos.x-1;    
+        DrawHexTile(i, player_hex_pos.y+1, map1[(player_hex_pos.y*8)+i+8]);
+        i++;
+        DrawHexTile(i, player_hex_pos.y+1, map1[(player_hex_pos.y*8)+i+8]);
+        
     } else { //odd - go up and +1
-        DrawHexTile(i+1, player_hex_pos.y-1, map1[(player_hex_pos.y*8)+i-7]);
+        i++;
         DrawHexTile(i, player_hex_pos.y-1, map1[(player_hex_pos.y*8)+i-8]);
-        // d and
-        DrawHexTile(i, player_hex_pos.y+1, map1[(player_hex_pos.y*8)+i-8]);
+        i++;
+        DrawHexTile(i, player_hex_pos.y-1, map1[(player_hex_pos.y*8)+i-8]);
+        i = player_hex_pos.x;    
+        DrawHexTile(i, player_hex_pos.y+1, map1[(player_hex_pos.y*8)+i+8]);
+        i++;
+        DrawHexTile(i, player_hex_pos.y+1, map1[(player_hex_pos.y*8)+i+8]);
+        
     }
     
 }
