@@ -17,16 +17,16 @@ typedef struct encounter {
 //heal1 TREASURE?
 const char desc01[] = \
 "You find a can of barely-expired cat food.\n\
- (You regain 1 HP.)";
+ (You regain 1 HP. Press a key.)";
 //heal3 TREASURE?
 const char desc02[] = \
 "You find a discarded bottle of MetaboStim, still\n\
-half-full. (You regain 3 HP!)";
+half-full. (You regain 3 HP! Press a key.)";
 //heal5 TREASURE?
 const char desc03[] = \
 "You find a nano-steroidal injector. This should\n\
 help you keep going for a while!\n\
-(You heal 5 HP!)";
+(You heal 5 HP! Press a key.)";
 
 //gs1
 //BOAR
@@ -128,13 +128,13 @@ fusion heresy, or run away? ([B]ook or [S]peed?)";
 const char desc19[] = \
 "You find an abandonded building with the lock\n\
 still intact. You go inside and search about, but\n\
-find nothing of use...";
+find nothing of use... (Press a key.)";
 //nothing
 const char desc20[] = \
 "Your keen eye spots an old shelter, cleverly\n\
 hidden beneath some natural brush. After\n\
 confirming it is empty, you search it thoroughly,\n\
-but find nothing...";
+but find nothing...  (Press a key.)";
 
 // roll 1d20
 // 1-3  : heal 1, 3, 5
@@ -273,7 +273,7 @@ const Encounter bs_blank = {\
     {SPEED,  BOOK},
     {8,    9},
     {2,    2},
-    {&roboboar[0]}
+    {0}
 };
 const Encounter bs_chest = {\
     {&desc15[0]},

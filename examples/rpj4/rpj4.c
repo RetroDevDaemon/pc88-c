@@ -86,6 +86,7 @@ void BufferInput()
 {
     switch(inputMode)
     {
+        case(INTRO):
         case(EXPLORING):
             if(GetKeyDown(KB_PAD9))
                 lastKey = UpRight;
@@ -105,14 +106,20 @@ void BufferInput()
                 lastKey = Cancel;
             if(GetKeyDown(KB_PADRETURN))
                 lastKey = Confirm;
-            break;
-        case(INTRO):
             if(GetKeyDown(KB_RETURN))
                 lastKey = Confirm;
             if(GetKeyDown(KB_SPACE))
                 lastKey = Confirm;
             if(GetKeyDown(KB_ESC))
                 lastKey = Cancel;
+            break;
+        case(ENC_SELECT):
+            if(GetKeyDown(KB_G))
+                lastKey = Gun;
+            if(GetKeyDown(KB_S))
+                lastKey = Speed;
+            if(GetKeyDown(KB_B))
+                lastKey = Book;
             break;
         default:
             lastKey = -1;

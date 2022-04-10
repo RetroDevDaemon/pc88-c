@@ -134,6 +134,7 @@ u8 inputWait;
 #define WAITING 0
 #define ENC_SELECT 2
 #define INTRO 3
+
 #define GUN 0
 #define SPEED 1
 #define BOOK 2
@@ -172,6 +173,27 @@ void LoadMap1()
     // roll 3d6
     currentMap = 1;
     
+    map1_encounters[0] = &heal1;
+    map1_encounters[1] = &heal1;
+    map1_encounters[2] = &heal5;
+
+    map1_encounters[3] = &gs_boar;
+    map1_encounters[4] = &gs_drone;
+    map1_encounters[5] = &gs_soldier;
+    
+    map1_encounters[6] = &gb_boar;
+    map1_encounters[7] = &gb_drone;
+    map1_encounters[8] = &gb_soldier;
+    
+    map1_encounters[9] = &bs_blank;
+    map1_encounters[10] = &bs_chest;
+    map1_encounters[11] = &bs_drone;
+
+    map1_encounters[12] = &blank1;
+    map1_encounters[13] = &blank2;
+    map1_encounters[14] = &blank1;
+    map1_encounters[15] = &blank2;
+    
 }
 
 
@@ -183,7 +205,6 @@ void LoadMap1()
 
 void BeginEncounter(u8 encNo)
 {
-    map1_encounters[encNo] = &bs_drone;
     Encounter* enc = map1_encounters[encNo];
     TextRowCopy(0, 15);
     TextRowCopy(0, 16);
@@ -196,7 +217,7 @@ void BeginEncounter(u8 encNo)
     
     SetCursorPos(1, 16);
     print(enc->desc);
-    print(map1_encounters[0]->desc);
+    //print(map1_encounters[0]->desc);
 
     ExpandedGVRAM_On();     
     EnableALU(1);
@@ -205,8 +226,8 @@ void BeginEncounter(u8 encNo)
     DrawImage_V2(67, 162, &deck[0], 8, 38);
     // draw player/enemy
     if(enc->encounterSpr != NULL)
-        DrawTransparentImage_V2(68, 150, enc->encounterSpr, 4, 24);
-    DrawTransparentImage_V2(55, 150, &librarianSprite[0], 4, 24);
+        DrawTransparentImage_V2(68, 154, enc->encounterSpr, 4, 24);
+    DrawTransparentImage_V2(55, 154, &librarianSprite[0], 4, 24);
     // erase sprite
     ExpandedGVRAM_Copy_On();
     //ALUCopyIn(TEMPGVR_SPRITE_0, GVRAM_BASE+(150*80)+54, 4, 24); // tempgvr 0 = background of players tile
@@ -214,11 +235,13 @@ void BeginEncounter(u8 encNo)
     
     ExpandedGVRAM_Off();     
     DisableALU(0);
+
+    inputMode = ENC_SELECT;
     //print("OK");
 }
 
 enum Inputs { 
-    UpRight=9, Right=6, DownRight=3, UpLeft=7, Left=4, DownLeft=1, Confirm=5, Cancel=0
+    UpRight=9, Right=6, DownRight=3, UpLeft=7, Left=4, DownLeft=1, Confirm=5, Cancel=0, Gun=11, Speed=12, Book=13
 };
     
 void SetPlayerPosByGrid(u8 x, u8 y)
@@ -446,14 +469,20 @@ void main()
                     // if not valid tile, dont take a turn.
                 }
             }
+            else if(inputMode == ENC_SELECT)
+            {
+                
+            }
         }
-        
         // Main Loop
         // modify seed 
         if(inputWait > 0)
             inputWait--;
         lastKey = -1;
         RANDOMSEED += rand();
+        s16 s = roll(3, 6, -3);
+        SetCursorPos(0, 19);
+        print(byToHex((u8)s));
         randnum = (targetHex.x << 4) | targetHex.y;
         
         // return 
