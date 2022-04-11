@@ -55,7 +55,7 @@ void RunIntro()
         SetCursorPos(40 - intro_offsets[i], 15);
         print(introText[i]);    
     }
-    if(lastKey != 0) goto SKIPINTRO;
+    if(lastKey != -1) goto SKIPINTRO;
     // scroll remaining text until done
     for(i = 0; i < 10; i++)
     {

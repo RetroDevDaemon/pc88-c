@@ -171,6 +171,27 @@ void SetPlayerPosByGrid(u8 x, u8 y)
     player_pos.y -= 8;
  }
 
+void DoGameOver()
+{
+    CLS();
+    box.x = 0;
+    box.y = 0;
+    SETBANK_RED()
+    EraseVRAMArea(&box, 79, 199);
+    SETBANK_GREEN()
+    EraseVRAMArea(&box, 79, 199);
+    SETBANK_BLUE()
+    EraseVRAMArea(&box, 79, 199);
+    SETBANK_MAINRAM()
+    SetCursorPos(20,10);
+    print("               YOU LOSE\n\n");
+    print(" Libby has died before retrieving the sacred\n\n");
+    print("artefacts. The Combine takes over the world and\n\n");
+    print("        darkness lasts forever...\n\n");
+    print("         THANKS FOR PLAYING!!");
+    while(1){};
+}
+
 inline void NoEnc()
  {
     SetCursorPos(35, 16);
@@ -254,6 +275,7 @@ void main()
     //
     // Run Intro
     //
+    playerMoved = false;
     SetCRTC_IRQ((void*)&Vblank);
     SetIRQs();
     IRQ_ON  
@@ -408,7 +430,9 @@ LOADTHEMAP:
                                 TextRowCopy(0, g);
                             SetCursorPos(15, 17);
                             print("You found the exit, but you can't leave yet!\n You have to find the [RELIC]!!");
-                            CPUWAIT(400);
+                            CPUWAIT(600);
+                            TextRowCopy(0, 17);
+                            TextRowCopy(0, 18);
                             inputWait = 30;
                             PrintExploreUI(true);
                         }
@@ -553,6 +577,10 @@ LOADTHEMAP:
                     savedKey = 0;
                     EraseCombat();
                     DrawLibby();
+                    if(Libby.hp <= 0)
+                    {
+                        DoGameOver();
+                    }
                 }
             }
             else if(inputMode == ENC_SELECT)
@@ -642,6 +670,10 @@ LOADTHEMAP:
                     for(u8 g = 15; g < 20; g++)
                         TextRowCopy(0, g);
                     PrintExploreUI(1);
+                    EraseCombat();
+                    DrawLibby();
+                    CPUWAIT(100);
+                       
                     inputMode = EXPLORING;
                 }
             }
@@ -671,7 +703,7 @@ void Vblank() __critical __interrupt
         //print("OVER!");
     }
 
-    if(playerMoved)
+    if(playerMoved && (inputMode != INTRO))
     {
         EnableALU(1);
         ExpandedGVRAM_Copy_On();
