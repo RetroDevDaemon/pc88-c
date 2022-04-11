@@ -1,74 +1,16 @@
+// RETRO PLATFORM JAM #4 ENTRY
+// v0.9 (Submission ver.)
+
+// "The Librarian"
+//  ~ Starfall part II ~
+
+
 #include <pc88-c.h>
 
 #include "song_b.h"
 #include "sprites.h"
 
 #include "graphics.h"
-
-
-const unsigned char introSong[] = {
-	0, // num songs
-    185,0, // offset
-    5,1, // binary size 0x105
-
-    190, // tempo??
-    
-    47,0,0,0, //offset, loop
-    87,0,0,0,
-    //135,0,0,0,
-    172,0,0,0,
-    172,0,0,0,
-    173,0,0,0,
-    174,0,0,0,
-    175,0,0,0,
-    176,0,0,0,
-    177,0,0,0,
-    178,0,0,0,
-    179,0,0,0,
-    
-    180,0, // data end loc, +5
-    
-    240,0,241,19,250,38,100,245,28,0,30,48, //64
-	16,52,16,50,30,48,16,52,16,50,30,36,16,37,16,39,
-	30,36,16,37,24,39,246,4,4,27,0,   0,
-    
-    240,1,241,18,250,38,100, // part 2
-    245,36,0,245,12,0,4,71,4,69,4,68,4,
-	66,246,4,4,11,0,245,12,0,4,69,4,68,4,66,4,
-	64,246,3,4,11,0,246,7,8,35,0,  0,
-
-    240,2,241,17,250,38,100, // part 3
-    245,25,0,30,32,16,32,16,34,30,36,16,32,
-	16,34,30,20,30,16,160,16,23,24,21,246,4,4,24,0,  0,
-	0,0,0,0,0,0,0,0, //(133 bytes of song)
-    
-    3, //185
-    
-    65,49,69,65,
-    29,48,15,0,
-    89,92,89,78,
-    138,141,139,132,
-    0,0,0,0,
-    21,39,88,6,
-    58,
-    
-    111,15,15,102,
-    49,17,44,0,
-    31,31,31,159,
-    154,145,154,140,
-    5,1,9,1,
-    11,167,11,248,
-    35,
-    
-    101,2,40,97,
-	39,27,17,0,
-    223,31,31,31,
-    146,143,132,143,
-    4,0,10,1,
-	16,0,0,0,
-    0
-};
-
 
 const u8 map1[] = { \
     2,2,2,1,1,1,2,1,
@@ -80,7 +22,26 @@ const u8 map1[] = { \
     1,2,2,1,2,2,1,1,
     2,1,1,2,2,2,2,2,
 };
-
+const u8 map2[] = {\
+    1,1,1,2,1,1,1,1,
+    2,1,2,2,2,2,3,1,
+    1,2,3,2,2,2,2,1,
+    2,1,2,2,2,2,1,2,
+    1,2,1,2,2,2,2,1,
+    1,2,2,2,2,2,1,1,
+    1,1,2,2,2,2,3,1,
+    2,1,1,1,1,1,2,1
+};
+const u8 map3[] = {\
+    3,2,2,2,2,2,2,3,
+    2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,
+    2,2,2,3,1,2,2,2,
+    2,2,2,1,3,2,2,2,
+    2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,2,
+    2,2,2,2,2,2,2,3
+};
 
 
 u8 revealedMap[] = { \
@@ -94,6 +55,9 @@ u8 revealedMap[] = { \
     0,0,0,0,0,0,0,0
 };
 
+XYPos maprelic[3];
+XYPos mapexit[3];
+u8 foundRelic[3];
 
 inline void SetIRQs()
 {
@@ -109,6 +73,7 @@ extern u16 RANDOMSEED;
 u32 idleCount;
 u8 ctr;
 u8 currentMap;
+u8 savedKey;
 
 struct tileinfo { 
     XYPos pos;
@@ -129,15 +94,32 @@ XYPos targetHex;
 s8 lastKey;
 u8 inputMode;
 u8 inputWait;
-
+u8 lastRoll;
+                        
 #define EXPLORING 1
 #define WAITING 0
 #define ENC_SELECT 2
 #define INTRO 3
+#define ENC_CONTINUE 4
+#define ENC_RETRY 5
 
-#define GUN 0
-#define SPEED 1
-#define BOOK 2
+#define GUN 11
+#define SPEED 12
+#define BOOK 13
+
+typedef struct playerStats { \
+    s8 gun;
+    s8 gunMax;
+    s8 speed;
+    s8 speedMax;
+    s8 book;
+    s8 bookMax;
+    s8 hp;
+    s8 hpMax;
+} PlayerStats;
+PlayerStats Libby;
+
+XYPos box;
 
 // F DEFS
 void DrawHexTile(s8 x, s8 y, u8 index);
@@ -146,55 +128,21 @@ s16 roll(u8 numDie, u8 sides, s8 mod);
 void GameInit();
 void DrawFullUI();
 void DrawAreaAroundPlayer();
-void DrawInputUI();
 void BufferInput();
 inline void MovementKeys();
 void ConfigIntro();
 void CPUWAIT(u16 n);
 void RunIntro();
-void PrintExploreUI();
+void PrintExploreUI(u8 full);
+void LoadMap(u8 map);
+void BeginEncounter(u8 encNo);
+void SetPlayerPosByGrid(u8 x, u8 y);
+
 
 #include "intro.h"
 
-
-
 #include "encounters.c"
 
-//enc type offsets are 012 map1  123 map2 345 map3
-// 3-18
-// 3-5 :heal
-// 6-8 :a
-// 9-11 :b
-// 12-14 :c
-// 15-18: miss
-// STUPID AND BAD AND UNOPTOMIZED.
-void LoadMap1()
-{
-    // roll 3d6
-    currentMap = 1;
-    
-    map1_encounters[0] = &heal1;
-    map1_encounters[1] = &heal1;
-    map1_encounters[2] = &heal5;
-
-    map1_encounters[3] = &gs_boar;
-    map1_encounters[4] = &gs_drone;
-    map1_encounters[5] = &gs_soldier;
-    
-    map1_encounters[6] = &gb_boar;
-    map1_encounters[7] = &gb_drone;
-    map1_encounters[8] = &gb_soldier;
-    
-    map1_encounters[9] = &bs_blank;
-    map1_encounters[10] = &bs_chest;
-    map1_encounters[11] = &bs_drone;
-
-    map1_encounters[12] = &blank1;
-    map1_encounters[13] = &blank2;
-    map1_encounters[14] = &blank1;
-    map1_encounters[15] = &blank2;
-    
-}
 
 
 #define GRASS 1
@@ -203,45 +151,10 @@ void LoadMap1()
 #define TEMPGVR_SPRITE_0 0xfe80 
 #define TEMPGVR_SPRITE_1 0xfee0
 
-void BeginEncounter(u8 encNo)
-{
-    Encounter* enc = map1_encounters[encNo];
-    TextRowCopy(0, 15);
-    TextRowCopy(0, 16);
-    TextRowCopy(0, 17);
-    TextRowCopy(0, 18);
-    TextRowCopy(0, 19);
-    
-    SetCursorPos(33, 15);
-    print("--ENCOUNTER--");
-    
-    SetCursorPos(1, 16);
-    print(enc->desc);
-    //print(map1_encounters[0]->desc);
-
-    ExpandedGVRAM_On();     
-    EnableALU(1);
-    // draw deck
-    DrawImage_V2(53, 162, &deck[0], 8, 38);
-    DrawImage_V2(67, 162, &deck[0], 8, 38);
-    // draw player/enemy
-    if(enc->encounterSpr != NULL)
-        DrawTransparentImage_V2(68, 154, enc->encounterSpr, 4, 24);
-    DrawTransparentImage_V2(55, 154, &librarianSprite[0], 4, 24);
-    // erase sprite
-    ExpandedGVRAM_Copy_On();
-    //ALUCopyIn(TEMPGVR_SPRITE_0, GVRAM_BASE+(150*80)+54, 4, 24); // tempgvr 0 = background of players tile
-    ALUCopyIn(TEMPGVR_SPRITE_0, GVRAM_BASE+(player_pos.y*80)+player_pos.x, 4, 24);
-    
-    ExpandedGVRAM_Off();     
-    DisableALU(0);
-
-    inputMode = ENC_SELECT;
-    //print("OK");
-}
+Encounter* currentEncounter;
 
 enum Inputs { 
-    UpRight=9, Right=6, DownRight=3, UpLeft=7, Left=4, DownLeft=1, Confirm=5, Cancel=0, Gun=11, Speed=12, Book=13
+    UpRight=9, Right=6, DownRight=3, UpLeft=7, Left=4, DownLeft=1, Confirm=5, Cancel=0, Gun=11, Speed=12, Book=13, Yes=21, No=22
 };
     
 void SetPlayerPosByGrid(u8 x, u8 y)
@@ -268,6 +181,50 @@ inline void NoEnc()
     inputWait = 30;
  }
 
+ void EraseCombat()
+ {
+        box.x = 49;
+    box.y = 155;
+    SETBANK_RED()
+    EraseVRAMArea(&box, 30, 44);
+    SETBANK_GREEN()
+    EraseVRAMArea(&box, 30, 44);
+    SETBANK_BLUE()
+    EraseVRAMArea(&box, 30, 44);
+    SETBANK_MAINRAM()
+ }
+
+void DrawLibby()
+{
+    ExpandedGVRAM_On();     
+    EnableALU(FASTMEM_ON);
+    DrawTransparentImage_V2(player_pos.x, player_pos.y, &librarianSprite[0], 32/8, 24);
+    DisableALU(FASTMEM_OFF);
+    ExpandedGVRAM_Off();   
+}
+
+void Ending()
+{
+    CLS();
+    box.x = 0;
+    box.y = 0;
+    SETBANK_RED()
+    EraseVRAMArea(&box, 79, 199);
+    SETBANK_GREEN()
+    EraseVRAMArea(&box, 79, 199);
+    SETBANK_BLUE()
+    EraseVRAMArea(&box, 79, 199);
+    SETBANK_MAINRAM()
+    SetCursorPos(30,10);
+    print("               YOU WIN!!\n\n");
+    print(" Libby has secured the forbidden artefacts\n\n");
+    print("and secured this region against the Combine.\n\n");
+    print("She is reknowned as a hero for ages to come.\n\n");
+    print("         THANKS FOR PLAYING!!");
+    while(1){};
+    
+}
+
 void main()
 {
     IRQ_OFF; 
@@ -278,6 +235,10 @@ void main()
     u8 i = 0;
     u8 c = 0;
     playingSong = false;
+    
+    Libby.hp = 10;
+    Libby.hpMax = 10;
+
     
     //
     // Stall if not V2 mode 
@@ -301,12 +262,32 @@ void main()
     ConfigIntro();
     RunIntro();
 
+    currentMap = 1;
+
+LOADTHEMAP:
+    Libby.speedMax = currentMap+1;
+    Libby.gunMax = currentMap+1;
+    Libby.bookMax = currentMap+1;
+    Libby.speed = Libby.speedMax ;
+    Libby.book = Libby.bookMax ;
+    Libby.gun = Libby.gunMax ;
+
+    playingSong = false;
+    ticker = 0;
+
+    if(currentMap == 4)
+        Ending();
+
+    for(c = 0; c < 64; c++)
+        revealedMap[c] = 0;
+
+    
     IRQ_OFF;
 
     CLS();
     ClearAttributeRam();
     
-    LoadMap1();
+    LoadMap(currentMap);
 
     //
     // Load main game
@@ -354,31 +335,25 @@ void main()
     // 0xfe80, 0xfee0, ff40, ffa0 room for 4
     player_pos.x = 12; // 1
     player_pos.y = 64; // 4
-    // grid starts (0,0) at 2,8 and (0,1) at 6,24
-    //   from there, +8x +32y per.
+    
     SetPlayerPosByGrid(player_hex_pos.x, player_hex_pos.y);
     
     // copy out BACKGROUND
     ExpandedGVRAM_Copy_On();
     ALUCopyOut(GVRAM_BASE+(player_pos.y*80)+player_pos.x, TEMPGVR_SPRITE_0, 4, 24);
-    // draw sprite 
-    ExpandedGVRAM_On();
-    DrawTransparentImage_V2(player_pos.x, player_pos.y, &librarianSprite[0], 32/8, 24);
 
-    
-    // ALU off
-    DisableALU(FASTMEM_OFF);
-    ExpandedGVRAM_Off();   
-
-    PrintExploreUI();
+    DrawLibby();
+    PrintExploreUI(1);
     
     inputMode = EXPLORING;
     
     SetCursorPos(30,16);
     print("               ");
 
+    savedKey = 0;
     inputWait = 60;    
 
+    IRQ_ON;
     while(1)
     { 
         // wait for 1/60 irq to finish
@@ -396,58 +371,86 @@ void main()
             {
                 if(lastKey == Confirm)
                 {
-                    // search this tile - 10% grass, 20% forest event
-                    // city - RELIC or EXIT?
-                    s16 s = roll(1, 20, 0);
-                    u8 tt;
-                    if(currentMap == 1)
-                        tt = map1[(player_hex_pos.y*8)+player_hex_pos.x];
-                    else if(currentMap == 2)
-                        tt = map1[(player_hex_pos.y*8)+player_hex_pos.x];
-                    else if(currentMap == 3)
-                        tt = map1[(player_hex_pos.y*8)+player_hex_pos.x];
-                    
-                    if(tt == GRASS)
+                    RUNHEXENCOUNTER:
+                    if((maprelic[currentMap-1].x == player_hex_pos.x) \
+                        && (maprelic[currentMap-1].y == player_hex_pos.y))
                     {
-                        if(s <= 2) //1 or 2?
-                        {
-                            //FIXME
-                            s16 s = roll(3, 6, -3);
-                            if(currentMap == 1){
-                                SetCursorPos(1,14);
-                                print(byToHex(s & 0xff));
-                                BeginEncounter((u8)s);
-                            }
-                            //else if(currentMap == 2)
-                            //    BeginEncounter(map2_encounters[(u8)s]);
-                            //else if(currentMap == 3)
-                            //    BeginEncounter(map3_encounters[(u8)s]);
-                        }    
-                        else 
-                            NoEnc();
+                        // Its the relic!!
+                        for(u8 g = 15; g < 20; g++)
+                            TextRowCopy(0, g);
+                        SetCursorPos(25, 17);
+                        print("You found the [RELIC]. Time to escape!");
+                        foundRelic[currentMap-1] = 1;
+                        CPUWAIT(500);
+                        TextRowCopy(0, 17);
+                        inputWait = 30;
+                        PrintExploreUI(true);
                     }
-                    else if (tt == TREE)
+                    if((mapexit[currentMap-1].x == player_hex_pos.x) \
+                        && (mapexit[currentMap-1].y == player_hex_pos.y))
                     {
-                        if(s <= 4) //20%
+                        // Its the exit!!
+                        if(foundRelic[currentMap-1])
                         {
-                            s16 s = roll(3, 6, -3);
-                            if(currentMap == 1){
-                                SetCursorPos(1,14);
-                                print(byToHex(s & 0xff));
-                                BeginEncounter((u8)s);                         
-                            }
-                            //else if(currentMap == 2)
-                            //    BeginEncounter(map2_encounters[(u8)s]);
-                            //else if(currentMap == 3)
-                            //    BeginEncounter(map3_encounters[(u8)s]);
+                            for(u8 g = 15; g < 20; g++)
+                                TextRowCopy(0, g);
+                            SetCursorPos(25, 17);
+                            print("You made it out!! On to the next zone...");
+                            CPUWAIT(500);
+                            currentMap++;
+                            //LoadMap(currentMap);
+                            inputWait = 30;
+                            // END MAP GO TO NEXT!!
+                            goto LOADTHEMAP;
                         }
                         else { 
-                            NoEnc();
-                        }    
+                            for(u8 g = 15; g < 20; g++)
+                                TextRowCopy(0, g);
+                            SetCursorPos(15, 17);
+                            print("You found the exit, but you can't leave yet!\n You have to find the [RELIC]!!");
+                            CPUWAIT(400);
+                            inputWait = 30;
+                            PrintExploreUI(true);
+                        }
                     }
-                    // every successful encounter gives you +1 HP
-                    // map 2 increases stats to 3/3
-                    // map 3 insreases to 4/4
+
+                    if(revealedMap[(player_hex_pos.y*8)+player_hex_pos.x] != 2)
+                    {
+                        revealedMap[(player_hex_pos.y*8)+player_hex_pos.x] = 2;
+                         // search this tile - 10% grass, 20% forest event
+                        // city - RELIC or EXIT?
+                        s16 s = roll(1, 20, 0);
+                        u8 tt;
+                        if(currentMap == 1)
+                            tt = map1[(player_hex_pos.y*8)+player_hex_pos.x];
+                        else if(currentMap == 2)
+                            tt = map2[(player_hex_pos.y*8)+player_hex_pos.x];
+                        else if(currentMap == 3)
+                            tt = map3[(player_hex_pos.y*8)+player_hex_pos.x];
+                        
+                        if(tt == GRASS)
+                        {
+                            if(s <= 2) //1 or 2?
+                            {
+                                s16 s = roll(3, 6, -3);
+                                BeginEncounter((u8)s);
+                            }    
+                            else 
+                                NoEnc();
+                        }
+                        else if (tt == TREE)
+                        {
+                            if(s <= 4) //20%
+                            {
+                                s16 s = roll(3, 6, -3);
+                                BeginEncounter((u8)s);                         
+                            }
+                            else { 
+                                NoEnc();
+                            }    
+                        }
+                    }
+                    
                 }
                 else if (lastKey == Cancel)
                 {
@@ -464,26 +467,192 @@ void main()
                             player_hex_pos.y = targetHex.y;
                             playerMoved = true;
                             inputWait = 20;
+                            u8 ti = (player_hex_pos.y * 8) + player_hex_pos.x;
+                            //if(hh == 1)
+                            //    goto RUNHEXENCOUNTER;
+                            u8* mi = ((currentMap-1) * 64) + &map1[0] + ti;
+                            // get map index of current tile...
+                            if(*mi == GRASS)
+                            {
+                                u8 re = roll(1,3,0);
+                                if(re > 2)
+                                    goto RUNHEXENCOUNTER;
+                            } else if(*mi == TREE){ 
+                                u8 re = roll(1,2,0);
+                                if(re==2)
+                                    goto RUNHEXENCOUNTER;
+                            }
+                            
                         }
                     ;
                     // if not valid tile, dont take a turn.
                 }
             }
+            else if(inputMode == ENC_RETRY)
+            {
+                // NG! You take damage: 2 
+                // OK! You got away safely.
+                u8 retryFail = 0;        
+                if(lastKey == Yes)
+                {
+                    inputWait = 30;
+                    if(savedKey == Gun){
+                        if(Libby.gun > 0)
+                            Libby.gun -= 1;
+                        else 
+                            retryFail = 1;
+                    } else if(savedKey == Speed){
+                        if(Libby.speed > 0)
+                            Libby.speed -= 1;
+                        else 
+                            retryFail = 1;
+                    } else if(savedKey == Book){
+                        if(Libby.book > 0)
+                            Libby.book -= 1;
+                        else 
+                            retryFail = 1;
+                    }
+                    if(retryFail == 0){
+                        lastRoll += roll(1, 6, 0);
+                        for(u8 g = 15; g < 20; g++)
+                            TextRowCopy(0, g);
+                        
+                        PrintExploreUI(0);
+                        SetCursorPos(5, 16);
+                        print("New roll: ");
+                        print(byToDec(lastRoll));
+                        inputMode = ENC_SELECT;
+                        goto CHECKENCOUNTER;
+                        //lastKey = savedKey;
+                    }
+                    
+                }
+                else if(lastKey == No)
+                {
+                    retryFail = 1;
+                }
+                if(retryFail)
+                {
+                    // clear text
+                    u8 e;
+                    EraseVRAMArea(VRAMAddrByTile(53, 154), 25, 45);
+                    for(u8 g = 15; g < 20; g++)
+                        TextRowCopy(0, g);
+                    SetCursorPos(4, 17);
+                    print("NG! You take damage: ");
+                    for(e = 0; e < 2; e++)
+                    {
+                        if(currentEncounter->stats[e] == savedKey)
+                            break;
+                    }
+                    Libby.hp -= currentEncounter->damage[e];
+                    print(byToDec(currentEncounter->damage[e]));
+                    print("\n(Press a key.)");
+                    CPUWAIT(100);
+                    inputMode = ENC_CONTINUE;
+                    savedKey = 0;
+                    EraseCombat();
+                    DrawLibby();
+                }
+            }
             else if(inputMode == ENC_SELECT)
             {
-                
+                for(u8 e = 0; e < 2; e++)
+                {
+                    if((currentEncounter->stats[e] == lastKey) || (savedKey != 0)) // Is the key pressed one of available?
+                    {
+                        if(savedKey != 0)
+                            lastKey = savedKey;
+                        inputWait = 30;
+                        //inputMode = ENC_RETRY;
+                        // clear text
+                        u8 g;
+                        for(g = 16; g < 20; g++)
+                            TextRowCopy(0, g);
+                        // e.g. 
+                        // All stat checks are 2d6. 
+                        // Result(Gun/Speed/Book): 4
+                        lastRoll = roll(2, 6, 0);
+                        SetCursorPos(5,16);
+                        print("Result [");
+                        if(lastKey == Gun)
+                        {
+                            print("Gun");
+                            savedKey = Gun;
+                        } else if (lastKey == Speed)
+                        {
+                            print("Speed");
+                            savedKey = Speed;
+                        } else if (lastKey == Book)
+                        {
+                            print("Book");
+                            savedKey = Book;
+                        }
+                        print("]: ");
+                        print(byToDec(lastRoll));
+                        CHECKENCOUNTER:
+                        if(lastRoll < currentEncounter->difficulty[e])
+                        {
+                            SetCursorPos(6, 17);
+                            print("Failed!! Use effort? (Remaining: ");
+                            if(lastKey == Gun)
+                                print(byToDec(Libby.gun));
+                            else if(lastKey == Book)
+                                print(byToDec(Libby.book));
+                            else if(lastKey == Speed)
+                                print(byToDec(Libby.speed));
+                            print(")");
+                            SetCursorPos(8, 18);
+                            print("[Y]es to retry or [N]o to fail.");
+                            inputMode = ENC_RETRY;
+                        }
+                        else { 
+                            SetCursorPos(6, 17);
+                            print("OK!! You gain experience and 1 hit point.");
+                            Libby.hpMax++;
+                            EraseCombat();
+                            DrawLibby();
+                            //inputWait = 100;
+                            CPUWAIT(500);
+                            inputMode = EXPLORING;
+                            for(g = 15; g < 20; g++)
+                                TextRowCopy(0, g);
+                           
+                            PrintExploreUI(1);
+                            savedKey = 0;
+                            
+                        }
+                    }
+                }
             }
-        }
+            else if(inputMode == ENC_CONTINUE)
+            {
+                if((currentEncounter->encounterSpr == &chest[0]) \
+                    && (currentEncounter->stats[0] == 0))
+                {
+                    //heal?
+                    Libby.hp += currentEncounter->damage[1];
+                    if(Libby.hp > Libby.hpMax)
+                        Libby.hp = Libby.hpMax;
+                }
+                if(lastKey == Confirm)
+                {
+                    inputWait = 30;
+                    // clear text
+                    for(u8 g = 15; g < 20; g++)
+                        TextRowCopy(0, g);
+                    PrintExploreUI(1);
+                    inputMode = EXPLORING;
+                }
+            }
+        } // end input loop
+
         // Main Loop
         // modify seed 
         if(inputWait > 0)
             inputWait--;
         lastKey = -1;
         RANDOMSEED += rand();
-        s16 s = roll(3, 6, -3);
-        SetCursorPos(0, 19);
-        print(byToHex((u8)s));
-        randnum = (targetHex.x << 4) | targetHex.y;
         
         // return 
         IRQ_ON 
@@ -509,7 +678,7 @@ void Vblank() __critical __interrupt
         //restore bg buffer
         ALUCopyIn(TEMPGVR_SPRITE_0, GVRAM_BASE+(player_pos.y*80)+player_pos.x, 4, 24);
         // adjust pos 
-        revealedMap[(player_hex_pos.y*8)+player_hex_pos.x] = 0;
+        revealedMap[(player_hex_pos.y*8)+player_hex_pos.x] = 2;
         player_hex_pos.x = targetHex.x;
         player_hex_pos.y = targetHex.y;
         SetPlayerPosByGrid(player_hex_pos.x, player_hex_pos.y);
@@ -525,17 +694,6 @@ void Vblank() __critical __interrupt
 
         playerMoved = false;
     }
-    
-    // PRINT IDLE COUNTS
-    //SetCursorPos(0, 0);
-    //u8* d = byToHex((u8)(idleCount >> 8)); 
-    //print(d);
-    //u8* d2 = byToHex((u8)(idleCount & 0xff));
-    //print(d2);
-    //SetCursorPos(0, 19);
-    //res = byToHex(randnum & 0xff);
-    //print(res);
-    
     
     idleCount = 0;
 

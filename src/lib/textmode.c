@@ -10,6 +10,7 @@ u8 LINE_POINTER;
 
 inline void putchr(u8 c)
 {
+    
     *SCREEN_POINTER = c;
     SCREEN_POINTER++;
     LINE_POINTER++;
@@ -109,6 +110,34 @@ u8* byToHex(u8 by)
     b += 0x30;
     BYTOHEXWORK[0] = b; BYTOHEXWORK[1] = a; BYTOHEXWORK[2] = 0;
     return &BYTOHEXWORK[0];
+}
+static u8 BYTODECWORK[4] = "   ";
+u8* byToDec(u8 by)
+{
+    u8 a = by;
+    u8 d = 0;
+    while(a >= 100)
+    {
+        a -= 100;
+        d += 1;
+    }
+    if(d > 0)
+        BYTODECWORK[0] = (d | 0x30);
+    else 
+        BYTODECWORK[0] = ' ';
+    d = 0;
+    while(a >= 10)
+    {
+        a -= 10;
+        d += 1;
+    }
+    if(d > 0)
+        BYTODECWORK[1] = (d | 0x30);
+    else 
+        BYTODECWORK[1] = ' ';
+    BYTODECWORK[2] = (a | 0x30);
+    BYTODECWORK[3] = 0;
+    return &BYTODECWORK[0];
 }
 
 // 3127 bytes, 0x78 per

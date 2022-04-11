@@ -1,10 +1,5 @@
-// TRAP EXAMPLES
-// string descriptor 
-// what stats it targets, tgt val
-// how much damage it will do 
-// 5 GS
-// 5 GB
-// 5 SB
+// encounters.c
+
 
 typedef struct encounter { 
     const char* desc;
@@ -136,43 +131,27 @@ hidden beneath some natural brush. After\n\
 confirming it is empty, you search it thoroughly,\n\
 but find nothing...  (Press a key.)";
 
-// roll 1d20
-// 1-3  : heal 1, 3, 5
-// 4-8  : GS
-// 9-13 : GB
-// 14-18: SB
-// 19-20: MISS
-
-//GUN SPEED BOOK
-// e.g. 
-// All stat checks are 2d6. 
-// Result(Gun/Speed/Book): 4
-// Failed!
-//  Use effort? (Remaining: n)
-// 1 Yes   2 No (Fail)
-// NG! You take damage: 2 
-// OK! You got away safely. 
 
 //HEALS
 const Encounter heal1 = { \
     {(const char*)&desc01[0]},
     {0, 0},
     {0, 0},
-    {0, 0},
+    {0, 1},
     {(const char*)&chest[0]}
 };
 const Encounter heal3 = { \
     {(const char*)&desc02[0]},
     {0, 0},
     {0, 0},
-    {0, 0},
+    {0, 3},
     {(const char*)&chest[0]}
 };
 const Encounter heal5 = { \
     {(const char*)&desc03[0]},
     {0, 0},
     {0, 0},
-    {0, 0},
+    {0, 5},
     {(const char*)&chest[0]}
 };
 const Encounter blank1 = {\
@@ -194,36 +173,36 @@ const Encounter blank2 = {\
 const Encounter gs_boar = {\
     {&desc04[0]},
     {GUN,  SPEED},
-    {8,    6},
-    {2,    2},
+    {9,    7},
+    {3,    3},
     {(const char*)&roboboar[0]}
 };
 const Encounter gs_drone = {\
     {&desc05[0]},
     {GUN,  SPEED},
-    {7,    5},
-    {1,    2},
+    {8,    6},
+    {2,    3},
     {(const char*)&drone[0]}
 };
 const Encounter gs_soldier = {\
     {&desc06[0]},
     {GUN,  SPEED},
-    {9,    6},
-    {2,    3},
+    {10,    7},
+    {3,    4},
     {(const char*)&enemy1[0]}
 };
 const Encounter gs_mine = {\
     {&desc07[0]},
     {GUN,  SPEED},
-    {6,    6},
-    {3,    3},
+    {8,    8},
+    {4,    4},
     {(const char*)0}
 };
 const Encounter gs_roper = {\
     {&desc08[0]},
     {GUN,  SPEED},
-    {9,    8},
-    {4,    3},
+    {9,    10},
+    {5,   4},
     {(const char*)&roper[0]}
 };
 
@@ -232,36 +211,36 @@ const Encounter gs_roper = {\
 const Encounter gb_boar = {\
     {&desc09[0]},
     {GUN,  BOOK},
-    {8,    9},
-    {2,    2},
+    {9,    9},
+    {3,    3},
     {&roboboar[0]}
 };
 const Encounter gb_drone = {\
     {&desc10[0]},
     {GUN,  BOOK},
-    {8,    5},
-    {1,    2},
+    {9,    8},
+    {2,    3},
     {&drone[0]}
 };
 const Encounter gb_soldier = {\
     {&desc11[0]},
     {GUN,  BOOK},
-    {9,    6},
-    {2,    4},
+    {10,    7},
+    {3,    5},
     {&enemy1[0]}
 };
 const Encounter gb_roper = {\
     {&desc12[0]},
     {GUN,  BOOK},
-    {8,    7},
-    {2,    3},
+    {10,    9},
+    {3,    4},
     {&roper[0]}
 };
 const Encounter gb_blank = {\
     {&desc13[0]},
     {GUN,  BOOK},
-    {6,    9},
-    {3,    4},
+    {8,    11},
+    {4,    5},
     {0}
 };
 
@@ -271,61 +250,39 @@ const Encounter gb_blank = {\
 const Encounter bs_blank = {\
     {&desc14[0]},
     {SPEED,  BOOK},
-    {8,    9},
-    {2,    2},
+    {9,    10},
+    {3,    3},
     {0}
 };
 const Encounter bs_chest = {\
     {&desc15[0]},
     {SPEED,  BOOK},
-    {8,    5},
-    {1,    2},
+    {9,    7},
+    {2,    3},
     {&chest[0]}
 };
 const Encounter bs_drone = {\
     {&desc16[0]},
     {SPEED,  BOOK},
-    {9,    5},
-    {1,    3},
+    {10,    6},
+    {2,    4},
     {&drone[0]}
 };
 const Encounter bs_roper = {\
     {&desc17[0]},
     {SPEED,  BOOK},
-    {10,    6},
-    {2,    3},
+    {10,    7},
+    {3,    4},
     {&roper[0]}
 };
 const Encounter bs_soldier = {\
     {&desc18[0]},
     {SPEED,  BOOK},
-    {8,    10},
-    {4,    2},
+    {8,    11},
+    {5,    3},
     {&enemy1[0]}
 };
 
 
-Encounter* map1_encounters[16];
-/* = {
-    (Encounter*)&heal1, (Encounter*)&heal1, (Encounter*)&heal5,
-    (Encounter*)&gs_boar, (Encounter*)&gs_drone, (Encounter*)&gs_soldier, 
-    (Encounter*)&gb_boar, (Encounter*)&gb_drone, (Encounter*)&gb_soldier, 
-    (Encounter*)&bs_blank, (Encounter*)&bs_chest, (Encounter*)&bs_drone,
-    (Encounter*)&blank1, (Encounter*)&blank2, (Encounter*)&blank1, (Encounter*)&blank2 
-};*/
+Encounter* map_encounters[16];
 
-const Encounter* map2_encounters[16] = {
-    &heal1, &heal3, &heal5,
-    &gs_mine, &gs_drone, &gs_soldier, 
-    &gb_boar, &gb_roper, &gb_drone, &gb_soldier, 
-    &bs_roper, &bs_chest, &bs_drone,
-    &blank1, &blank2, &blank1
-};
-
-const Encounter* map3_encounters[16] = {
-    &heal3, &heal3, &heal5,
-    &gs_mine, &gs_roper, &gs_soldier, 
-    &gb_drone, &gb_roper, &gb_blank, &gb_soldier, 
-    &bs_chest, &bs_roper, &bs_soldier, &bs_drone,
-    &blank1, &blank2 
-};

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.8" tiledversion="1.8.2" orientation="hexagonal" renderorder="right-down" width="8" height="8" tilewidth="64" tileheight="48" infinite="0" hexsidelength="24" staggeraxis="y" staggerindex="odd" nextlayerid="2" nextobjectid="1">
+ <editorsettings>
+  <export target="map1.csv" format="csv"/>
+ </editorsettings>
+ <tileset firstgid="1" source="../res/rpj4-tiles.tsx"/>
+ <layer id="1" name="Tile Layer 1" width="8" height="8">
+  <data encoding="csv">
+2,2,2,3,2,2,2,2,
+3,2,3,3,3,3,4,2,
+2,3,4,3,3,3,3,2,
+3,2,3,3,3,3,2,3,
+2,3,2,3,3,3,3,2,
+2,3,3,3,3,3,2,2,
+2,2,3,3,3,3,4,2,
+3,2,2,2,2,2,3,2
+</data>
+ </layer>
+</map>

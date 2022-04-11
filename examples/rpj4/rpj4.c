@@ -87,6 +87,7 @@ void BufferInput()
     switch(inputMode)
     {
         case(INTRO):
+        case(ENC_CONTINUE):
         case(EXPLORING):
             if(GetKeyDown(KB_PAD9))
                 lastKey = UpRight;
@@ -120,6 +121,12 @@ void BufferInput()
                 lastKey = Speed;
             if(GetKeyDown(KB_B))
                 lastKey = Book;
+            break;
+        case(ENC_RETRY):
+            if(GetKeyDown(KB_Y))
+                lastKey = Yes;
+            if(GetKeyDown(KB_N))
+                lastKey = No;
             break;
         default:
             lastKey = -1;
@@ -224,52 +231,210 @@ void DrawAreaAroundPlayer()
 {
     s8 i;
     i = player_hex_pos.x;
-    DrawHexTile(i-1, player_hex_pos.y, map1[(player_hex_pos.y*8)+i-1]);
-    DrawHexTile(i, player_hex_pos.y, map1[(player_hex_pos.y*8)+i]);
-    DrawHexTile(i+1, player_hex_pos.y, map1[(player_hex_pos.y*8)+i+1]);
+    u8* mapp = &map1[0];
+    if(currentMap == 2)
+        mapp += 64;
+    else if(currentMap == 3)
+        mapp += 128;
+    DrawHexTile(i-1, player_hex_pos.y, *(u8*)((u16)mapp + (player_hex_pos.y*8)+i-1));
+    DrawHexTile(i, player_hex_pos.y, *(u8*)((u16)mapp + (player_hex_pos.y*8)+i));
+    DrawHexTile(i+1, player_hex_pos.y,*(u8*)((u16)mapp + (player_hex_pos.y*8)+i+1));
     i = player_hex_pos.x-1;
     if(player_hex_pos.y % 2 == 0) //even - go up and -1
     {
-        DrawHexTile(i, player_hex_pos.y-1, map1[(player_hex_pos.y*8)+i-8]);
+        DrawHexTile(i, player_hex_pos.y-1, *(u8*)((u16)mapp + (player_hex_pos.y*8)+i-8));
         i++;
-        DrawHexTile(i, player_hex_pos.y-1, map1[(player_hex_pos.y*8)+i-8]);
+        DrawHexTile(i, player_hex_pos.y-1, *(u8*)((u16)mapp + (player_hex_pos.y*8)+i-8));
         i = player_hex_pos.x-1;    
-        DrawHexTile(i, player_hex_pos.y+1, map1[(player_hex_pos.y*8)+i+8]);
+        DrawHexTile(i, player_hex_pos.y+1, *(u8*)((u16)mapp + (player_hex_pos.y*8)+i+8));
         i++;
-        DrawHexTile(i, player_hex_pos.y+1, map1[(player_hex_pos.y*8)+i+8]);
+        DrawHexTile(i, player_hex_pos.y+1, *(u8*)((u16)mapp + (player_hex_pos.y*8)+i+8));
         
     } else { //odd - go up and +1
         i++;
-        DrawHexTile(i, player_hex_pos.y-1, map1[(player_hex_pos.y*8)+i-8]);
+        DrawHexTile(i, player_hex_pos.y-1, *(u8*)((u16)mapp + (player_hex_pos.y*8)+i-8));
         i++;
-        DrawHexTile(i, player_hex_pos.y-1, map1[(player_hex_pos.y*8)+i-8]);
+        DrawHexTile(i, player_hex_pos.y-1, *(u8*)((u16)mapp + (player_hex_pos.y*8)+i-8));
         i = player_hex_pos.x;    
-        DrawHexTile(i, player_hex_pos.y+1, map1[(player_hex_pos.y*8)+i+8]);
+        DrawHexTile(i, player_hex_pos.y+1, *(u8*)((u16)mapp + (player_hex_pos.y*8)+i+8));
         i++;
-        DrawHexTile(i, player_hex_pos.y+1, map1[(player_hex_pos.y*8)+i+8]);
+        DrawHexTile(i, player_hex_pos.y+1, *(u8*)((u16)mapp + (player_hex_pos.y*8)+i+8));
         
     }
     
 }
 
-void PrintExploreUI()
+void PrintExploreUI(u8 full)
 {
-    SetCursorPos(75, 4);
-    print("2/2");
-    SetCursorPos(75, 6);
-    print("2/2");
-    SetCursorPos(75, 8);
-    print("2/2");
-    SetCursorPos(75, 12);
-    print("10/10");
+    SetCursorPos(73, 3);
+    print(byToDec(Libby.gun));
+    print("/");
+    SetCursorPos(74, 4);
+    print(byToDec(Libby.gunMax));
+
+    SetCursorPos(73, 5);
+    print(byToDec(Libby.speed));
+    print("/");
+    SetCursorPos(74, 6);
+    print(byToDec(Libby.speedMax));
+
+    SetCursorPos(73, 7);
+    print(byToDec(Libby.book));
+    print("/");
+    SetCursorPos(74, 8);
+    print(byToDec(Libby.bookMax));
+
+    SetCursorPos(73, 12);
+    print(byToDec(Libby.hp));
+    print("/");
+    SetCursorPos(74, 13);
+    print(byToDec(Libby.hpMax));
+
     SetCursorPos(30,19);
     print("           ");
     SetCursorPos(5,16);
-
-    //print("ENCOUNTER!\n\n   A wild RoboBoar crashes through the brush!");
-    print("[7   9]\n");
-    // explore mode
-    print("[4   6]  Move      [5]  Search\n"); 
-    print("[1   3]         [0]     Camp");
+    if(full){
+        //print("ENCOUNTER!\n\n   A wild RoboBoar crashes through the brush!");
+        print("[7   9]\n");
+        // explore mode
+        print("[4   6]  Move      [5]  Search\n"); 
+        print("[1   3]         ");//[0]     Camp");
+    }
     
+}
+
+
+void LoadMap(u8 map)
+{
+    // roll 3d6
+    //currentMap = 1;
+    if(map == 1){
+        map_encounters[0] = &heal1;
+        map_encounters[1] = &heal1;
+        map_encounters[2] = &heal5;
+
+        map_encounters[3] = &gs_boar;
+        map_encounters[4] = &gs_drone;
+        map_encounters[5] = &gs_soldier;
+        
+        map_encounters[6] = &gb_boar;
+        map_encounters[7] = &gb_drone;
+        map_encounters[8] = &gb_soldier;
+        
+        map_encounters[9] = &bs_blank;
+        map_encounters[10] = &bs_chest;
+        map_encounters[11] = &bs_drone;
+
+        map_encounters[12] = &blank1;
+        map_encounters[13] = &blank2;
+        map_encounters[14] = &blank1;
+        map_encounters[15] = &blank2;
+        
+        maprelic[0].x = 6;
+        maprelic[0].y = 5;
+        
+        mapexit[0].x = 4;
+        mapexit[0].y = 1;
+    }
+    else if(map == 2)
+    {
+        map_encounters[0] = &heal1;
+        map_encounters[1] = &heal3;
+        map_encounters[2] = &heal5;
+
+        map_encounters[3] = &gs_mine;
+        map_encounters[4] = &gs_drone;
+        map_encounters[5] = &gs_soldier;
+        
+        map_encounters[6] = &gb_boar;
+        map_encounters[7] = &gb_drone;
+        map_encounters[8] = &gb_soldier;
+        map_encounters[9] = &gb_roper;
+
+        map_encounters[10] = &bs_roper;
+        map_encounters[11] = &bs_chest;
+        map_encounters[12] = &bs_drone;
+
+        map_encounters[13] = &blank1;
+        map_encounters[14] = &blank2;
+        map_encounters[15] = &blank1;
+        
+        maprelic[1].x = 6;
+        maprelic[1].y = 6;
+        
+        mapexit[1].x = 2;
+        mapexit[1].y = 2;
+    }  
+    else if(map == 3)
+    {
+        map_encounters[0] = &heal3;
+        map_encounters[1] = &heal3;
+        map_encounters[2] = &heal5;
+
+        map_encounters[3] = &gs_mine;
+        map_encounters[4] = &gs_roper;
+        map_encounters[5] = &gs_soldier;
+        
+        map_encounters[6] = &gb_roper;
+        map_encounters[7] = &gb_blank;
+        map_encounters[8] = &gb_drone;
+        map_encounters[9] = &gb_soldier;
+        
+        map_encounters[10] = &bs_roper;
+        map_encounters[11] = &bs_chest;
+        map_encounters[12] = &bs_drone;
+        map_encounters[13] = &bs_soldier;
+
+
+        map_encounters[14] = &blank1;
+        map_encounters[15] = &blank2;
+        
+        maprelic[2].x = 0;
+        maprelic[2].y = 0;
+        
+        mapexit[2].x = 7;
+        mapexit[2].y = 7;
+    }
+
+}
+
+void BeginEncounter(u8 encNo)
+{
+    Encounter* enc = map_encounters[encNo];
+    currentEncounter = enc;
+
+    TextRowCopy(0, 15);
+    TextRowCopy(0, 16);
+    TextRowCopy(0, 17);
+    TextRowCopy(0, 18);
+    TextRowCopy(0, 19);
+    
+    SetCursorPos(33, 15);
+    print("--ENCOUNTER--");
+    
+    SetCursorPos(1, 16);
+    print(enc->desc);
+    //print(map1_encounters[0]->desc);
+
+    ExpandedGVRAM_On();     
+    EnableALU(1);
+    // draw deck
+    DrawImage_V2(53, 162, &deck[0], 8, 38);
+    DrawImage_V2(67, 162, &deck[0], 8, 38);
+    // draw player/enemy
+    if(enc->encounterSpr != NULL)
+        DrawTransparentImage_V2(68, 154, enc->encounterSpr, 4, 24);
+    DrawTransparentImage_V2(55, 154, &librarianSprite[0], 4, 24);
+    // erase sprite
+    ExpandedGVRAM_Copy_On();
+    //ALUCopyIn(TEMPGVR_SPRITE_0, GVRAM_BASE+(150*80)+54, 4, 24); // tempgvr 0 = background of players tile
+    ALUCopyIn(TEMPGVR_SPRITE_0, GVRAM_BASE+(player_pos.y*80)+player_pos.x, 4, 24);
+    
+    ExpandedGVRAM_Off();     
+    DisableALU(0);
+
+    inputMode = ENC_SELECT;
+    if(enc->stats[0] == 0)
+        if(enc->stats[1] == 0)
+            inputMode = ENC_CONTINUE;
 }
