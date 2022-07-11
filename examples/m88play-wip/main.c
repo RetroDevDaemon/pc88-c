@@ -3,6 +3,15 @@
 
 #include "song_b.h"
 
+/* 
+*
+* M88 FORMAT PLAYER (OPN ONLY)
+*    Heavily WIP! 大変作成中！
+*
+*   I need testers and composers willing to help test their compositions
+*   and give feedback. Right now it's functional, but not perfect.
+*/
+
 inline void SetIRQs()
 {
     SetIOReg(IRQ_LEVEL_SET, 2);
