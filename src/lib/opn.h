@@ -391,6 +391,8 @@ static const u16 octavesix[12] = {
     SSGTONE_B6
 };
 
+#include "opn.c"
+
 #endif 
 /*! @} */
 

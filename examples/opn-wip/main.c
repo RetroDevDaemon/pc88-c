@@ -1,4 +1,5 @@
 #include <pc88-c.h>
+#include <opn.h>
 
 #include "song_b.h"
 
@@ -25,7 +26,7 @@ void main()
     playingSong = false;
     
     // Set up currentSong pointers
-    LoadSong(&song[0], 150);
+    LoadSong(&song[0]);
     playingSong = true;
     ticker = 0;
 

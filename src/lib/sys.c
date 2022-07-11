@@ -75,7 +75,7 @@ u16 GetSysMode()
 {
     //u32 modestr = 0x12345678;
               //     D E H L
-    return ReadIOReg(0x31) * 256 | ReadIOReg(0x6e);
+    return (ReadIOReg(0x31) << 8) | ReadIOReg(0x6e);
     
 }
 

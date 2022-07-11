@@ -1,4 +1,5 @@
 #include <pc88-c.h>
+#include <opn.h>
 //#include "math.h"
 
 enum directions { UP, DOWN, LEFT, RIGHT };

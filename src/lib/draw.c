@@ -310,6 +310,8 @@ SetCursor:
 	out			($50),a					;CRTC: パラメータ2 ROW POS(0-)
 	ret
 **/
+/*
+FIXME
 
 void SetMonitor(u8 khz, u8 rows)
 {
@@ -393,7 +395,7 @@ void SetMonitor(u8 khz, u8 rows)
 
 }
 
-
+*/
 void DrawTransparentImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h)
 {
     u8 tran = img[0] >> 4; //first pixel is always transparent

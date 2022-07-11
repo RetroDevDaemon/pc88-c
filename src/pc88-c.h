@@ -29,6 +29,7 @@ typedef unsigned long u32;
 typedef signed long s32;
 typedef unsigned long long u64;
 typedef signed long long s64;
+
 #define true 1
 #define false 0
 #define bit(n) (1 << n)
@@ -36,7 +37,17 @@ typedef signed long long s64;
 #define NULL null 
 
 typedef signed int fix_16s;
-#define FIXED16(n) ((fix_16s)((n) << 8))
+#define FIXED16(n) ((fix_16s)((n) * 256))/*<< 8))*/
+typedef unsigned int fix_16;
+#define FIXED16U(n) ((fix_16)((n) * 256))/*<< 8))*/
+typedef signed long fix_32s;
+#define FIXED32(n) ((fix_32s)((n) * 256*256))/*<< 16))*/
+typedef unsigned long fix_32;
+#define FIXED32U(n) ((fix_32)((n) * 256*256))/*<< 16))*/
+//typedef signed long long fix_64s;
+//#define FIXED64(n) ((fix_64s)((n) << 32))
+//typedef unsigned long long fix_64;
+//#define FIXED64U(n) ((fix_64)((n) << 32))
 
 ///pb
 /** PlanarBitmap
@@ -206,8 +217,8 @@ void ALUCopyOut(vu8* src, vu8* dst, u8 w, u16 h);
  * vram into screen-visible vram.
 */
 void ALUCopyIn(vu8* src, vu8* dst, u8 w, u16 h);
-// OPN
-#include "opn.h"
+
+// opn.h is included on a project-by-project basis
 
 /// SYS
 ///;bit7:0=8MHz 1=4MHz (FH以降)
@@ -220,6 +231,8 @@ u8 GetN88Rom();
 u16 GetSysMode();
 
 // MATH
+
+
 u8 abs(s8 n);
 u16 abs16(s16 n);
 u8 rand();

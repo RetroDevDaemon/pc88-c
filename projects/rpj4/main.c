@@ -6,6 +6,7 @@
 
 
 #include <pc88-c.h>
+#include <opn.h>
 
 #include "song_b.h"
 #include "sprites.h"

@@ -66,9 +66,9 @@ PC88CFILES=out/crt0.rel \
 	out/draw.rel \
 	out/textmode.rel \
 	out/beep.rel \
-	out/opn.rel \
 	out/vram_util.rel \
 	out/sys.rel
+#	out/opn.rel ; OPTIONAL, include opn.h
 #PC88CFILES=out/crt0.rel out/ioreg.rel out/textmode.rel out/sys.rel
 
 

@@ -1,4 +1,5 @@
 #include <pc88-c.h>
+#include <opn.h>
 
 void VGMPlayer() __naked; 
 void Vblank() __critical __interrupt;
