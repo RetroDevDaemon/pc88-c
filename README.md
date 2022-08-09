@@ -1,4 +1,4 @@
-# PC88-C (0.2)
+# PC88-C (0.2.1)
 
 # Overview 
 A very minimal framework for PC88 development using C. <br> 
@@ -27,25 +27,57 @@ Manual part 1, overview: https://barelyconsciousgames.blogspot.com/2021/02/pc-88
 Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/pc88-c-frame-for-nec-pc-8801-part-2.html <br> 
 
 ## What's new
+0.2.1<br>
+- Refactored text, draw, and beep code to be modular (e.g. #include <textmode.h>) like opn lib. Double check your includes!
+```
+beeper.h
+void beep(u8 length, u16 tone) __naked;
+
+draw.h
+void SetMonitor(u8 khz, u8 rows);
+void DrawTransparentImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h);
+void DrawImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h);
+void DrawPlaneBMP(const u8* img, u8 plane, u16 x, u16 y, u8 w, u8 h);
+void SetPixel(u16 x, u8 y, u8 c);
+inline void EnableALU(u8 fastmem);
+inline void DisableALU(u8 fastmem);
+inline void ExpandedGVRAM_On();
+inline void ExpandedGVRAM_Off();
+inline void CRT_OFF();
+inline void CRT_ON();
+
+opn.h
+void FMNoteOff(u8 chn);
+void FMNoteOn(u8 chn, u16 tone, u8 oct);
+void PlaySong();
+void LoadSong(const u8* song);
+u8* ProcessFM(u8 chn, u8* songby_ptr);//, M88Data* songdat);
+u8* MSetFlag(u8 chn, u8* songby_ptr);
+void SetSSGInstrument(u8 chn, u8 instr);
+void SetOPNBatch(u8 nextreg, u8* regby);
+void SetFMInstrument(u8 chn, Instrument* ins);
+u8* MStartLoop(u8 chn, u8* songby_ptr);//, M88Data* songdat);
+u8* MEndLoop(u8 chn, u8* songby_ptr);
+u8* SSGSetVolume(u8 chn, u8* sb);
+u8* SSGPlayNote(u8 chn, u8* sb);
+u8* FMSetVolume(u8 chn, u8* sb);
+u8* FMPlayNote(u8 chn, u8* sb);
+void LoadFMInstruments(u8 num_ins, Instrument* instrument_start);
+void SetTempo(u16 t);
+
+textmode.h
+void SetTextAttribute(u8 x, u8 y, u8 attr);
+void ClearAttributeRam();
+void SetCursorPos(u8 x, u8 y);
+void SetCursorPos40(u8 x, u8 y);
+u8* byToHex(u8 by);
+u8* byToDec(u8 by);
+void TextRowCopy(u8 src, u8 dst);
+void CLS();
+```
 0.2<br>
 - Updated naked functions to be compatible with SDCC 4.2.0 calling convention (small speedup)<br>
 - Added bytecomp tool <br>
-
-0.1.5<br>
-- Fixed ClearAttributeRam() not clearing all attributes
-- Added CLS() to clear text only
-- Clarified certain functions
-- Bugfixes for OPN channel 1-3 playback
-- Inter-VRAM copy functions (limited use)
-- Note: M88 player is using inaccurate tempo! (non-IRQ based)
-- Note: Check `examples/rpj4` for use of new functions
-
-0.1.4<br>
-- Added CRT controls with SetMonitor() [bugged - careful!]<br>
-- Added limited channel A,B,C M88 support<br>
-- Added DrawImage_V2() and DrawTransparentImage_V2() methods<br>
-- Changed Enable_ALU() and Disable_ALU() to require FASTMEM param<br>
-- Various tweaks and fixes<br>
 
 <hr>
 
@@ -113,6 +145,22 @@ If properly made/installed, the normal make command should work :)<br>
 <br>
 
 ## Revision history
+
+0.1.5<br>
+- Fixed ClearAttributeRam() not clearing all attributes
+- Added CLS() to clear text only
+- Clarified certain functions
+- Bugfixes for OPN channel 1-3 playback
+- Inter-VRAM copy functions (limited use)
+- Note: M88 player is using inaccurate tempo! (non-IRQ based)
+- Note: Check `examples/rpj4` for use of new functions
+
+0.1.4<br>
+- Added CRT controls with SetMonitor() [bugged - careful!]<br>
+- Added limited channel A,B,C M88 support<br>
+- Added DrawImage_V2() and DrawTransparentImage_V2() methods<br>
+- Changed Enable_ALU() and Disable_ALU() to require FASTMEM param<br>
+- Various tweaks and fixes<br>
 
 0.1.3<br>
 - Added limited VGM player and YM conversion tool<br>
