@@ -71,6 +71,7 @@ void RunIntro()
     }
     
     SKIPINTRO:
+   
 }
 
 void ConfigIntro()

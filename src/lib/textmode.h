@@ -21,7 +21,7 @@ u8* byToHex(u8 by);
 u8* byToDec(u8 by);
 
 /*! Moves a row of text from row src to row dst (0-24)*/
-inline void TextRowCopy(u8 src, u8 dst);
+void TextRowCopy(u8 src, u8 dst);
 
 /*! Sets entire 80x25 text screen to 0x20 (' ')
  *  Note - you will still need to ClearAttributeRam()

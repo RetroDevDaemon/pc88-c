@@ -144,7 +144,7 @@ u8* byToDec(u8 by)
 // 0xf3c8 + (120*6)
 extern u16 local_a;
 extern u16 local_b;
-inline void TextRowCopy(u8 src, u8 dst)
+void TextRowCopy(u8 src, u8 dst)
 { // 0 to 20
     local_a = 0xf3c8 + (0x78 * src);
     local_b = 0xf3c8 + (0x78 * dst);
@@ -153,14 +153,14 @@ inline void TextRowCopy(u8 src, u8 dst)
     ; wipe the dst row, kinda slow
         ld de,(_local_b)
         ld bc,#80
-    $00177:
+    .trc1:
         ld a,#0x20
         ld (de),a 
         inc de 
         dec bc 
         ld a,b 
         or c 
-        jr nz,$00177
+        jr nz, .trc1
     
     ; fast copy 
         ld hl,(_local_a)
@@ -171,14 +171,14 @@ inline void TextRowCopy(u8 src, u8 dst)
     ; wipe the src row 
         ld de,(_local_a)
         ld bc,#80
-    $00178:
+    .trc2:
         ld a,#0x20
         ld (de),a 
         inc de 
         dec bc 
         ld a,b 
         or c 
-        jr nz,$00178
+        jr nz, .trc2
     
     __endasm;
 
@@ -190,22 +190,22 @@ void CLS()
     __asm 
         ld hl,#0xf3c8-40
         ld c,#25    ; 25 rows of text
-    $00142:
+    .cls1:
         ld de,#40   ; 40 bytes in between rows 
         add hl,de 
         ld b,#80    ; 80 chars per row 
-    $00143:
+    .cls2:
         ld a,#' '
         ld (hl),a 
         inc hl 
         dec b 
         ld a,b 
         cp #0
-        jr nz,$00143
+        jr nz,.cls2
         dec c 
         ld a,c 
         cp #0 
-        jr nz,$00142
+        jr nz,.cls1
     __endasm;
 }
 /*! @} */

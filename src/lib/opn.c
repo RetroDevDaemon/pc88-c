@@ -53,6 +53,7 @@
 struct Song currentSong;
 fix_16s ticker;
 bool playingSong;
+u16 SONG_TEMPO;
 
 // TODO: Prolly wont implement this
 void SetSSGInstrument(u8 chn, u8 instr)
@@ -98,6 +99,12 @@ void SetFMInstrument(u8 chn, Instrument* ins)
     regby = (u16)ins + 3;
     SetOPNBatch(nextreg, regby);
     
+}
+
+
+void SetTempo(u16 tempo)
+{
+    SONG_TEMPO = tempo;
 }
 
 fix_16s realTempo;
@@ -523,7 +530,7 @@ void PlaySong()
         
     }
     // Use this for tempo-exact timing!
-    ticker += FIXED16(60);
+    ticker += FIXED16(SONG_TEMPO);
     if(ticker >= realTempo)
     {
         

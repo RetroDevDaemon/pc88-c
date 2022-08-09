@@ -284,5 +284,4 @@ const Encounter bs_soldier = {\
 };
 
 
-Encounter* map_encounters[16];
 

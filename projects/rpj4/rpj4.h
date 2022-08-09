@@ -434,7 +434,9 @@ void BeginEncounter(u8 encNo)
     DisableALU(0);
 
     inputMode = ENC_SELECT;
-    if(enc->stats[0] == 0)
-        if(enc->stats[1] == 0)
+    if(enc->stats[0] == 0){
+        if(enc->stats[1] == 0){
             inputMode = ENC_CONTINUE;
+        }
+    }
 }
