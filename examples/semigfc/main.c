@@ -1,5 +1,6 @@
 
 #include <pc88-c.h>
+#include <textmode.h>
 
 void main()
 {   

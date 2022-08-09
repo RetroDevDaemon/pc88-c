@@ -1,6 +1,9 @@
 #include <pc88-c.h>
-#include <opn.h>
+//#include <opn.h>
 //#include "math.h"
+#include <draw.h>
+#include <beeper.h>
+#include <textmode.h>
 
 enum directions { UP, DOWN, LEFT, RIGHT };
 

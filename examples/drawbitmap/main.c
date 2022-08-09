@@ -1,5 +1,6 @@
 
 #include <pc88-c.h>
+#include <draw.h>
 
 #include "img_b.h"
 #include "img_r.h"

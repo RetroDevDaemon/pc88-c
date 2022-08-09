@@ -179,6 +179,8 @@ u8* FMSetVolume(u8 chn, u8* sb);
 u8* FMPlayNote(u8 chn, u8* sb);
 void LoadFMInstruments(u8 num_ins, Instrument* instrument_start);
 
+void SetTempo(u16 t);
+
 /// SSG Period inputs:
 //3993600 / (65.41 * 32)
 

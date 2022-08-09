@@ -1,4 +1,5 @@
 #include <pc88-c.h>
+#include <textmode.h>
 
 u8 stringbuf[32];
 

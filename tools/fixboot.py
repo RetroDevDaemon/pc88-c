@@ -2,7 +2,10 @@
 import re 
 import sys
 
-f = open('out/main.map', 'r')
+# usage:
+# $ python3 ./fixboot.py out/main.map src/ipl.bin
+
+f = open(sys.argv[1],'r') #'out/main.map', 'r')
 s = []
 tr = ' '
 while tr != '':
@@ -19,14 +22,14 @@ while i < len(s):
 ll = q[0][6:]
 hh = q[0][4:6]
 
-f = open(sys.argv[1], 'rb')
+f = open(sys.argv[2], 'rb')
 ib = bytearray(f.read())
 f.close()
 
 ib[0x38] = int(ll,16)
 ib[0x39] = int(hh,16) 
 
-f = open(sys.argv[1], 'wb')
+f = open(sys.argv[2], 'wb')
 f.write(ib)
 f.close()
 

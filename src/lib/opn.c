@@ -53,6 +53,7 @@
 struct Song currentSong;
 fix_16s ticker;
 bool playingSong;
+u16 SONG_TEMPO;
 
 // TODO: Prolly wont implement this
 void SetSSGInstrument(u8 chn, u8 instr)
@@ -98,6 +99,12 @@ void SetFMInstrument(u8 chn, Instrument* ins)
     regby = (u16)ins + 3;
     SetOPNBatch(nextreg, regby);
     
+}
+
+
+void SetTempo(u16 tempo)
+{
+    SONG_TEMPO = tempo;
 }
 
 fix_16s realTempo;
@@ -209,6 +216,44 @@ u8* ProcessFM(u8 chn, u8* songby_ptr)//, M88Data* songdat)
             break;
     }
     return songby_ptr;
+}
+
+void SetOPNReg(u8 r, u8 v) __naked // TESTME SDCC 
+{
+        r; v; 
+    __asm
+    ;    push ix 
+    ;    ld ix,#0
+    ;    add	ix,sp
+    //; 4 (ix) and 5 (ix) contain r and v 
+    ;    ld c, 4 (ix)
+    ;    ld b, 5 (ix) 
+    ;_OPNWait:    
+    ;    in a, (0x44)
+    ;    rlca 
+    ;    jr c, _OPNWait
+    ;    ld a, c
+    ;    out (0x44), a
+    ;    ld a, 0 (ix)
+    ;    ld a, b
+    ;    out (0x45), a 
+
+    ;    pop	ix
+    ;    ret
+
+        ld c, a 
+        ld b, l 
+    _opnwaitt:
+        in a, (0x44)
+        rlca 
+        jr c,_opnwaitt
+        ld a,c 
+        out (0x44),a 
+        ld a,b 
+        out (0x45),a 
+        ret 
+
+    __endasm;
 }
 
 u8* MStartLoop(u8 chn, u8* sb)
@@ -485,7 +530,7 @@ void PlaySong()
         
     }
     // Use this for tempo-exact timing!
-    ticker += FIXED16(60);
+    ticker += FIXED16(SONG_TEMPO);
     if(ticker >= realTempo)
     {
         

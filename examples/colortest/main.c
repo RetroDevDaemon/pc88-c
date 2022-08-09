@@ -1,6 +1,7 @@
 //
 #include <pc88-c.h>
-
+#include <draw.h>
+#include <textmode.h>
 //
 
 //

@@ -1,5 +1,5 @@
 #include <pc88-c.h>
-
+#include <textmode.h>
 
 void Vblank() __critical __interrupt;
 void ClockInterrupt() __critical __interrupt;

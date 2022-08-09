@@ -63,11 +63,11 @@ PC88CFILES=out/crt0.rel \
 	out/waitvblank.rel \
 	out/diskload.rel \
 	out/ioreg.rel \
-	out/draw.rel \
-	out/textmode.rel \
-	out/beep.rel \
 	out/vram_util.rel \
-	out/sys.rel
+	out/sys.rel 
+#	out/textmode.rel \
+#	out/beeper.rel \
+#	out/draw.rel 
 #	out/opn.rel ; OPTIONAL, include opn.h
 #PC88CFILES=out/crt0.rel out/ioreg.rel out/textmode.rel out/sys.rel
 
@@ -81,7 +81,7 @@ default: clean $(PROJECT) $(PC88CFILES)
 	$(PY) tools/maked88.py $(APPNAME)
 	$(PY) tools/hexer.py src/ipl.bin 0x2f $(USEDSEC)
 	$(CC) $(88FLAGS) $(CFLAGS) $(CMDFLAGS) $(PROJECT)/main.c out/*.rel -o out/main.ihx
-	$(PY) tools/fixboot.py src/ipl.bin
+	$(PY) tools/fixboot.py out/main.map src/ipl.bin
 	$(PY) tools/hex2bin.py out/main.ihx main.bin
 	$(PY) tools/maked88.py $(APPNAME) src/ipl.bin 0 0 1
 	$(PY) tools/maked88.py $(APPNAME) main.bin 0 0 2	

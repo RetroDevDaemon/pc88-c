@@ -1,6 +1,6 @@
 #include <pc88-c.h>
 #include <opn.h>
-
+#include <textmode.h>
 #include "song_b.h"
 
 /* 

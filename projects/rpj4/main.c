@@ -7,6 +7,8 @@
 
 #include <pc88-c.h>
 #include <opn.h>
+#include <textmode.h>
+#include <draw.h>
 
 #include "song_b.h"
 #include "sprites.h"
@@ -73,7 +75,6 @@ extern u16 RANDOMSEED;
 
 u32 idleCount;
 u8 ctr;
-u8 currentMap;
 u8 savedKey;
 
 struct tileinfo { 
@@ -142,7 +143,9 @@ void SetPlayerPosByGrid(u8 x, u8 y);
 
 #include "intro.h"
 
-#include "encounters.c"
+#include "encounters.h"
+
+Encounter* map_encounters[16];
 
 
 
@@ -177,13 +180,13 @@ void DoGameOver()
     CLS();
     box.x = 0;
     box.y = 0;
-    SETBANK_RED()
+    SETBANK_RED();
     EraseVRAMArea(&box, 79, 199);
-    SETBANK_GREEN()
+    SETBANK_GREEN();
     EraseVRAMArea(&box, 79, 199);
-    SETBANK_BLUE()
+    SETBANK_BLUE();
     EraseVRAMArea(&box, 79, 199);
-    SETBANK_MAINRAM()
+    SETBANK_MAINRAM();
     SetCursorPos(20,10);
     print("               YOU LOSE\n\n");
     print(" Libby has died before retrieving the sacred\n\n");
@@ -207,13 +210,13 @@ inline void NoEnc()
  {
         box.x = 49;
     box.y = 155;
-    SETBANK_RED()
+    SETBANK_RED();
     EraseVRAMArea(&box, 30, 44);
-    SETBANK_GREEN()
+    SETBANK_GREEN();
     EraseVRAMArea(&box, 30, 44);
-    SETBANK_BLUE()
+    SETBANK_BLUE();
     EraseVRAMArea(&box, 30, 44);
-    SETBANK_MAINRAM()
+    SETBANK_MAINRAM();
  }
 
 void DrawLibby()
@@ -230,14 +233,14 @@ void Ending()
     CLS();
     box.x = 0;
     box.y = 0;
-    SETBANK_RED()
+    SETBANK_RED();
     EraseVRAMArea(&box, 79, 199);
-    SETBANK_GREEN()
+    SETBANK_GREEN();
     EraseVRAMArea(&box, 79, 199);
-    SETBANK_BLUE()
+    SETBANK_BLUE();
     EraseVRAMArea(&box, 79, 199);
-    SETBANK_MAINRAM()
-    SetCursorPos(30,10);
+    SETBANK_MAINRAM();
+    SetCursorPos(15,8);
     print("               YOU WIN!!\n\n");
     print(" Libby has secured the forbidden artefacts\n\n");
     print("and secured this region against the Combine.\n\n");
@@ -247,9 +250,15 @@ void Ending()
     
 }
 
+bool newgame;
+u8 theCurrentMapNum;
+u8 currentMap;
+
 void main()
 {
     IRQ_OFF; 
+    newgame = true;
+    currentMap = 1;
     // clear vars
     RANDOMSEED += rand();
     ctr = 0;
@@ -261,7 +270,7 @@ void main()
     Libby.hp = 10;
     Libby.hpMax = 10;
 
-    
+    theCurrentMapNum = 1;
     //
     // Stall if not V2 mode 
     //
@@ -284,7 +293,6 @@ void main()
     inputMode = INTRO;
     ConfigIntro();
     RunIntro();
-
     currentMap = 1;
 
 LOADTHEMAP:
@@ -298,8 +306,7 @@ LOADTHEMAP:
     playingSong = false;
     ticker = 0;
 
-    if(currentMap == 4)
-        Ending();
+    
 
     for(c = 0; c < 64; c++)
         revealedMap[c] = 0;
@@ -309,8 +316,6 @@ LOADTHEMAP:
 
     CLS();
     ClearAttributeRam();
-    
-    LoadMap(currentMap);
 
     //
     // Load main game
@@ -323,6 +328,11 @@ LOADTHEMAP:
     print("Loading...");
 
     GameInit();
+
+    if(currentMap == 4)
+        Ending();
+    
+    LoadMap(currentMap);
 
     // Set up currentSong pointers
     LoadSong(&song[0]);
@@ -376,9 +386,14 @@ LOADTHEMAP:
     savedKey = 0;
     inputWait = 60;    
 
+
     IRQ_ON;
     while(1)
     { 
+        if(currentMap == 0)
+        {
+            currentMap = 1;
+        }
         // wait for 1/60 irq to finish
         while(!frameDone)
         {
@@ -445,30 +460,52 @@ LOADTHEMAP:
                          // search this tile - 10% grass, 20% forest event
                         // city - RELIC or EXIT?
                         s16 s = roll(1, 20, 0);
+
                         u8 tt;
-                        if(currentMap == 1)
+
+                        SetCursorPos(50, 18);
+                        print(byToDec(player_hex_pos.x));
+                        SetCursorPos(50, 19);
+                        print(byToDec(player_hex_pos.y));
+                        SetCursorPos(55, 18);
+                        print(byToDec(currentMap));
+
+                        if(currentMap == 1){
                             tt = map1[(player_hex_pos.y*8)+player_hex_pos.x];
-                        else if(currentMap == 2)
+                            
+                        }
+                        else if(currentMap == 2){
                             tt = map2[(player_hex_pos.y*8)+player_hex_pos.x];
-                        else if(currentMap == 3)
+                        }
+                        else if(currentMap == 3){
                             tt = map3[(player_hex_pos.y*8)+player_hex_pos.x];
+                        }
                         
+                        
+
                         if(tt == GRASS)
                         {
-                            if(s <= 2) //1 or 2?
+                                                                        
+
+                            if((u8)(s & 0xff) <= (u8)2) //1 or 2?
                             {
-                                s16 s = roll(3, 6, -3);
-                                BeginEncounter((u8)s);
+                                s16 s2 = roll(3, 6, -3);
+            
+                                BeginEncounter((u8)s2);
                             }    
                             else 
                                 NoEnc();
                         }
                         else if (tt == TREE)
                         {
-                            if(s <= 4) //20%
+                            if((u8)(s & 0xff) <= (u8)4) //20%
                             {
-                                s16 s = roll(3, 6, -3);
-                                BeginEncounter((u8)s);                         
+                                s16 s2 = roll(3, 6, -3);
+                                BeginEncounter((u8)s2);      
+                                                        
+                                SetCursorPos(50, 18);
+                                print(byToDec(s));
+                   
                             }
                             else { 
                                 NoEnc();
@@ -697,8 +734,10 @@ void Vblank() __critical __interrupt
     IRQ_OFF; 
 
     // MUSIC?
-    if(playingSong)
+    if(playingSong){
+        SetTempo(30);
         PlaySong();
+    }
     else {
         //SetCursorPos(5, 0);
         //print("OVER!");
@@ -728,6 +767,9 @@ void Vblank() __critical __interrupt
         playerMoved = false;
     }
     
+    SetCursorPos(70,19);
+    print(byToDec(currentMap));
+
     idleCount = 0;
 
     //SETBANK_MAINRAM();
@@ -741,8 +783,9 @@ void Vblank() __critical __interrupt
 s16 roll(u8 numDie, u8 sides, s8 mod)
 {
     s16 r = 0;
-    for(u8 i = 0; i < numDie; i++)
+    for(u8 i = 0; i < numDie; i++){
         r += (u8)(1 + (rand() & (sides-1))); // 0-255
+    }
     r += (u16)(mod & 0x00ff);
     return r;
 }
@@ -754,4 +797,4 @@ void CPUWAIT(u16 n)
     }
 }
 
-#include "rpj4.c"
+#include "rpj4.h"

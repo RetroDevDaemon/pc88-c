@@ -80,7 +80,7 @@ typedef struct xypos {
 
 ///////////////////////
 // PC BEEPER INFO
-#include "lib/beeper.h" 
+//#include "lib/beeper.h" 
 ///////////////////////
 
 ///////////////////////
@@ -128,24 +128,10 @@ inline void putchr(u8 c);
 void print(String str);
 /**/void print40(String str);
 
-// TEXTMODE
-/** Attributes must be set in ascending X order on each row. 
- *   Attribute #0 on each row is ALWAYS read as X=0, regardless of its actual value. 
- */
-void SetTextAttribute(u8 x, u8 y, u8 attr);
-/// Resets to the bios defaults.
-void ClearAttributeRam();       
-void SetCursorPos(u8 x, u8 y);
-/**/void SetCursorPos40(u8 x, u8 y);
-/*! Converts a single byte to ASCII numeric form */
-u8* byToHex(u8 by); 
-u8* byToDec(u8 by);
-/*! Moves a row of text from row src to row dst (0-24)*/
-inline void TextRowCopy(u8 src, u8 dst);
-/*! Sets entire 80x25 text screen to 0x20 (' ')
- *  Note - you will still need to ClearAttributeRam()
- *  to get rid of color codes.*/
-void CLS();
+void Wait_VBLANK() __naked; 
+
+//textmode
+//#include <textmode.h>
 
 // IOREGS
 u8 ReadIOReg(u8 r);
@@ -156,44 +142,17 @@ void SetOPNReg(u8 r, u8 v) __naked;
 void Vblank() __critical __interrupt;
 void ClockInterrupt() __critical __interrupt;
 
-// WAITVBLANK
-void Wait_VBLANK();
-
 // GETKEYDOWN
 bool GetKeyDown(u8 SCANCODE);
 
 // DRAW
-#define FASTMEM_ON 1 
-#define FASTMEM_OFF false 
-inline void CRT_OFF() ;
-inline void CRT_ON() ;
-void SetMonitor(u8 khz, u8 rows);
-/*! The first pixel in the given 4bpp bitmap array is read as
- *  the transparent color. This color will not be written, thus
- *  will be XORed with the background. 
- */
-void DrawTransparentImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h);
-/*! Writes a 4bpp bitmap without transparent index.
- *  slightly faster than transparent version.
- */
-void DrawImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h);
-/*! Use this for one-plane images, otherwise use DrawPlanarBitmap()
- *  For use in V1 mode. 1bpp planar bitmap.
- */
-void DrawPlaneBMP(const u8* img, u8 plane, u16 x, u16 y, u8 w, u8 h);
-void SetPixel(u16 x, u8 y, u8 c);
-inline void EnableALU(u8 fastmem);
-inline void DisableALU(u8 fastmem);
-inline void ExpandedGVRAM_On();
-inline void ExpandedGVRAM_Off();
+//#include <draw.h>
 
 // DISKLOAD
 #define DRIVE_1 0
 #define DRIVE_2 1
 void DiskLoad(u8* dst, u8 track, u8 sector, u8 numSecs, u8 drive); 
 
-// BEEP
-void beep(u8 length, u16 tone) __naked; 
 
 // VRAM_UTIL
 #define VRAMAddrByTile(x,y) (0xc000 + (y*80) + x)
