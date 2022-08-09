@@ -150,7 +150,7 @@ void CLS();
 // IOREGS
 u8 ReadIOReg(u8 r);
 void SetIOReg(u8 r, u8 v);
-void SetOPNReg(u8 r, u8 v) __naked;
+void SetOPNReg(u8 r, u8 v) __naked; 
 
 // VBl/Clk irqs
 void Vblank() __critical __interrupt;
@@ -193,7 +193,7 @@ inline void ExpandedGVRAM_Off();
 void DiskLoad(u8* dst, u8 track, u8 sector, u8 numSecs, u8 drive); 
 
 // BEEP
-void beep(u16 tone, u8 length);
+void beep(u8 length, u16 tone) __naked; 
 
 // VRAM_UTIL
 #define VRAMAddrByTile(x,y) (0xc000 + (y*80) + x)

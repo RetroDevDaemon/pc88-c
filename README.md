@@ -1,4 +1,4 @@
-# PC88-C (0.1.5)
+# PC88-C (0.2)
 
 # Overview 
 A very minimal framework for PC88 development using C. <br> 
@@ -27,6 +27,10 @@ Manual part 1, overview: https://barelyconsciousgames.blogspot.com/2021/02/pc-88
 Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/pc88-c-frame-for-nec-pc-8801-part-2.html <br> 
 
 ## What's new
+0.2<br>
+- Updated naked functions to be compatible with SDCC 4.2.0 calling convention (small speedup)<br>
+- Added bytecomp tool <br>
+
 0.1.5<br>
 - Fixed ClearAttributeRam() not clearing all attributes
 - Added CLS() to clear text only
@@ -46,8 +50,9 @@ Manual part 2, basic drawing: https://barelyconsciousgames.blogspot.com/2021/02/
 <hr>
 
 ## Important: requires SDCC to be on the path<br>
-If you have SDCC 4.1.0 and Python3, you should be able to build without issue.<br>
-(Note the newest build of SDCC is not yet supported. Please use 4.1.0)<br>
+If you have SDCC 4.2.0 and Python3, you should be able to build without issue.<br>
+(Note that SDCC 4.2.0 has changed calling conventions! If you are on SDCC 4.1, use a previous version of this repository.)
+<br>
 Recommended emulators:<br>
 M88x5 - Cycle accurate, excellent for debugging, slow (get from Illusion City, below)<br>
 XM8 - SDL2, fast, no debugging (http://retropc.net/pi/xm8/index.html) <br> 

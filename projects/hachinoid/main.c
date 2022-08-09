@@ -78,6 +78,9 @@ u8 GetBallCollision(s8 xsp, s8 ysp);
 void CPUWAIT(u16 n);
 void TickPrint(u8* str, u8 len);
 
+// sdcc 4.2
+#define _beep(a,b) beep(b,a)
+
 void main()
 {
     //cln = CLEANRESET;
@@ -354,10 +357,10 @@ inline void GAME_INIT()
     LoadLevel(levels[currentLevel]);
     // DOOT DO DOO!
     SETBANK_MAINRAM();
-    beep(BEEP_C5, 50);
+    _beep(BEEP_C5, 50);
     CPUWAIT(10);
-    beep(BEEP_C5, 50);
-    beep(BEEP_G5, 200);
+    _beep(BEEP_C5, 50);
+    _beep(BEEP_G5, 200);
 }
 void CPUWAIT(u16 n)
 {
@@ -371,7 +374,7 @@ void TickPrint(u8* str, u8 len)
     for(u8 f = 0; f < len; f++) { 
         u8 n = *(str + f);
         putchr(n);
-        beep(BEEP_G3, 3);
+        _beep(BEEP_G3, 3);
         Wait_VBLANK();
     }
 }
@@ -418,7 +421,7 @@ inline void EdgeUp()
         edgeCtr++;
         DrawSprite(&edgeGem_1, 40 + edgeCtr, 180);
         DrawSprite(&fire_yes, 46, 176);
-        beep(50, 10);
+        _beep(50, 10);
     }
 }
 
@@ -540,7 +543,7 @@ inline void GAME_UPDATE()
                 }else { 
                     SETBANK_MAINRAM();
                 }
-                beep(100, 10);
+                _beep(100, 10);
                 firing = false;
                 
             }
@@ -551,10 +554,10 @@ inline void GAME_UPDATE()
         // bounce on edges
         if(ball_pos.x > (PLAYFIELD_RIGHT-1 + abs(lr)) ) {
             if(bx_speed > 0) bx_speed *= -1;
-            beep(600, 5);
+            _beep(600, 5);
         } else if (ball_pos.x <= (PLAYFIELD_LEFT-1 + abs(lr))) {
             if(bx_speed < 0) bx_speed *= -1;
-            beep(600, 5);
+            _beep(600, 5);
         }
         // hit paddle
         if(bar_pos.x < ball_pos.x + 1){
@@ -567,7 +570,7 @@ inline void GAME_UPDATE()
                         else if(po >= 4) bx_speed++;    // 4-5 
                         ball_pos.y = bar_pos.y - 4;     // set ball on top of paddle
                         by_speed *= -1;                 // reflect! 
-                        beep(90, 5);
+                        _beep(90, 5);
                     }
                 }
             }
@@ -577,7 +580,7 @@ inline void GAME_UPDATE()
             by_speed = 0;
             bx_speed = 0;
             ball_pos.y = 15;
-            beep(700, 50);      // err!
+            _beep(700, 50);      // err!
             
             SETBANK_MAINRAM()
             SetCursorPos(15, 8);
@@ -597,7 +600,7 @@ inline void GAME_UPDATE()
         else if (ball_pos.y < (8 - by_speed)) {
             // Bounce top
             by_speed *= -1;
-            beep(600, 5);
+            _beep(600, 5);
         }
 
     }
@@ -648,11 +651,11 @@ inline void GAME_INPUT()
     if(GetKeyDown(KB_ESC)) { 
         SetCursorPos(55, 19);
         print("PAUSED - ESC TO CONTINUE");
-        beep(100, 150);
+        _beep(100, 150);
         while(1)
         {
             if(GetKeyDown(KB_ESC)){
-                beep(50, 150);
+                _beep(50, 150);
                 SetCursorPos(55, 19);
                 print("                          ");
                 return;
@@ -823,7 +826,7 @@ u8 GetBallCollision(s8 xsp, s8 ysp)
                             }else { 
                                 SETBANK_MAINRAM();
                             }
-                            beep(100, 10);
+                            _beep(100, 10);
                             return true;
                         }
                     }
