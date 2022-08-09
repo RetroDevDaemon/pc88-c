@@ -34,7 +34,7 @@ u8 rand() __naked
         add     a,l
         xor     h
         ld      (_RANDOMSEED),hl
-        ld      l,a
+        ; ld      l,a   ; ret value now in A for sdcc 4.2
         ret 
     __endasm;
 }

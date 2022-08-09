@@ -211,6 +211,44 @@ u8* ProcessFM(u8 chn, u8* songby_ptr)//, M88Data* songdat)
     return songby_ptr;
 }
 
+void SetOPNReg(u8 r, u8 v) __naked // TESTME SDCC 
+{
+        r; v; 
+    __asm
+    ;    push ix 
+    ;    ld ix,#0
+    ;    add	ix,sp
+    //; 4 (ix) and 5 (ix) contain r and v 
+    ;    ld c, 4 (ix)
+    ;    ld b, 5 (ix) 
+    ;_OPNWait:    
+    ;    in a, (0x44)
+    ;    rlca 
+    ;    jr c, _OPNWait
+    ;    ld a, c
+    ;    out (0x44), a
+    ;    ld a, 0 (ix)
+    ;    ld a, b
+    ;    out (0x45), a 
+
+    ;    pop	ix
+    ;    ret
+
+        ld c, a 
+        ld b, l 
+    _opnwaitt:
+        in a, (0x44)
+        rlca 
+        jr c,_opnwaitt
+        ld a,c 
+        out (0x44),a 
+        ld a,b 
+        out (0x45),a 
+        ret 
+
+    __endasm;
+}
+
 u8* MStartLoop(u8 chn, u8* sb)
 {
     sb++; // 22 ...

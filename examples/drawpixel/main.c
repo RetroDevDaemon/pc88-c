@@ -1,4 +1,5 @@
 #include <pc88-c.h>
+#include <draw.h>
 
 void main()
 {

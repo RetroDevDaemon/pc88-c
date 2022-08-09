@@ -1,18 +1,24 @@
+
+#include <pc88-c.h>
+
 /*! \addtogroup draw 
  * @{
  */
-#include <pc88-c.h>
+
 
 void DrawPlaneBMP(const u8* img, u8 plane, u16 x, u16 y, u8 w, u8 h)
 {
-    if(plane == PLANE_RED)
-        SETBANK_RED()
-    else if(plane == PLANE_BLUE)
-        SETBANK_BLUE()
-    else 
-        SETBANK_GREEN()
+    if(plane == PLANE_RED){
+        SETBANK_RED();}
+    else if(plane == PLANE_BLUE){
+        SETBANK_BLUE();}
+    else {
+        SETBANK_GREEN();}
+
     vu8* p = (vu8*)(0xc000) + (y * 80) + (u8)(x/8);
+
     const u8* v = img;
+
     for(u8 yy = 0; yy < h; yy++){
         for(u8 xx = 0; xx < w; xx++){
             *p = *v;
@@ -81,8 +87,8 @@ void DrawRLEBitmap(PlanarBitmap* pb, u16 x, u16 y)
             }
             p += (80 - pb->w);
         }
-        */
-/*
+        
+
     }
 }
 */
@@ -310,12 +316,13 @@ SetCursor:
 	out			($50),a					;CRTC: パラメータ2 ROW POS(0-)
 	ret
 **/
-/*
-FIXME
+
 
 void SetMonitor(u8 khz, u8 rows)
 {
-
+}
+/*
+FIXME
     CRT_OFF();
     //パラメータ1	W	C/B	H6	H5	H4	H3	H2	H1	H0
     __asm 
@@ -399,8 +406,11 @@ void SetMonitor(u8 khz, u8 rows)
 void DrawTransparentImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h)
 {
     u8 tran = img[0] >> 4; //first pixel is always transparent
+    
     u8 lastColor = 99;
+    
     vu8* dst = (vu8*)(0xc000 + (y*80) + x); // start at x,y
+    
     while(h > 0)    // at the top
     {
         s8 bytePxLoc = 7;   // left most pixel
@@ -425,19 +435,24 @@ void DrawTransparentImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h)
                 {
                     if(p != tran)
                         *dst = (1 << bytePxLoc);
+
                     bytePxLoc--;
+                    
                     if(p2 != tran){
                         SetIOReg(EXPANDED_ALU_CTRL, p2);
                         *dst = (1 << bytePxLoc);
                     }
+                    
                     bytePxLoc--;
                     lastColor = p2;
                 }
                 else 
                 {   // the next two pixels are the same
                     bytePxLoc--;    
+
                     if(p != tran)
                         *dst = (0b11 << bytePxLoc);
+                    
                     bytePxLoc--;
                     lastColor = p;
                 }
@@ -486,7 +501,9 @@ void DrawImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h)
                 {
                     *dst = (1 << bytePxLoc);
                     bytePxLoc--;
+                    
                     SetIOReg(EXPANDED_ALU_CTRL, p2);
+                    
                     *dst = (1 << bytePxLoc);
                     bytePxLoc--;
                     lastColor = p2;
@@ -494,7 +511,9 @@ void DrawImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h)
                 else 
                 {   // the next two pixels are the same
                     bytePxLoc--;    
+                    
                     *dst = (0b11 << bytePxLoc);
+                    
                     bytePxLoc--;
                     lastColor = p;
                 }

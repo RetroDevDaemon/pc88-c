@@ -1,4 +1,5 @@
 #include <pc88-c.h>
+#include <textmode.h>
 
 void Vblank() __critical __interrupt;
 inline void SetVBLIRQ();

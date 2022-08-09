@@ -1,4 +1,5 @@
 #include <pc88-c.h>
+#include <draw.h>
 
 const unsigned char sprite[] = { 
     0b00011111,0b11100000,0b00000000,

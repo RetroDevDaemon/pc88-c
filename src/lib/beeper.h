@@ -3,6 +3,12 @@
  *  \addtogroup Beep
  *  @{
  */
+#ifndef _88_beeper_
+#define _88_beeper_ 
+
+// BEEP
+void beep(u8 length, u16 tone) __naked; 
+
 // Snd
 //            ((CPU SPD /  TUNEHZ)  - 138) / 48
 /// Formula: ((3993600 / <Tune>) - 138) / 48
@@ -30,4 +36,8 @@
 #define BEEP_A5 (u16)(((3993600/880)-138)/48)
 #define BEEP_B5 (u16)(((3993600/988)-138)/48)
 
+
+#include <beeper.c>
+
+#endif 
 /*! @} */

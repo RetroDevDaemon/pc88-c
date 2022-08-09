@@ -5,8 +5,8 @@
 #include <pc88-c.h>
 
 u8 TABULATE;
-vu8* SCREEN_POINTER;
-u8 LINE_POINTER;
+extern vu8* SCREEN_POINTER;
+extern u8 LINE_POINTER;
 
 inline void putchr(u8 c)
 {
