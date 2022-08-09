@@ -10,8 +10,15 @@
  \param numSecs - Number of sectors to copy (bytes*256)
  \param drive - Drive number (default 0) 
 */
-void DiskLoad(u8* dest, u8 srcTrack, u8 srcSector, u8 numSecs, u8 drive) __naked 
+void DiskLoad(u8* dest, u8 srcTrack, u8 srcSector, u8 numSecs, u8 drive) __naked // TESTME SDCC
 {
+    // new calling convention:
+    // dest HL
+    // rest on stack:
+    // drive 8
+    // numsecs 8
+    // srcsector 8
+    // srcTrack  8
     /* As-is from IPL.BIN, taken from Maroon's page.
        This is copied in during the auto-load sequence to C0xx. */
     
@@ -19,12 +26,18 @@ void DiskLoad(u8* dest, u8 srcTrack, u8 srcSector, u8 numSecs, u8 drive) __naked
     __asm 
         ld iy, #0               ; iy 0 contains n. bytes in arguments
         add iy, sp              ; fix stack pointer 
-        ld l, 2 (iy)     
-        ld h, 3 (iy)            ; dest
-        ld d, 4 (iy)            ; track 
-        ld e, 5 (iy)            ; sector 
-        ld b, 6 (iy)            ; nm secs
-        ld c, 7 (iy)            ; drive no. 
+        ;ld l, 2 (iy)     
+        ;ld h, 3 (iy)            ; dest
+        ;ld d, 4 (iy)            ; track 
+        ;ld e, 5 (iy)            ; sector 
+        ;ld b, 6 (iy)            ; nm secs
+        ;ld c, 7 (iy)            ; drive no. 
+        ; corrected for SDCC 4.2:
+        ; hl is already ok 
+        ld c, 2 (iy)        ; drive 
+        ld b, 3 (iy)        ; secs 
+        ld e, 4 (iy)        ; src sect 
+        ld d, 5 (iy)        ; src track 
     DISK_Load:
         ld			a,#0x02					; cmd 2, read data
         call		DISK_SdCmd
