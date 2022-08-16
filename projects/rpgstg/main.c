@@ -6,14 +6,58 @@
 
 // function defs 
 void DrawBattleGrid();
-
+void WriteHLineFast(u8 col, u8 y, u8 len);
+void WriteVLine(u16 x, u8 y, u8 len);
 
 void main()
 {
     // battle grid is 48x24 px
     DrawBattleGrid();
     
+    ExpandedGVRAM_On();
+    EnableALU(FASTMEM_ON);
+    
+    SetIOReg(EXPANDED_ALU_CTRL, CLR_BLUE);
+    
+    WriteHLineFast(6, 164, 28);
+    WriteVLine(6*8, 164, 32);
+    
+    SetIOReg(EXPANDED_ALU_CTRL, CLR_CYAN);
+    WriteHLineFast(6, 165, 28);
+    WriteVLine(6*8+1, 165, 31);
+    
+    DisableALU(FASTMEM_OFF);
+    ExpandedGVRAM_Off();
+
     while(1){};
+}
+
+// block of 8 for speed
+void WriteHLineFast(u8 col, u8 y, u8 len)
+{
+    vu8* s = 0xc000 + (y * 80) + col;
+
+    while ( len > 0 )
+    {
+        *s++ = 0xff;
+        len--;
+    }
+}
+
+
+void WriteVLine(u16 x, u8 y, u8 len)
+{
+    vu8* s = 0xc000 + (y * 80) + (x >> 3);
+    
+    u8 b = x % 8;
+    b = (0x80 >> b);
+    
+    while(len > 0)
+    {
+        *s = b;
+        s += 80;
+        len--;
+    }
 }
 
 void DrawBattleGrid()
