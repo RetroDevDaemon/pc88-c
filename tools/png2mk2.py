@@ -90,9 +90,10 @@ def WriteCHeader(bn, obb):
 		if(i%16==0):
 			outcstr += '\n\t'
 	outcstr += '};\n'
-	f = open(bn + '.h', 'w')
-	f.write(outcstr)
-	f.close()
+	#f = open(bn + '.h', 'w')
+	#f.write(outcstr)
+	#f.close()
+	print(outcstr)
 
 
 MAKERLE = 0
@@ -102,7 +103,7 @@ if(MAKERLE==0):
 	imgsize, pix = LoadImg(sys.argv[1])
 	basen, uncompr = InitImgOutput(sys.argv[1], imgsize, pix)	
 	WriteCHeader(basen, uncompr)
-	print(basen + '.h written.')
+	#print(basen + '.h written.')
 else:
 	imgsize, pix = LoadImg(sys.argv[1])
 	basen, uncompr = InitImgOutput(sys.argv[1], imgsize, pix)	

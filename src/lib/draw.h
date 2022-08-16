@@ -9,7 +9,7 @@ void SetMonitor(u8 khz, u8 rows);
  *  the transparent color. This color will not be written, thus
  *  will be XORed with the background. 
  */
-void DrawTransparentImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h);
+vu8* DrawTransparentImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h);
 /*! Writes a 4bpp bitmap without transparent index.
  *  slightly faster than transparent version.
  */

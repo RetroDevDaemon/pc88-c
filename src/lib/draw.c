@@ -403,14 +403,14 @@ FIXME
 }
 
 */
-void DrawTransparentImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h)
+vu8* DrawTransparentImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h)
 {
     u8 tran = img[0] >> 4; //first pixel is always transparent
     
     u8 lastColor = 99;
     
     vu8* dst = (vu8*)(0xc000 + (y*80) + x); // start at x,y
-    
+    vu8* r = dst;
     while(h > 0)    // at the top
     {
         s8 bytePxLoc = 7;   // left most pixel
@@ -468,9 +468,9 @@ void DrawTransparentImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h)
         }
 
         h--;        //decrement height
-        dst += (80-w);  // go to next pixel row
-        
+        dst += (80-w);  // go to next pixel row   
     }
+    return r;
 }
 
 void DrawImage_V2(u8 x, u8 y, u8* img, u8 w, u8 h)

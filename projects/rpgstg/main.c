@@ -4,28 +4,43 @@
 #include <textmode.h>
 //#include <beeper.h>
 
+// project includes
+#include "mecha.h"
+
 // function defs 
 void DrawBattleGrid();
 void WriteHLineFast(u8 col, u8 y, u8 len);
 void WriteVLine(u16 x, u8 y, u8 len);
+
 
 void main()
 {
     // battle grid is 48x24 px
     DrawBattleGrid();
     
+    // V2 line writing
     ExpandedGVRAM_On();
     EnableALU(FASTMEM_ON);
     
+    // dark blue line
     SetIOReg(EXPANDED_ALU_CTRL, CLR_BLUE);
-    
     WriteHLineFast(6, 164, 28);
     WriteVLine(6*8, 164, 32);
-    
+    // cyan line
     SetIOReg(EXPANDED_ALU_CTRL, CLR_CYAN);
     WriteHLineFast(6, 165, 28);
     WriteVLine(6*8+1, 165, 31);
     
+    // Load sprite into vram
+    // format on disk is 4bpp. 
+    vu8* spr_vram_addr = DrawTransparentImage_V2(10, 100, &mecha[0], 32/8, 16);
+    // copy from vram to buffer the bytes at this address
+    ExpandedGVRAM_Copy_On();
+    ALUCopyOut(spr_vram_addr, 0xfe80, 4, 16);
+    // copy from buffer +320px
+    ALUCopyIn(0xfe80, spr_vram_addr + 40, 4, 16);   
+
+    // done with V2 drawing
     DisableALU(FASTMEM_OFF);
     ExpandedGVRAM_Off();
 
