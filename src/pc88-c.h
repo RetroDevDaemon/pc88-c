@@ -157,6 +157,7 @@ void DiskLoad(u8* dst, u8 track, u8 sector, u8 numSecs, u8 drive);
 // VRAM_UTIL
 #define VRAMAddrByTile(x,y) (0xc000 + (y*80) + x)
 void EraseVRAMArea(XYPos* xy, u8 w, u8 h);
+void EraseVRAMAreaAddr(vu8* addr, u8 w, u8 h);
 #define ExpandedGVRAM_Copy_On() SetIOReg(EXPANDED_GVRAM_CTRL, (u8)(0x80 | bit(4) ));
 inline void SetCRTC_IRQ(void* func);
 /*! Copies graphics from within GVRAM in V2 mode

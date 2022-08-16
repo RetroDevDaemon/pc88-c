@@ -18,6 +18,16 @@ void EraseVRAMArea(XYPos* xy, u8 w, u8 h)
     }
 }
 
+void EraseVRAMAreaAddr(vu8* addr, u8 w, u8 h)
+{
+    for(u8 z = 0; z < h; z++)
+    {
+        for(u8 f = 0; f < w; f++)
+            *addr++ = 0xff;
+        //if(xo != 0) *vp = 0;
+        addr += (80 - w);
+    }
+}
 
 #define ALUCPY ld	a,(hl) \
         ld	(de),a \
@@ -41,7 +51,7 @@ void ALUCopy(vu8* src, vu8* dst, u8 w, u16 h)
         ld	bc,(_local_h)
         ld	hl,(_local_a)
         ld	de,(_local_b)
-    00104$:
+    .copylp:
         push	bc
     
          ALUCPY 
@@ -70,7 +80,7 @@ void ALUCopy(vu8* src, vu8* dst, u8 w, u16 h)
         ld	a,c
         or	b    ; check if 0
         ; cp a,#0
-        jr nz,00104$
+        jr nz,.copylp
     __endasm;
 }
 
@@ -85,7 +95,7 @@ void ALUCopyOut(vu8* src, vu8* dst, u8 w, u16 h)
         ld	bc,(_local_h)
         ld	hl,(_local_a)
         ld	de,(_local_b)
-    00109$:
+    .outlp:
         push	bc
     
          ALUCPY 
@@ -102,7 +112,7 @@ void ALUCopyOut(vu8* src, vu8* dst, u8 w, u16 h)
         ld	a,c
         or	b    ; check if 0
         ; cp a,#0
-        jr nz,00109$
+        jr nz,.outlp
     __endasm;
 }
 
@@ -116,7 +126,7 @@ void ALUCopyIn(vu8* src, vu8* dst, u8 w, u16 h)
         ld	bc,(_local_h)
         ld	hl,(_local_a)
         ld	de,(_local_b)
-    00108$:
+    .inlp:
         push	bc
     
          ALUCPY 
@@ -139,7 +149,7 @@ void ALUCopyIn(vu8* src, vu8* dst, u8 w, u16 h)
         ld	a,c
         or	b    ; check if 0
         ; cp a,#0
-        jr nz,00108$
+        jr nz,.inlp
     __endasm;
 }
 

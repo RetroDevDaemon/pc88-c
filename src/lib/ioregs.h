@@ -98,6 +98,7 @@ Default values: xxxx1001
 */
 #define ALU_MODE_CTRL 0x32
 /*! Write only
+Expanded Access Mode ALU Control 
 <pre>
 Bit	7	6	    5	    4	    3	2	    1	    0
 		ALU21	ALU11	ALU01	    ALU20	ALU10	ALU00

@@ -11,10 +11,30 @@
 void DrawBattleGrid();
 void WriteHLineFast(u8 col, u8 y, u8 len);
 void WriteVLine(u16 x, u8 y, u8 len);
+inline void SetVBLIRQ();
+void Vblank() __critical __interrupt;
 
+// globals 
+vu8* pc0_loc;
+vu8* pc0_oldloc;
+bool vbl_done;
+u8 playerDir;
+bool playerMoved;
+
+// game defines
+#define DIR_RIGHT 4
+#define DIR_DOWN 2
+#define DIR_LEFT 6
 
 void main()
 {
+    IRQ_OFF 
+	__asm 
+		ld hl, #_Vblank
+		ld (CRTC_IRQ),hl
+	__endasm;
+	SetVBLIRQ();
+
     // battle grid is 48x24 px
     DrawBattleGrid();
     
@@ -33,18 +53,89 @@ void main()
     
     // Load sprite into vram
     // format on disk is 4bpp. 
-    vu8* spr_vram_addr = DrawTransparentImage_V2(10, 100, &mecha[0], 32/8, 16);
+    pc0_loc = DrawTransparentImage_V2(0, 0, &mecha[0], 32/8, 16);
+    pc0_oldloc = pc0_loc;
     // copy from vram to buffer the bytes at this address
     ExpandedGVRAM_Copy_On();
-    ALUCopyOut(spr_vram_addr, 0xfe80, 4, 16);
-    // copy from buffer +320px
-    ALUCopyIn(0xfe80, spr_vram_addr + 40, 4, 16);   
-
-    // done with V2 drawing
+    ALUCopyOut(pc0_loc, 0xfe80, 4, 16);
+    
     DisableALU(FASTMEM_OFF);
     ExpandedGVRAM_Off();
 
-    while(1){};
+    // enable vblank
+    IRQ_ON;
+    while(1)
+    {
+         // stop main loop from running more than once per vbl
+        while(!vbl_done){};
+        vbl_done = false;
+
+        playerMoved = false;
+        pc0_oldloc = pc0_loc;
+            
+        if(GetKeyDown(KB_PAD4))
+        {
+            playerDir = DIR_RIGHT;
+            pc0_loc += 1;
+            playerMoved = true;
+        }
+        else if(GetKeyDown(KB_PAD2))
+        {
+            playerDir = DIR_DOWN;
+            pc0_loc += 80;
+            playerMoved = true;
+        }
+        else if(GetKeyDown(KB_PAD6))
+        {
+            playerDir = DIR_LEFT;
+            pc0_loc -= 1;
+            playerMoved = true;
+        }
+    }  
+    
+}
+
+inline void SetVBLIRQ()
+{
+    SetIOReg(IRQ_LEVEL_SET, 2);      // Set IRQ high for VBL
+    SetIOReg(IRQ_MASK, 0b10);        // Reset mask for VBL
+}
+
+void Vblank() __critical __interrupt
+{
+    IRQ_OFF 
+    
+    // v2 drawin'!
+    EnableALU(FASTMEM_OFF);
+    ExpandedGVRAM_On();
+
+    // erase the shadow of the player sprite
+    if(playerMoved)
+    {
+        SetIOReg(EXPANDED_ALU_CTRL, 0); // (draw black)
+        switch(playerDir)
+        {
+            case(DIR_RIGHT): // left column
+                EraseVRAMAreaAddr(pc0_oldloc, 1, 16);
+                break;
+            case(DIR_DOWN): // top row
+                EraseVRAMAreaAddr(pc0_oldloc, 4, 8);
+                break;
+            case(DIR_LEFT): // right col 
+                EraseVRAMAreaAddr(pc0_oldloc+3, 1, 16);
+                break;
+        }
+    }
+    // player
+    ExpandedGVRAM_Copy_On();
+    ALUCopyIn(0xfe80, (vu8*)(pc0_loc), 4, 16); 
+
+    DisableALU(FASTMEM_OFF);
+    ExpandedGVRAM_Off();
+
+    vbl_done = true;
+    SetVBLIRQ(); 
+    IRQ_ON
 }
 
 // block of 8 for speed
