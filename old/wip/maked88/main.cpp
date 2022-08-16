@@ -1,6 +1,9 @@
 // maked88/main.c 
 #include "headers.h"
 
+// Currently, the only thing this does is load in
+//  a disks bytes and create the d88 class.
+//
 
 int main(int argc, char* argv[])
 {

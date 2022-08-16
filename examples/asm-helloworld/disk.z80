@@ -1,0 +1,70 @@
+
+; 111x ATTENTION
+; 100x DATAVALID
+; 101x REQUESTDATA
+; 110x DATAACCEPT
+
+; 0xFF Status out
+; 0xFE Status in 
+; 0xFD Data out
+; 0xFC Data in 
+
+DISK_SdCmd:
+    push    af 
+    ld      a,#0b00001111   ; attention=1
+    out     (0xFF),a 
+    ._wait1: 
+    in      a,(0xFE) 
+    bit     1,a             ; RFD=1?
+    jr      z,._wait1 
+    ld      a,#0b00001110   ; attn = 0
+    out     (0xFF),a 
+    jr      DISK_SdData1sub
+
+DISK_SdData1: 
+    push    af 
+    .__wait1: 
+    in      a,(0xFE) 
+    bit     1,a             ; RFD=1?
+    jr      z,.__wait1 
+DISK_SdData1sub:
+    pop     af 
+    out     (0xFD),a        ; write byte 
+    ld      a,#0b00001001   ; data valid 1
+    out     (0xFF),a 
+    .wait2: 
+    in      a,(0xFE)
+    bit     2,a             ; wait for DAC=1
+    jr      z,.wait2 
+    ld      a,#0b00001000   ; data valid 0
+    out     (0xFF),a 
+    .wait3: 
+    in      a,(0xFE) 
+    bit     2,a             ; wait for DAC=0
+    jr      nz,.wait3 
+    ret 
+
+DISK_RdData2: 
+    ld      a,#0b00001011   ; ready for data 1
+    out     (0xFF),a 
+    .___wait1: 
+    in      a,(0xFE) 
+    rrca                    ; data valid if bit 0 set
+    jr      nc,.___wait1    ; wait for DAV ack = 1
+    ld      a,#0b00001010   ; rdy for data 0
+    out     (0xFF),a        
+    in      a,(0xFC)        ; read byte 
+    ld      (hl),a 
+    inc     hl 
+    ld      a,#0b00001101   ; data accepted = 1
+    out     (0xFF),a 
+    .__wait2: 
+    in      a,(0xFE) 
+    rrca                    
+    jr      c,.__wait2      ; wait for DAV=0
+    in      a,(0xFC) 
+    ld      (hl),a 
+    inc     hl 
+    ld      a,#0b00001100   ; data accepted = 0
+    out     (0xFF),a 
+    ret 

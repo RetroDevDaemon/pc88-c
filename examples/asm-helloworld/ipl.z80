@@ -1,0 +1,80 @@
+; IPL for PC88-C
+;   ~ cc0 ~
+; asxxxx syntax
+
+    .area CODE (ABS)    ; designate this code area as not relocatable
+    
+    .org 0xc000
+
+Main: 
+    di 
+
+    xor     a 
+    ld      (0xE6A7),a      ; cursor off
+    call    0x428B          ; blink off
+    call    0x4021          ; f-key display off 
+    ld      hl,#.console     
+    call    0x7071          ; Run 'console'
+    call    0x5F0E          ; txt screen area 
+    ld      a,#1            ; color/80c text mode
+    out     (0x30),a 
+    ld      a,#0b00011011   ; disable basic rom for 64kb (bit 5 for 20/25)
+    out     (0x31),a        ; hi-res 20row/color
+    ld      a,#0b10001001
+    out     (0x32),a        ; sound irq off/digital rgb
+    xor     a 
+    out     (0xE6),a 
+    out     (0xE4),a        ; disable all IRQ
+    out     (0x5F),a        ; mainRAM 
+    ld      hl,#0x100          ; prog exe address , should be _CODE
+    ld      de,#((0 << 8) | 2)  ; track 0, sector 2 
+    ld      bc,#((0x5f << 8) | 0)   ; load size, drive no
+    call    DISK_Load 
+    ld      sp,#0xff
+    ei 
+    jp      0xffff
+
+.console: 
+    .ascii  /0,25,0,1/
+    .db     0               ; CONSOLE 0,25,0,1 - 25 row color
+
+DISK_Load: 
+    ld      a,#0x02         ; cmd 02 - read data 
+    call    DISK_SdCmd
+    ld      a,b             ; sector num.
+    cp      #17 
+    jr      c,._load2 
+    ld      a,#17
+    sub     e 
+    ._load2: 
+    call    DISK_SdData1 
+    ld      a,c             ; drive 
+    call    DISK_SdData1 
+    ld      a,d             ; track 
+    call    DISK_SdData1 
+    ld      a,e             ; sector 
+    call    DISK_SdData1 
+    ld      a,#0x12         ; Cmd fast send data
+    call    DISK_SdCmd
+    ._loop1: 
+    push    bc 
+    ld      b,#128          ; 128 loops, 2 bytes each = 256 bytes per sector loop
+    ._loop2: 
+    call    DISK_RdData2    ; (do this 128 times)
+    djnz    ._loop2 
+    inc     e 
+    ld      a,e 
+    cp      #17 
+    jr      z,._next        ; if sector ct = 17, go to next track 
+    pop     bc              ; pop sector count
+    djnz    ._loop1         
+    ret 
+    ._next: 
+    inc     d 
+    ld      e,#1 
+    pop     bc 
+    dec     b               ; b = sector count
+    jr      nz,DISK_Load    ; load the next sector
+    ret 
+
+.include "disk.z80"

@@ -1,0 +1,57 @@
+; disktest.z80
+
+__init::
+    jr main
+
+main:
+    ; First, try the status command
+    _waitforrdy:
+    ld a, #0x14             ; command: get device status 
+    call DISK_SdCmd
+    ld a, #0                ; drive no. 0
+    call DISK_SdData1
+    ld hl, #0xc100
+    call DISK_RdData2
+    ld a,(0xc100)
+    bit 5, a
+    jr nz, _waitforrdy      ; if not ready, keep trying
+    ; result: 0x28 
+    ; 0010 1000
+    ; bit 5 - ready 
+    ; bit 3 - twosided 2D 
+
+;; TEST SAVE TO DISK 
+    ld a, #1
+    call DISK_SdCmd
+    ld a, #1            ; number of sectors to write, or len in bytes / 256
+    call DISK_SdData1
+    ld a, #0
+    call DISK_SdData1   ; drive 0
+    ld a, #0            ; track 0 
+    call DISK_SdData1
+    ld a, #16
+    call DISK_SdData1   ; sector 16
+    ;ld a, #0x11         ; fast save command 
+    ;call DISK_SdData1
+    ld bc, #0
+    ld hl, #LoadData 
+    .ltlp:
+    ld a, (hl)
+    call DISK_SdData1
+    inc hl 
+    dec b 
+    xor a 
+    or b 
+    jr nz, .ltlp        ; one byte at a time, 256 times
+
+end:
+    jr end 
+
+LoadData:
+.rept 16
+.byte 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15
+.endm 
+    ; 0x11 - fast save
+    ; 0x12 - fast load 
+
+.include "disk.z80"

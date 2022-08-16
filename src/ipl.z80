@@ -1,8 +1,6 @@
-; IPL for PC88-C
+; IPL for Standalone
 ;   ~ cc0 ~
-; (Adapted from several Xrea examples)
-
-    .z80 
+; SDCC syntax
 
 Main: 
     di 

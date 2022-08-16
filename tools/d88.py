@@ -538,4 +538,5 @@ class disk():
         if(self.bytes[start+bc] == 0xff):
             self.bytes[start+bc] = 0xc9
         # done!
+        print("File added. Last used address on disk:", hex(start+bc-1))
         

@@ -1,20 +1,21 @@
+
     .z80 
 
-DISK_Load: 
-    ld      a,#0x02         ; cmd 02 - read data 
+DISK_Load:  ; load 1 sector each time this is called 
+    ld      a,#0x02         ; cmd 02 - setup read data 
     call    DISK_SdCmd
     ld      a,b             ; sector num.
     cp      #17 
-    jr      c,._load2 
-    ld      a,#17
+    jr      c,._load2       ; if sector ct > 17, skip 
+    ld      a,#17           ; else a = 17 - startSector
     sub     e 
 ._load2: 
+    call    DISK_SdData1    ; sector count
+    ld      a,c             ; drive no
     call    DISK_SdData1 
-    ld      a,c             ; drive 
+    ld      a,d             ; start track 
     call    DISK_SdData1 
-    ld      a,d             ; track 
-    call    DISK_SdData1 
-    ld      a,e             ; sector 
+    ld      a,e             ; start sector 
     call    DISK_SdData1 
     ld      a,#0x12         ; Cmd 18 - fast send data
     call    DISK_SdCmd
@@ -25,19 +26,20 @@ DISK_Load:
     call    DISK_RdData2 
     djnz    ._loop2 
     inc     e 
-    ld      a,e 
-    cp      #17 
-    jr      z,._next 
+    ld      a,e             ; increase the tgt sector
+    cp      #17             ; if 17,
+    jr      z,._next        ; next track
     pop     bc 
     djnz    ._loop1 
     ret 
 ._next: 
-    inc     d 
-    ld      e,#1 
+    inc     d               ; increment track
+    ld      e,#1            ; reset tgt sector to 1
     pop     bc 
-    dec     b 
+    dec     b               ; decrement sector counter 
     jr      nz,DISK_Load 
     ret 
+
 DISK_SdCmd:
     push    af 
     ld      a,#0b00001111   ; attention=1
@@ -68,7 +70,7 @@ DISK_SdData1sub:
     out     (0xFF),a 
 .wait3: 
     in      a,(0xFE) 
-    bit     2,a 
+    bit     2,a             
     jr      nz,.wait3 
     ret 
 DISK_RdData2: 

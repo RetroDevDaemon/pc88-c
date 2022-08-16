@@ -1,0 +1,16 @@
+__init::
+	jr main 
+
+main:
+	ld hl, #hw_str
+	ld de, #0xf3c8
+	ld bc, #13
+	ldir
+	
+end:
+	jr end
+
+hw_str:
+	.ascii /Hello World!/
+	.db 0 
+	

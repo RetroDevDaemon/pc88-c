@@ -1,0 +1,62 @@
+------------------------
+::APP IN C::
+
+sdcc \
+    --verbose \
+    -mz80 \
+    --stack-loc 0xff \
+    --code-loc 0x100 \
+    --data-loc 0x8000 \
+    --no-std-crt0 \
+    hw.c \
+    -o hw.ihx 
+
+
+::APP IN ASM::
+
+sdasz80 -lso ./hw.z80
+
+sdldz80 -c 
+    -mjwx
+    -i hw.ihx 
+    -b _CODE = 0x100 
+    hw.rel 
+    -e 
+
+
+python3 ./tools/hex2bin.py hw.ihx > hw.bin 
+
+------------------------
+::MAKE IPL:
+
+sdasz80 -lso ./ipl.z80
+
+sdldz80 -c
+    -mjwx
+    -i ipl.ihx 
+    -b _CODE = 0xc000 
+    ipl.rel 
+    -e
+
+
+python3 ./tools/hex2bin.py ./ipl.ihx > ipl.bin
+
+--------------------------
+::APP TO DISK::
+
+# Get location of __init and update IPL 
+
+python3 ./tools/fixboot.py ./hw.map ./ipl.bin 
+
+# Create disk file and insert IPL and app 
+
+python3 -B ./tools/maked88.py hiworld.d88 ./ipl.bin 0 0 1
+python3 -B ./tools/maked88.py hiworld.d88 ./hw.bin 0 0 2
+
+
+-------------------
+::PYTHON HELPERS::
+
+python3 -m pip install intelhex 
+python3 -m pip install numpy
+python3 -m pip install pillow 
