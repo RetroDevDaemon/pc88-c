@@ -95,6 +95,14 @@ def WriteCHeader(bn, obb):
 	#f.close()
 	print(outcstr)
 
+def WriteBytes(bn, obb):
+	out=[]
+	i = 0
+	while i < len(obb):
+		out.append(obb[i]) # outcstr += str(obb[i]) + ','
+		i += 1
+	print(out)
+
 
 MAKERLE = 0
 
@@ -102,7 +110,9 @@ MAKERLE = 0
 if(MAKERLE==0):
 	imgsize, pix = LoadImg(sys.argv[1])
 	basen, uncompr = InitImgOutput(sys.argv[1], imgsize, pix)	
-	WriteCHeader(basen, uncompr)
+	WriteBytes(basen, uncompr)
+	print("\n" + str(len(uncompr)) + "bytes written.")
+	#WriteCHeader(basen, uncompr)
 	#print(basen + '.h written.')
 else:
 	imgsize, pix = LoadImg(sys.argv[1])
