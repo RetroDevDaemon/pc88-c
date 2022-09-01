@@ -3,8 +3,8 @@
 
 #include "tileset.h"
 
-void CopyTileToBuffer(u8* src, u8* dst);
-void DrawTileFromBuffer(u8* src, u8* dst);
+void CopyTileToBuffer(vu8* src, vu8* dst) __naked;
+void DrawTileFromBuffer(vu8* src, vu8* dst);
 
 
 void main()
@@ -26,7 +26,15 @@ void main()
     // copy out tiles 
     CopyTileToBuffer(0xc002, 0xfe80);
     
-    DrawTileFromBuffer(0xfe80, 0xc200);
+    // Fill 40x20 area with grass tile 
+    u8* t = 0xc000;
+    for(u8 y = 0; y < 20; y++){
+        for(u8 i = 0; i < 40; i++)
+        {
+            DrawTileFromBuffer(0xfe80, t + (i * 2));
+        }
+        t += 0x280;
+    }
     
     DisableALU(FASTMEM_OFF);
     ExpandedGVRAM_Off();
@@ -36,7 +44,7 @@ void main()
 
 }
 
-void CopyTileToBuffer(u8* src, u8* dst) 
+void CopyTileToBuffer(vu8* src, vu8* dst) __naked
 {
     // HL and DE are already loaded
     __asm 
@@ -49,27 +57,81 @@ void CopyTileToBuffer(u8* src, u8* dst)
         add hl,bc
         pop bc 
         djnz _tcpoutlp
+        ret
     __endasm;
 }
 
-void DrawTileFromBuffer(u8* src, u8* dst) 
+void DrawTileFromBuffer(vu8* src, vu8* dst)  
 {
+    
     // HL and DE are already loaded
     __asm 
-        ld bc,#8
-        _tcpinlp:
-        push bc
-        push hl         ; faster way?
-        push de 
-        pop hl 
+        push bc 
         ld bc,#78
-        add hl,bc 
-        push hl 
-        pop de 
-        pop hl 
-        ldi
+        push bc 
+
         ldi 
+        ldi 
+        ex de,hl 
         pop bc 
-        djnz _tcpinlp
+        push bc 
+        add hl,bc
+        ex de,hl 
+        ldi 
+        ldi 
+        ex de,hl
+        pop bc 
+        push bc  
+        add hl,bc
+        ex de,hl 
+        ldi 
+        ldi 
+        ex de,hl 
+        pop bc 
+        push bc 
+        add hl,bc
+        ex de,hl 
+        ldi 
+        ldi 
+        ex de,hl 
+        pop bc 
+        push bc 
+        add hl,bc
+        ex de,hl 
+        ldi 
+        ldi 
+        ex de,hl 
+        pop bc 
+        push bc 
+        add hl,bc
+        ex de,hl 
+        ldi 
+        ldi 
+        ex de,hl 
+        pop bc 
+        push bc 
+        add hl,bc
+        ex de,hl 
+        ldi 
+        ldi 
+        ex de,hl 
+        pop bc 
+        add hl,bc
+        ex de,hl 
+        ldi 
+        ldi 
+        
+        pop bc 
     __endasm;
+    /*
+    for(u8 i = 0; i < 8; i ++)
+    {
+        *dst = *src;
+        dst += 1;
+        src += 1;
+        *dst = *src;
+        dst += 79;
+        src += 1;
+    }
+    */
 }
