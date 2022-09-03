@@ -3,7 +3,9 @@
 
 #include "tileset.h"
 
-void CopyTileToBuffer(vu8* src, vu8* dst) __naked;
+typedef unsigned char Map;
+
+void CopyTileToBuffer(vu8* src, vu8* dst);
 void DrawTileFromBuffer(vu8* src, vu8* dst);
 
 
@@ -11,7 +13,14 @@ void main()
 {
     IRQ_OFF;
 
-    EnableALU(1);
+    Map* map_ = 0x6000;
+    u8* mapBuffer_A = 0x8000;
+    u8* mapBuffer_B = mapBuffer_A + (40*20);
+    char* mapBuffer_end = mapBuffer_B + (40*20);
+
+    DiskLoad(map_, 4, 1, (0x2000/256), 0); 
+
+    EnableALU(0);
     ExpandedGVRAM_On();
 
     // load tiles into vram
@@ -24,14 +33,15 @@ void main()
     ExpandedGVRAM_Copy_On();
     
     // copy out tiles 
-    CopyTileToBuffer(0xc002, 0xfe80);
+    for(u8 i = 0; i < 24; i ++)
+        CopyTileToBuffer(0xc000 + (i*2), 0xfe80 + (i * 0x10));
     
     // Fill 40x20 area with grass tile 
     u8* t = 0xc000;
     for(u8 y = 0; y < 20; y++){
         for(u8 i = 0; i < 40; i++)
         {
-            DrawTileFromBuffer(0xfe80, t + (i * 2));
+            DrawTileFromBuffer(0xfff0, t + (i * 2));
         }
         t += 0x280;
     }
@@ -44,21 +54,35 @@ void main()
 
 }
 
-void CopyTileToBuffer(vu8* src, vu8* dst) __naked
+void CopyTileToBuffer(vu8* src, vu8* dst) 
 {
-    // HL and DE are already loaded
-    __asm 
-        ld bc,#8
-        _tcpoutlp:
-        push bc 
-        ldi
-        ldi 
-        ld bc,#78
-        add hl,bc
-        pop bc 
-        djnz _tcpoutlp
-        ret
-    __endasm;
+    // Generated assembly is... fine
+    vu8* op = dst;
+    vu8* inp = src;
+    *op++ = *inp++;
+    *op++ = *inp++;
+    inp += 78;
+    *op++ = *inp++;
+    *op++ = *inp++;
+    inp += 78;
+    *op++ = *inp++;
+    *op++ = *inp++;
+    inp += 78;
+    *op++ = *inp++;
+    *op++ = *inp++;
+    inp += 78;
+    *op++ = *inp++;
+    *op++ = *inp++;
+    inp += 78;
+    *op++ = *inp++;
+    *op++ = *inp++;
+    inp += 78;
+    *op++ = *inp++;
+    *op++ = *inp++;
+    inp += 78;
+    *op++ = *inp++;
+    *op++ = *inp++;
+    
 }
 
 void DrawTileFromBuffer(vu8* src, vu8* dst)  
@@ -113,16 +137,4 @@ void DrawTileFromBuffer(vu8* src, vu8* dst)
         ldi 
 
     __endasm;
- 
-    /*
-    for(u8 i = 0; i < 8; i ++)
-    {
-        *dst = *src;
-        dst += 1;
-        src += 1;
-        *dst = *src;
-        dst += 79;
-        src += 1;
-    }
-    */
 }
