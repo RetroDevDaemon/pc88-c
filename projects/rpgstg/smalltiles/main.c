@@ -63,66 +63,57 @@ void CopyTileToBuffer(vu8* src, vu8* dst) __naked
 
 void DrawTileFromBuffer(vu8* src, vu8* dst)  
 {
-    
     // HL and DE are already loaded
     __asm 
-        push bc 
-        ld bc,#78
-        push bc 
 
         ldi 
         ldi 
+        ld bc,#78
+        ld a,c
         ex de,hl 
-        pop bc 
-        push bc 
         add hl,bc
         ex de,hl 
         ldi 
         ldi 
         ex de,hl
-        pop bc 
-        push bc  
+        ld c,a
         add hl,bc
         ex de,hl 
         ldi 
         ldi 
         ex de,hl 
-        pop bc 
-        push bc 
+        ld c,a
         add hl,bc
         ex de,hl 
         ldi 
         ldi 
         ex de,hl 
-        pop bc 
-        push bc 
+        ld c,a
         add hl,bc
         ex de,hl 
         ldi 
         ldi 
         ex de,hl 
-        pop bc 
-        push bc 
+        ld c,a
         add hl,bc
         ex de,hl 
         ldi 
         ldi 
         ex de,hl 
-        pop bc 
-        push bc 
+        ld c,a
         add hl,bc
         ex de,hl 
         ldi 
         ldi 
         ex de,hl 
-        pop bc 
+        ld c,a
         add hl,bc
         ex de,hl 
         ldi 
         ldi 
-        
-        pop bc 
+
     __endasm;
+ 
     /*
     for(u8 i = 0; i < 8; i ++)
     {
