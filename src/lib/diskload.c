@@ -10,6 +10,7 @@
  \param numSecs - Number of sectors to copy (bytes*256)
  \param drive - Drive number (default 0) 
 */
+extern u16 local_a;
 void DiskLoad(u8* dest, u8 srcTrack, u8 srcSector, u8 numSecs, u8 drive) __naked // TESTME SDCC
 {
     // new calling convention:
@@ -21,7 +22,7 @@ void DiskLoad(u8* dest, u8 srcTrack, u8 srcSector, u8 numSecs, u8 drive) __naked
     // srcTrack  8
     /* As-is from IPL.BIN, taken from Maroon's page.
        This is copied in during the auto-load sequence to C0xx. */
-    
+    local_a = (u16)dest;
     dest; srcTrack; srcSector; numSecs; drive;
     __asm 
         ld iy, #0               ; iy 0 contains n. bytes in arguments
@@ -38,6 +39,7 @@ void DiskLoad(u8* dest, u8 srcTrack, u8 srcSector, u8 numSecs, u8 drive) __naked
         ld b, 3 (iy)        ; secs 
         ld e, 4 (iy)        ; src sect 
         ld d, 5 (iy)        ; src track 
+        ld hl,(_local_a)
     DISK_Load:
         ld			a,#0x02					; cmd 2, read data
         call		DISK_SdCmd

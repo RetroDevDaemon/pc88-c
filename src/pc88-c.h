@@ -151,7 +151,7 @@ bool GetKeyDown(u8 SCANCODE);
 // DISKLOAD
 #define DRIVE_1 0
 #define DRIVE_2 1
-void DiskLoad(u8* dst, u8 track, u8 sector, u8 numSecs, u8 drive); 
+void DiskLoad(u8* dst, u8 track, u8 sector, u8 numSecs, u8 drive) __naked; 
 
 
 // VRAM_UTIL

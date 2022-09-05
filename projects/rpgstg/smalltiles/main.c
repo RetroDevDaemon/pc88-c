@@ -18,7 +18,7 @@ void main()
     u8* mapBuffer_B = mapBuffer_A + (40*20);
     char* mapBuffer_end = mapBuffer_B + (40*20);
 
-    DiskLoad(map_, 4, 1, (0x2000/256), 0); 
+    DiskLoad(0x8000, 4, 1, (0x2000/256), 0); 
 
     EnableALU(0);
     ExpandedGVRAM_On();
@@ -37,15 +37,18 @@ void main()
         CopyTileToBuffer(0xc000 + (i*2), 0xfe80 + (i * 0x10));
     
     // Fill 40x20 area with grass tile 
+    
     u8* t = 0xc000;
     for(u8 y = 0; y < 20; y++){
         for(u8 i = 0; i < 40; i++)
         {
-            DrawTileFromBuffer(0xfff0, t + (i * 2));
+            u8 ti = map_[(y * 128) + i];
+            DrawTileFromBuffer(0xfe80 + (0x10 * ti), t + (i * 2));
         }
         t += 0x280;
     }
-    
+ 
+
     DisableALU(FASTMEM_OFF);
     ExpandedGVRAM_Off();
 
