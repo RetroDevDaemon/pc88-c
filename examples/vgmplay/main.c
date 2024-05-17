@@ -7,11 +7,15 @@ void Vblank() __critical __interrupt;
 void LoadVGM(const u8* sn);
 inline void SetVBLIRQ();
 
+u8* songStart;
 static u8* songPointer;
+u16 songLoop; 
+u16 songWait = 0;
 static bool SONGPLAYING = false;
 
 //playing:
 #include "testssg.h"
+/*
 // not playing
 const unsigned char song[] = {\
 // Vgm_ 1.60 header
@@ -51,7 +55,7 @@ const unsigned char song[] = {\
 // off 
 	0x55, 0x28, 0x0, 0x66 
 };
-
+*/
 
 inline void SetVBLIRQ()
 {
@@ -67,21 +71,18 @@ void Vblank() __critical __interrupt
 	// Do our Vblank code:
     if(SONGPLAYING)
     {
-	VGMPlayer();
+		VGMPlayer();
     }
 
     IRQ_ON
 }
 
-u8* songStart;
-
 void main()
 {
 	IRQ_OFF 
-	__asm 
-		ld hl, #_Vblank
-		ld (CRTC_IRQ),hl
-	__endasm;
+	
+	*(u16*)CRTC_IRQ = (u16*)&Vblank;
+
 	SetVBLIRQ();        // And enable the VBL interrupt!
 	IRQ_ON 
 
@@ -102,6 +103,7 @@ void main()
 void LoadVGM(const u8* sn) 
 {
 	songPointer = sn + 0x40; // 1.50 FIXME
+	songLoop = sn + 0x29; //; TODO 
 	songStart = songPointer;
 	SONGPLAYING = true;
 }
@@ -110,24 +112,23 @@ void VGMPlayer() __naked
 {
 	// songPointer contains byte 0 of VGM data (if 1.60)
 	__asm 
-		push hl 
-		push bc 
-		push de 
-		push af 
-
+		
+		  ; waiting?
+		ld hl,(_songWait)
+		ld a,h 
+		or l 
+		jr z,_nowt
+		jp PlayWait 
+		
+		  _nowt:	; else get next byte and play
 		ld hl,(_songPointer)
-		ld a,(hl) 
+		ld a,(hl)
 		inc hl 
 		ld (_songPointer),hl 
-
+		
 		jp PlayLoop
 
 	endPlay:
-		pop af 
-		pop de 
-		pop bc 
-		pop hl 
-
 		ret
 		
 	PlayLoop: 
@@ -148,6 +149,19 @@ void VGMPlayer() __naked
 
 		jp endPlay 
 	
+	PlayWait:
+		ld hl,(_songWait)
+		ld bc,#735 			;; approx. 735 samples per frame. (depends on song?)
+		sbc hl,bc 
+		jr c,_clrwait 
+		ld (_songWait),hl 
+		jp endPlay 
+		  _clrwait:		    ;; set to 0 if its under this and continue the song. 
+		ld hl,#0 
+		ld (_songWait),hl 
+		call _GETNEXTBYTE
+		jp PlayLoop
+
 	_GETNEXTBYTE:
 		ld hl,(_songPointer) 
 		ld a,(hl)
@@ -174,15 +188,25 @@ void VGMPlayer() __naked
 		jp PlayLoop
 
 	_SAMPLEWAIT:
+		call _GETNEXTBYTE		; 55
+		ld c,a
+		call _GETNEXTBYTE		; 55
+		ld b,a 					; = 124
+		ld (_songWait), bc 
 		jp endPlay 
 	
 	_ENDFRAME:
 		jp endPlay 
 
 	_ENDSONG: 
-		;xor a 
-		;ld (_SONGPLAYING),a
-		ld hl,(_songStart) 
+		ld hl,(_songLoop)
+		ld a,h 
+		or l 
+		jr nz,_LOOP
+		xor a 
+		ld (_SONGPLAYING),a
+		_LOOP:
+		ld hl,(_songLoop) 
 		ld (_songPointer),hl 
 		jp endPlay 
 
@@ -190,6 +214,11 @@ void VGMPlayer() __naked
 		jp _ERROR 
 	
 	_QWAIT: 
+		ld b,#0			; t7
+		and #0xf		; t7
+		ld c,a 			; t4
+		inc c			; t4	= 22
+		ld (_songWait),bc
 		jp endPlay 
 	
 	__endasm;
